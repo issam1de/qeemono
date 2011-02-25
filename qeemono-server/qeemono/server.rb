@@ -33,12 +33,9 @@ module Qeemono
     include Log4r
 
     PROTOCOL_VERSION = '1.0'
-    MANDATORY_KEYS = [:method, :params, :version]
+    MANDATORY_KEYS = ['method', 'params', 'version']
 
     attr_reader :logger
-    attr_reader :host
-    attr_reader :port
-    attr_reader :options
 
 
     #
@@ -47,13 +44,16 @@ module Qeemono
     # * :debug (boolean) - If true the server logs debug information. Defaults to false.
     #
     def initialize(host, port, options)
-      @host = host
-      @port = port
-      @options = options
-      @registered_message_handlers_for_method = {}
-      @registered_message_handlers = []
-
       init_logger "#{host}:#{port}"
+
+      @sif = {   # The Server interface
+        :logger => @logger,
+        :host => host,
+        :port => port,
+        :options => options,
+        :registered_message_handlers_for_method => {},
+        :registered_message_handlers => []
+      }
     end
 
     def init_logger(logger_name)
@@ -74,15 +74,15 @@ module Qeemono
           handled_methods_as_strings = []
           handled_methods.each do |method|
             handled_methods_as_strings << method.to_s
-            (@registered_message_handlers_for_method[method.to_s] ||= []) << message_handler
+            (@sif[:registered_message_handlers_for_method][method.to_s] ||= []) << message_handler
           end
           message_handler_name = message_handler.name.to_s
-          @registered_message_handlers << message_handler
+          @sif[:registered_message_handlers] << message_handler
           message_handler_names << message_handler_name
           logger.debug "Message handler '#{message_handler_name}' has been registered for methods #{handled_methods_as_strings.inspect}."
         end
       end
-      logger.debug "Total amount of registered message handlers: #{@registered_message_handlers.size}"
+      logger.debug "Total amount of registered message handlers: #{@sif[:registered_message_handlers].size}"
     end
 
     #
@@ -113,12 +113,12 @@ module Qeemono
         end
       end
 
-      if @registered_message_handlers.include?(message_handler)
+      if @sif[:registered_message_handlers].include?(message_handler)
         logger.error "Message handler '#{message_handler.name}' is already registered! (Details: #{message_handler})"
         return false
       end
 
-      if !@registered_message_handlers.select { |mh| mh.name == message_handler.name }.empty?
+      if !@sif[:registered_message_handlers].select { |mh| mh.name == message_handler.name }.empty?
         logger.error "A message handler with name '#{message_handler.name}' already exists! Names must be unique. (Details: #{message_handler})"
         return false
       end
@@ -136,13 +136,13 @@ module Qeemono
         handled_methods = message_handler.handled_methods || []
         handled_methods = [handled_methods] unless handled_methods.is_a? Array
         handled_methods.each do |method|
-          @registered_message_handlers_for_method[method.to_s].delete(message_handler)
-          @registered_message_handlers.delete(message_handler)
+          @sif[:registered_message_handlers_for_method][method.to_s].delete(message_handler)
+          @sif[:registered_message_handlers].delete(message_handler)
         end
         message_handler_names << message_handler.name.to_s
       end
       logger.debug "Unregistered #{message_handler_names.size} message handlers. (Details: #{message_handler_names.inspect})"
-      logger.debug "Total amount of registered message handlers: #{@registered_message_handlers.size}"
+      logger.debug "Total amount of registered message handlers: #{@sif[:registered_message_handlers].size}"
     end
 
     def start
@@ -153,7 +153,7 @@ module Qeemono
       @channel_subscriptions = {} # key = web socket signature (aka client id); value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
 
       EventMachine.run do
-        EventMachine::WebSocket.start(:host => @host, :port => @port, :debug => @options[:debug]) do |ws|
+        EventMachine::WebSocket.start(:host => @sif[:host], :port => @sif[:port], :debug => @sif[:options][:debug]) do |ws|
 
           ws.onopen do
             remember_web_socket(ws)
@@ -162,11 +162,11 @@ module Qeemono
 
           ws.onmessage do |message|
             begin
-              message_as_json = JSON.parse message
-              result = self.class.parse_message(message_as_json)
+              message_hash = JSON.parse message
+              result = self.class.parse_message(message_hash)
               if result == :ok
-                logger.debug "Received valid message. Going to dispatch. (Details: #{message_as_json.inspect})"
-                dispatch_message(ws, message_as_json)
+                logger.debug "Received valid message. Going to dispatch. (Details: #{message_hash.inspect})"
+                dispatch_message(ws, message_hash)
               else
                 err_msg = result[1]
                 logger.error err_msg
@@ -186,7 +186,7 @@ module Qeemono
 
         end # end - EventMachine::WebSocket.start
 
-        logger.info "The qeemono server has been started on host #{@host}:#{@port} at #{Time.now}."
+        logger.info "The qeemono server has been started on host #{@sif[:host]}:#{@sif[:port]} at #{Time.now}."
       end # end - EventMachine.run
 
     end # end - start
@@ -278,18 +278,17 @@ module Qeemono
     # otherwise an array [:error, <err_msg>] containing :error as the first
     # and the resp. error message as the second element is returned.
     #
-    def self.parse_message(message_as_json)
-      return [:error, 'Message is nil'] if message_as_json.nil?
+    def self.parse_message(message_hash)
+      return [:error, 'Message is nil'] if message_hash.nil?
 
       # Check for all mandatory keys...
-      (MANDATORY_KEYS-[:version]).each do |key|
-        check_message_for_mandatory_key(key, message_as_json) # aka action
-        check_message_for_mandatory_key(key, message_as_json) # the method/action parameters
+      (MANDATORY_KEYS-['version']).each do |key|
+        check_message_for_mandatory_key(key, message_hash)
       end
       # end - Check for all mandatory keys
 
       # If no protocol version is given, the latest/current version is assumed and added...
-      message_as_json[:version.to_s] = PROTOCOL_VERSION
+      message_hash['version'] = PROTOCOL_VERSION
 
       return :ok
     rescue => e
@@ -300,9 +299,9 @@ module Qeemono
     # Returns true if the given key is existent in the JSON message;
     # raises an exception otherwise.
     #
-    def self.check_message_for_mandatory_key(key, message_as_json)
-      if message_as_json[key.to_s].nil?
-        raise "Key :#{key.to_s} is missing in the JSON message! Ignoring." # TODO: raise dedicated exception here
+    def self.check_message_for_mandatory_key(key, message_hash)
+      if message_hash[key.to_s].nil?
+        raise "Key '#{key.to_s}' is missing in the JSON message! Ignoring." # TODO: raise dedicated exception here
       end
       return true
     end
@@ -310,9 +309,22 @@ module Qeemono
     #
     # Dispatches the received message to the responsible message handler.
     #
-    def dispatch_message(web_socket, message_as_json)
-      # TODO: implement
-      @channels[:broadcast].push(message_as_json.to_s)
+    def dispatch_message(web_socket, message_hash)
+      method_name = message_hash['method'].to_s
+      message_handlers = @sif[:registered_message_handlers_for_method][method_name] || []
+      if message_handlers.empty?
+        logger.warn "Did not found any message handler registered for method '#{method_name}'! Ignoring."
+      else
+        message_handlers.each do |message_handler|
+          begin
+            message_handler.send("handle_#{method_name}".to_sym, @sif, message_hash['params'])
+          rescue NoMethodError => e
+            err_msg = "Message handler '#{message_handler.name}' does not respond to method '#{method_name}'! (Details: #{message_handler})"
+            logger.error err_msg
+            web_socket.send err_msg
+          end
+        end
+      end
     end
 
   end # end - class Server

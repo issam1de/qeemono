@@ -7,11 +7,10 @@ module Qeemono
       class System < Qeemono::MessageHandler::Base
 
         def handled_methods
-          ['1', :bar]
         end
 
         def name
-          'dummy'
+          '__system_handler'
         end
 
       end

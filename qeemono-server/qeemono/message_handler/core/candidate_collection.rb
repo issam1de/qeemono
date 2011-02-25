@@ -14,6 +14,11 @@ module Qeemono
           'CandidateCollection'
         end
 
+        # ***
+
+        def handle_bar(sif, first)
+          sif[:logger].info "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHALLO!!!!!!!!!!! #{first}"
+        end
       end
     end
   end

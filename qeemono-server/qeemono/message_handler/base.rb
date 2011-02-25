@@ -6,6 +6,20 @@ module Qeemono
     #
     # Actual message handling must not be done here.
     #
+    # Every message handler must implement the following action:
+    # * handled_methods
+    # * name
+    #
+    # Additionally, the message handler must implement one handle_<*m*> method
+    # per handled qeemono method *m*. qeemono methods function like protocol actions.
+    # Each handle method looks like this:
+    #
+    # def handle_<*m*>(server_interface, args*)
+    #   # ...
+    # end
+    #
+    # Where <*m*> is replaced with the resp. method name.
+    #
     class Base
 
       def handled_methods

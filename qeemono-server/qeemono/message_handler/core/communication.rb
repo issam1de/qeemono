@@ -7,11 +7,10 @@ module Qeemono
       class Communication < Qeemono::MessageHandler::Base
 
         def handled_methods
-          'bauer'
         end
 
         def name
-          'dummy2'
+          '__communication_handler'
         end
 
       end
