@@ -1,6 +1,4 @@
 require './qeemono/server.rb'
-require './qeemono/message_handler/core/system'
-require './qeemono/message_handler/core/communication'
 
 server = Qeemono::Server.new('127.0.0.1', '8080', {:debug => false})
 mh_core = Qeemono::MessageHandler::Core::System.new

@@ -20,14 +20,16 @@
 require 'em-websocket'
 require 'json'
 require 'log4r'
+
 require './qeemono/message_handler/base'
+require './qeemono/message_handler/core/system'
+require './qeemono/message_handler/core/communication'
 
 
 module Qeemono
   class Server
 
     include Log4r
-    include Qeemono::MessageHandler
 
     PROTOCOL_VERSION = '1.0'
     MANDATORY_KEYS = [:method, :params, :version]

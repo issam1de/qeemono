@@ -3,30 +3,6 @@
   <component name="GemRequirementsHolder" version="3">
     <requirement>
       <requirement>
-        <dependency name="addressable" version="0" bound="GREATER_OR_EQUAL" git="false" path="false" doRequire="true" />
-      </requirement>
-      <source manual="true" />
-    </requirement>
-    <requirement>
-      <requirement>
-        <dependency name="em-websocket" version="0" bound="GREATER_OR_EQUAL" git="false" path="false" doRequire="true" />
-      </requirement>
-      <source manual="true" />
-    </requirement>
-    <requirement>
-      <requirement>
-        <dependency name="eventmachine" version="0" bound="GREATER_OR_EQUAL" git="false" path="false" doRequire="true" />
-      </requirement>
-      <source manual="true" />
-    </requirement>
-    <requirement>
-      <requirement>
-        <dependency name="log4r" version="0" bound="GREATER_OR_EQUAL" git="false" path="false" doRequire="true" />
-      </requirement>
-      <source manual="true" />
-    </requirement>
-    <requirement>
-      <requirement>
         <dependency name="rails" version="3.0.4" bound="EQUAL" git="false" path="false" doRequire="true" />
       </requirement>
       <source from="qeemono-portal/Gemfile" />
@@ -35,7 +11,6 @@
       <requirement>
         <dependency name="sqlite3" version="0" bound="GREATER_OR_EQUAL" git="false" path="false" doRequire="true" />
       </requirement>
-      <source manual="true" />
       <source from="qeemono-portal/Gemfile" />
     </requirement>
   </component>
