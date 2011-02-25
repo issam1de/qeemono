@@ -24,6 +24,7 @@ require 'log4r'
 require './qeemono/message_handler/base'
 require './qeemono/message_handler/core/system'
 require './qeemono/message_handler/core/communication'
+require './qeemono/message_handler/core/candidate_collection'
 
 
 module Qeemono

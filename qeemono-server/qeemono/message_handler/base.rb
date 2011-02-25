@@ -6,12 +6,6 @@ module Qeemono
     #
     class Base
 
-      MANDATORY_METHODS = {
-        :handled_methods => Array,
-        :name => String
-      }
-
-
       def handled_methods
         []
       end
