@@ -23,7 +23,17 @@
     <favorites_list name="qeemono" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="start_server.rb" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="17" column="0" selection-start="703" selection-end="703" vertical-scroll-proportion="0.24228029">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -50,9 +60,9 @@
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidates.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/server.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/start_server.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/start_server.rb" />
       </list>
     </option>
   </component>
@@ -295,14 +305,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1157" height="1174" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32994455" sideWeight="0.6158712" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32994455" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2753751" sideWeight="0.80499077" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2753751" sideWeight="0.80499077" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19500925" sideWeight="0.99911505" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -359,13 +369,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="0" selection-start="703" selection-end="703" vertical-scroll-proportion="0.24228029">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="21" column="0" selection-start="332" selection-end="332" vertical-scroll-proportion="0.2992874">
@@ -397,6 +400,13 @@
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="20" column="0" selection-start="328" selection-end="328" vertical-scroll-proportion="0.28503564">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="0" selection-start="703" selection-end="703" vertical-scroll-proportion="0.24228029">
           <folding />
         </state>
       </provider>
