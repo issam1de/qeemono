@@ -53,6 +53,10 @@
 #   - Web Sockets (http://www.w3.org/TR/websockets/)
 #   - EventMachine
 #
+#
+#
+# [ qeemono server is tested under Ruby 1.9.x ]
+#
 
 
 require 'em-websocket'
