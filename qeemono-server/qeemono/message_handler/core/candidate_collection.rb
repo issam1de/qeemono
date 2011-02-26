@@ -18,7 +18,7 @@ module Qeemono
         # **************************************************************
         # **************************************************************
 
-        def handle_bar3(params)
+        def handle_bar(params)
           @qsif[:logger].info "BAR!!! #{params}"
         end
 
