@@ -7,11 +7,11 @@ module Qeemono
       class CandidateCollection < Qeemono::MessageHandler::Base
 
         def handled_methods
-          ['1', :bar]
+          [:foo, :bar]
         end
 
         def name
-          'CandidateCollection'
+          '__candidate_collection_handler'
         end
 
         # ***
