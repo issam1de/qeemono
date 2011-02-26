@@ -36,6 +36,14 @@ module Qeemono
           end
         end
 
+        def handle_subscribe_to_channels(sif, params)
+          # TODO: implement
+        end
+
+        def handle_unsubscribe_from_channels(sif, params)
+          # TODO: implement
+        end
+
       end
     end
   end
