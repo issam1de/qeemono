@@ -24,19 +24,46 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="server.rb" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="server.rb" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="60" column="19" selection-start="1631" selection-end="1631" vertical-scroll-proportion="0.0">
+            <state line="276" column="34" selection-start="10054" selection-end="10054" vertical-scroll-proportion="0.53188777">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="message_handler_registration_manager.rb" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="start_server.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="16" column="0" selection-start="840" selection-end="840" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="communication.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="33" column="0" selection-start="1093" selection-end="1093" vertical-scroll-proportion="-15.230769">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="message_handler_registration_manager.rb" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="16" selection-start="562" selection-end="562" vertical-scroll-proportion="0.31188118">
+            <state line="13" column="0" selection-start="121" selection-end="252" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="system.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="0" selection-start="297" selection-end="297" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -45,7 +72,7 @@
       <file leaf-file-name="qeemono_test_client.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/qeemono-client/qeemono_test_client.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="67" selection-start="559" selection-end="559" vertical-scroll-proportion="-9.142858">
+            <state line="16" column="100" selection-start="592" selection-end="592" vertical-scroll-proportion="-9.142858">
               <folding />
             </state>
           </provider>
@@ -75,12 +102,12 @@
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidates.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb" />
-        <option value="$PROJECT_DIR$/qeemono-client/qeemono_test_client.html" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/server.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/start_server.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb" />
+        <option value="$PROJECT_DIR$/qeemono-client/qeemono_test_client.html" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/server.rb" />
       </list>
     </option>
   </component>
@@ -159,6 +186,54 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono-server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="message_handler" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono-server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="qeemono" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="message_handler" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="core" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -318,9 +393,9 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.15157117" sideWeight="0.6158712" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21993671" sideWeight="0.77356744" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21993671" sideWeight="0.75138634" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22643253" sideWeight="0.9991166" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24861369" sideWeight="0.9991166" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -395,13 +470,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="0" selection-start="297" selection-end="297" vertical-scroll-proportion="0.28217822">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="25" column="0" selection-start="500" selection-end="500" vertical-scroll-proportion="0.37128714">
@@ -409,37 +477,72 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="34" selection-start="279" selection-end="302" vertical-scroll-proportion="0.19306931">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-client/qeemono_test_client.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="67" selection-start="559" selection-end="559" vertical-scroll-proportion="-9.142858">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="60" column="19" selection-start="1631" selection-end="1631" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="0" selection-start="853" selection-end="853" vertical-scroll-proportion="0.25247526">
+        <state line="149" column="32" selection-start="6535" selection-end="6535" vertical-scroll-proportion="0.3329208">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="16" selection-start="562" selection-end="562" vertical-scroll-proportion="0.31188118">
+        <state line="13" column="0" selection-start="121" selection-end="252" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="33" column="0" selection-start="1093" selection-end="1093" vertical-scroll-proportion="-15.230769">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/ruby-1.9.2-p136@qeemono/gems/eventmachine-0.12.10/lib/em/channel.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="0" selection-start="1134" selection-end="1134" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="0" selection-start="297" selection-end="297" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-client/qeemono_test_client.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="100" selection-start="592" selection-end="592" vertical-scroll-proportion="-9.142858">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="840" selection-end="840" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/ruby-1.9.2-p136@qeemono/gems/em-websocket-0.2.0/lib/em-websocket/connection.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="25" selection-start="1052" selection-end="1067" vertical-scroll-proportion="0.73754156">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/ruby-1.9.2-p136@qeemono/gems/em-websocket-0.2.0/lib/em-websocket/websocket.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="38" selection-start="406" selection-end="406" vertical-scroll-proportion="0.27906978">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="276" column="34" selection-start="10054" selection-end="10054" vertical-scroll-proportion="0.53188777">
           <folding />
         </state>
       </provider>

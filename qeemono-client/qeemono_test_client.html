@@ -14,7 +14,7 @@
           $("#debug").append("<p>" + str);
         }
 
-        ws = new WebSocket("ws://localhost:8080?client_id=4711-mark");
+        ws = new WebSocket("ws://localhost:8080?client_id=test-client-" + Math.floor(Math.random()*3));
 
         ws.onmessage = function(evt) {
           $("#msg").append("<p>" + evt.data + "</p>");
@@ -26,8 +26,8 @@
 
         ws.onopen = function() {
           debug("connected...");
-          ws.send("{\"method\":\"Hallo!\",\"params\":\"555\", \"version\":\"1.0\"}");
-          ws.send("{\"method\":\"Hallo again!\",\"params\":\"123\", \"version\":\"1.0\"}");
+          //ws.send("{\"method\":\"Hallo!\",\"params\":\"555\", \"version\":\"1.0\"}");
+          //ws.send("{\"method\":\"Hallo again!\",\"params\":\"123\", \"version\":\"1.0\"}");
         }
 
       });

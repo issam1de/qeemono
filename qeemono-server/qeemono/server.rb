@@ -66,6 +66,9 @@ require './qeemono/message_handler/core/candidate_collection'
 
 
 module Qeemono
+  #
+  # This is the qeemono server. It is the main class of the qeemono server project.
+  #
   class Server
 
     include Log4r
@@ -93,8 +96,8 @@ module Qeemono
         :web_sockets => {}, # key = client id; value = web socket object
         :channels => {}, # key = channel symbol; value = channel object
         :channel_subscriptions => {}, # key = client id; value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
-        :registered_message_handlers_for_method => {},
-        :registered_message_handlers => []
+        :registered_message_handlers_for_method => {}, # key = method; value = message handler
+        :registered_message_handlers => [] # all registered message handlers
       }
       @sif[:channels][:broadcast] = EM::Channel.new
 
@@ -141,8 +144,7 @@ module Qeemono
           end # end - ws.onmessage
 
           ws.onclose do
-            client_id = forget_client_web_socket_association(ws)
-            unsubscribe_from_channels(client_id , :all)
+            forget_client_web_socket_association(ws)
           end
 
         end # end - EventMachine::WebSocket.start
@@ -177,7 +179,7 @@ module Qeemono
         channel_subscriber_ids << channel_subscriber_id
       end
 
-      msg = "New client '#{client_id}' has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
+      msg = "Client '#{client_id}' has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
       @sif[:channels][:broadcast].push msg
       logger.debug msg
 
@@ -212,6 +214,11 @@ module Qeemono
       @sif[:channels][:broadcast].push msg
       logger.debug msg
 
+      #Test
+      channel_symbols.each do |channel_symbol|
+        raise "ERROR" if !@sif[:channel_subscriptions][client_id][channel_symbol].nil?
+      end
+
       return channel_subscriber_ids
     end
 
@@ -227,20 +234,43 @@ module Qeemono
     # for this resp. client.
     #
     # If no client_id is contained in the web socket an error is sent back to the
-    # requesting client and false is returned. Returns true if everything went well.
+    # requesting client and false is returned. Further processing of the request is
+    # ignored.
+    #
+    # If another client is trying to steal another client's session (by passing the
+    # same client_id) an error is sent back to the requesting client and false is
+    # returned. Further processing of the request is ignored.
+    #
+    # Returns true if everything went well.
     #
     def client_id(web_socket)
-      client_id = web_socket.request['Query']['client_id']
+      client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
       if client_id.nil?
-        msg = "Client did not send its client_id! Ignoring. (Details: #{web_socket})"
+        msg = "Client did not send its client_id! Ignoring. (Web socket: #{web_socket})"
         web_socket.send msg
         logger.error msg
         return false
       else
+        if session_hijacking_attempt?(web_socket, client_id)
+          msg = "Attempt to steal session from client '#{client_id}'! Not allowed. Ignoring. (Web socket: #{web_socket})"
+          web_socket.send msg
+          logger.fatal msg
+          return false
+        end
         # Remeber the web socket for this client (establish the client/web socket association)...
         @sif[:web_sockets][client_id] = web_socket
         return client_id
       end
+    end
+
+    #
+    # Returns true if there is already a different web socket for the same client_id;
+    # false otherwise.
+    #
+    def session_hijacking_attempt?(web_socket, client_id)
+      older_web_socket = @sif[:web_sockets][client_id]
+      return true if older_web_socket && older_web_socket.object_id != web_socket.object_id
+      return false
     end
 
     #
@@ -251,10 +281,12 @@ module Qeemono
     # Returns the client_id of the unlearned association.
     #
     def forget_client_web_socket_association(web_socket)
-      client_id_to_forget = nil
-      # Remove all key/value pairs with the given web socket as value....
-      @sif[:web_sockets].delete_if { |client_id, ws| client_id_to_forget = client_id ; ws == web_socket }
-      return client_id_to_forget
+      client_id_to_forget, ___web_socket = @sif[:web_sockets].rassoc(web_socket)
+      if client_id_to_forget
+        unsubscribe_from_channels(client_id_to_forget, :all)
+        @sif[:web_sockets].delete(client_id_to_forget)
+        return client_id_to_forget
+      end
     end
 
     #
@@ -306,7 +338,7 @@ module Qeemono
               message_handler.send(handle_method_sym, @sif, message_hash['params'])
             rescue => e
               backtrace = e.backtrace.map { |line| "\n#{line}" }.join
-              logger.fatal "Method '#{method_name}' of message handler '#{message_handler.name}' is buggy! (Details: #{e.to_s})#{backtrace}"
+              logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.inspect}) is buggy! (Details: #{e.to_s})#{backtrace}"
             end
           else
             err_msg = "Message handler '#{message_handler.name}' does not respond to method '#{method_name}'! (Details: #{message_handler}, Params: #{message_hash['params'].inspect})"
