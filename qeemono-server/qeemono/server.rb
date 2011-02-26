@@ -80,7 +80,6 @@ module Qeemono
     PROTOCOL_VERSION = '1.0'
     MANDATORY_KEYS = ['method', 'params', 'version']
 
-    attr_reader :logger
     attr_reader :message_handler_registration_manager
 
 
@@ -106,11 +105,6 @@ module Qeemono
       @qsif[:channels][:broadcast] = EM::Channel.new
 
       @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
-    end
-
-    def init_logger(logger_name)
-      @logger = Logger.new logger_name
-      @logger.outputters = Outputter.stdout
     end
 
     def start
@@ -157,6 +151,8 @@ module Qeemono
       end # end - EventMachine.run
 
     end # end - start
+
+    protected
 
     #
     # Subscribes the client represented by client_id to the channels represented by
@@ -352,6 +348,15 @@ module Qeemono
           end
         end
       end
+    end
+
+    def init_logger(logger_name)
+      @logger = Logger.new logger_name
+      @logger.outputters = Outputter.stdout
+    end
+
+    def logger
+      @logger
     end
 
   end # end - class Server

@@ -4,9 +4,6 @@ module Qeemono
   #
   class MessageHandlerRegistrationManager
 
-    attr_reader :logger
-
-
     def initialize(server_interface)
       @qsif = server_interface
       @logger = @qsif[:logger]
@@ -97,6 +94,10 @@ module Qeemono
       end
 
       return true
+    end
+
+    def logger
+      @logger
     end
 
   end
