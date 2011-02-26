@@ -21,7 +21,7 @@
 #   - resistant against session hijacking attempts
 #   - thin JSON protocol
 #   - no thick framework underlying
-#   - communication can be broadcast, 1-to-1, and 1-to-channels(s) (channel == user group)
+#   - communication can be broadcast, broadcast-except-me, 1-to-1, and 1-to-channels(s)
 #   - clean and mean implemented
 #   - message handlers use observer pattern to register
 #
@@ -119,7 +119,11 @@ module Qeemono
           ws.onopen do
             client_id = client_id(ws)
             if client_id
-              subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+              begin
+                subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+              rescue => e
+                logger.fatal backtrace(e)
+              end
             end
           end
 
@@ -146,7 +150,11 @@ module Qeemono
           end # end - ws.onmessage
 
           ws.onclose do
-            forget_client_web_socket_association(ws)
+            begin
+              forget_client_web_socket_association(ws)
+            rescue => e
+              logger.fatal backtrace(e)
+            end
           end
 
         end # end - EventMachine::WebSocket.start
@@ -174,18 +182,19 @@ module Qeemono
         channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
-          # Broadcast (push) message to all subscribers...
+          # Broadcast (push) message to all subscribers of this channel...
           @qsif[:web_sockets][client_id].send message
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
         (@qsif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
         channel_subscriber_ids << channel_subscriber_id
+
+        msg = "Client '#{client_id}' has been subscribed to channel #{channel_symbol.inspect} (subscriber id is #{channel_subscriber_id})."
+        @qsif[:channels][channel_symbol].push msg
       end
 
-      msg = "Client '#{client_id}' has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
-      @qsif[:channels][:broadcast].push msg
-      logger.debug msg
+      logger.debug "Client '#{client_id}' has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
 
       return channel_subscriber_ids
     end
@@ -212,16 +221,12 @@ module Qeemono
         @qsif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
         @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
         channel_subscriber_ids << channel_subscriber_id
+
+        msg = "Client '#{client_id}' has been unsubscribed from channel #{channel_symbol.inspect} (subscriber id was #{channel_subscriber_id})."
+        @qsif[:channels][channel_symbol].push msg
       end
 
-      msg = "Client '#{client_id}' has been unsubscribed from channels #{channel_symbols.inspect} (subscriber ids were #{channel_subscriber_ids.inspect})."
-      @qsif[:channels][:broadcast].push msg
-      logger.debug msg
-
-      #Test
-      channel_symbols.each do |channel_symbol|
-        raise "ERROR" if !@qsif[:channel_subscriptions][client_id][channel_symbol].nil?
-      end
+      logger.debug "Client '#{client_id}' has been unsubscribed from channels #{channel_symbols.inspect} (subscriber ids were #{channel_subscriber_ids.inspect})."
 
       return channel_subscriber_ids
     end
@@ -348,8 +353,7 @@ module Qeemono
               # Here's the actual dispatch...
               message_handler.send(handle_method_sym, message_hash['params'])
             rescue => e
-              backtrace = e.backtrace.map { |line| "\n#{line}" }.join
-              logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) is buggy! (Details: #{e.to_s})#{backtrace}"
+              logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) is buggy! Exception trace: #{backtrace(e)}"
             end
           else
             err_msg = "Message handler '#{message_handler.name}' (#{message_handler.class}) is registered to handle method '#{method_name}' but does not respond to it! (Sent params: #{message_hash['params'].inspect})"
@@ -363,12 +367,16 @@ module Qeemono
     def init_logger(logger_name)
       @logger = Logger.new logger_name
       file_outputter = FileOutputter.new('file_outputter', :filename => 'log/qeemono_server.log')
-      #@logger.outputters << Outputter.stdout
+      @logger.outputters << Outputter.stdout
       @logger.outputters << file_outputter
     end
 
     def logger
       @logger
+    end
+
+    def backtrace(exception)
+      exception.to_s + exception.backtrace.map { |line| "\n#{line}" }.join
     end
 
   end # end - class Server
