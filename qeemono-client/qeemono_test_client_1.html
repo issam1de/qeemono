@@ -11,23 +11,30 @@
       $(document).ready(function() {
 
         function debug(str) {
-          $("#debug").append("<p>" + str);
+          $("#debug").append("<div>" + str + "</div>");
         }
 
-        ws = new WebSocket("ws://localhost:8080?client_id=test-client-" + Math.floor(Math.random()*3));
+        function example(str) {
+          $("#example").append("<div>" + str + "</div>");
+        }
+
+        function msg(str) {
+          $("#msg").append("<p>" + str + "</p>");
+        }
+
+        ws = new WebSocket("ws://localhost:8080?client_id=test-client-1");
+
+        ws.onopen = function() {
+          debug("Connected...");
+          example('Open your Javascript console and enter the following: <pre>ws.send(\'{"method":"send","params":{"receivers":["test-client-1"], "channels":["broadcast"],"payload":"Hello Mark!"}}\');</pre>');
+        }
 
         ws.onmessage = function(evt) {
-          $("#msg").append("<p>" + evt.data + "</p>");
+          msg(evt.data);
         }
 
         ws.onclose = function() {
           debug("socket closed");
-        }
-
-        ws.onopen = function() {
-          debug("connected...");
-          //ws.send("{\"method\":\"Hallo!\",\"params\":\"555\", \"version\":\"1.0\"}");
-          //ws.send("{\"method\":\"Hallo again!\",\"params\":\"123\", \"version\":\"1.0\"}");
         }
 
       });
@@ -35,7 +42,8 @@
     </script>
   </head>
   <body>
-    <div id="debug" style="background:#ddd;"></div>
-    <div id="msg"></div>
+    <div id="debug" style="background:#ddf; padding:10px; margin:10px;"></div>
+    <div id="example" style="background:#ddd; padding:10px;  margin:10px;"></div>
+    <div id="msg" style="background:#fafafa; padding:10px;  margin:10px; border:1px solid #999; font-family:Courier; font-size:0.8em;"></div>
   </body>
 </html>
