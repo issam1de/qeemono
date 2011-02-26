@@ -362,7 +362,9 @@ module Qeemono
 
     def init_logger(logger_name)
       @logger = Logger.new logger_name
-      @logger.outputters = Outputter.stdout
+      file_outputter = FileOutputter.new('file_outputter', :filename => 'log/qeemono_server.log')
+      @logger.outputters << Outputter.stdout
+      @logger.outputters << file_outputter
     end
 
     def logger
