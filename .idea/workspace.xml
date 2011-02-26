@@ -23,7 +23,62 @@
     <favorites_list name="qeemono" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="server.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="341" column="47" selection-start="12368" selection-end="12368" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="candidate_collection.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="20" column="23" selection-start="557" selection-end="557" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="message_handler_registration_manager.rb" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="71" column="14" selection-start="3092" selection-end="3092" vertical-scroll-proportion="0.96938777">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="base.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="41" column="0" selection-start="969" selection-end="969" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="system.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="18" column="0" selection-start="488" selection-end="488" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="communication.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="77" column="0" selection-start="2621" selection-end="2621" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -48,11 +103,11 @@
         <option value="$PROJECT_DIR$/qeemono-client/qeemono_test_client.html" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/start_server.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/server.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb" />
       </list>
     </option>
   </component>
@@ -332,14 +387,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1920" height="1174" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.15157117" sideWeight="0.6158712" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32994455" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21993671" sideWeight="0.75138634" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21993671" sideWeight="0.75138634" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24861369" sideWeight="0.9991166" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -447,41 +502,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="0" selection-start="969" selection-end="969" vertical-scroll-proportion="0.627551">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="104" column="0" selection-start="4272" selection-end="4272" vertical-scroll-proportion="1.5918367">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="0" selection-start="488" selection-end="488" vertical-scroll-proportion="0.2755102">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="0" selection-start="747" selection-end="747" vertical-scroll-proportion="0.4744898">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="20" selection-start="249" selection-end="249" vertical-scroll-proportion="0.15306123">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/start_server.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="17" column="0" selection-start="853" selection-end="853" vertical-scroll-proportion="0.26020408">
@@ -489,9 +509,44 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="0" selection-start="488" selection-end="488" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="41" column="0" selection-start="969" selection-end="969" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="77" column="0" selection-start="2621" selection-end="2621" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="23" selection-start="557" selection-end="557" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="230" column="6" selection-start="7949" selection-end="7949" vertical-scroll-proportion="1.8877552">
+        <state line="341" column="47" selection-start="12368" selection-end="12368" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="14" selection-start="3092" selection-end="3092" vertical-scroll-proportion="0.96938777">
           <folding />
         </state>
       </provider>

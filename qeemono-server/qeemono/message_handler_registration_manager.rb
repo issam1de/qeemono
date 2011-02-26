@@ -60,36 +60,36 @@ module Qeemono
     #
     def check(message_handler)
       if !message_handler.is_a? Qeemono::MessageHandler::Base
-        logger.error "This is not a message handler! Must subclass '#{Qeemono::MessageHandler::Base.to_s}'. (Details: #{message_handler})"
+        logger.error "This is not a message handler! Must subclass '#{Qeemono::MessageHandler::Base.to_s}'. (Details: #{message_handler.class})"
         return false
       end
 
       if message_handler.name.nil? || message_handler.name.to_s.strip.empty?
-        logger.error "Message handler must have a non-empty name! (Details: #{message_handler})"
+        logger.error "Message handler must have a non-empty name! (Details: #{message_handler.class})"
         return false
       end
 
       handled_methods = message_handler.handled_methods || []
       handled_methods = [handled_methods] unless handled_methods.is_a? Array
       if handled_methods.empty?
-        logger.warn "Message handler '#{message_handler.name}' does not listen to any method! (Details: #{message_handler})"
+        logger.warn "Message handler '#{message_handler.name}' does not listen to any method! (Details: #{message_handler.class})"
         return false
       end
 
       handled_methods.each do |method|
         if method.nil? || method.to_s.strip.empty?
-          logger.error "Message handler '#{message_handler.name}' tries to listen to invalid method! Methods must be strings or symbols. (Details: #{message_handler})"
+          logger.error "Message handler '#{message_handler.name}' tries to listen to invalid method! Methods must be strings or symbols. (Details: #{message_handler.class})"
           return false
         end
       end
 
       if @qsif[:registered_message_handlers].include?(message_handler)
-        logger.error "Message handler '#{message_handler.name}' is already registered! (Details: #{message_handler})"
+        logger.error "Message handler '#{message_handler.name}' is already registered! (Details: #{message_handler.class})"
         return false
       end
 
       if !@qsif[:registered_message_handlers].select { |mh| mh.name == message_handler.name }.empty?
-        logger.error "A message handler with name '#{message_handler.name}' already exists! Names must be unique. (Details: #{message_handler})"
+        logger.error "A message handler with name '#{message_handler.name}' already exists! Names must be unique. (Details: #{message_handler.class})"
         return false
       end
 

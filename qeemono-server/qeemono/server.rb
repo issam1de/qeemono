@@ -36,8 +36,8 @@
 # Requirements on client-side:
 # ----------------------------
 #
-#    - jQuery
-#    - jStorage
+#    - jQuery (http://jquery.com)
+#    - jStorage (http://www.jstorage.info)
 #    - Web Socket support - built-in in most modern browsers. If not built-in, you can
 #                           utilize e.g. the HTML5 Web Socket implementation powered
 #                           by Flash (see https://github.com/gimite/web-socket-js).
@@ -253,13 +253,13 @@ module Qeemono
     def client_id(web_socket)
       client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
       if client_id.nil?
-        msg = "Client did not send its client_id! Ignoring. (Web socket: #{web_socket})"
+        msg = "Client did not send its client_id! Ignoring."
         web_socket.send msg
         logger.error msg
         return false
       else
         if session_hijacking_attempt?(web_socket, client_id)
-          msg = "Attempt to steal session from client '#{client_id}'! Not allowed. Ignoring. (Web socket: #{web_socket})"
+          msg = "Attempt to steal session from client '#{client_id}'! Not allowed. Ignoring."
           web_socket.send msg
           logger.fatal msg
           return false
@@ -352,7 +352,7 @@ module Qeemono
               logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) is buggy! (Details: #{e.to_s})#{backtrace}"
             end
           else
-            err_msg = "Message handler '#{message_handler.name}' does not respond to method '#{method_name}'! (Details: #{message_handler}, Params: #{message_hash['params'].inspect})"
+            err_msg = "Message handler '#{message_handler.name}' (#{message_handler.class}) is registered to handle method '#{method_name}' but does not respond to it! (Sent params: #{message_hash['params'].inspect})"
             logger.error err_msg
             @qsif[:web_sockets][client_id].send err_msg
           end

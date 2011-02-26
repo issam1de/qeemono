@@ -56,7 +56,7 @@ module Qeemono
           channels = params['channels']
           receiver_client_ids = params['receivers']
           if channels.nil? && receiver_client_ids.nil?
-            raise "Neither parameter 'channels' nor 'receivers' is nil! At least one target (channel and/or receiver) must be specified."
+            raise "Neither parameter 'channels' nor 'receivers' is set! At least one target (channel and/or receiver) must be specified."
           else
             send_to_channels(channels, params['payload'])
             send_to_receivers(receiver_client_ids, params['payload'])
