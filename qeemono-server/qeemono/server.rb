@@ -51,9 +51,13 @@ module Qeemono
         :host => host,
         :port => port,
         :options => options,
+        :web_sockets => {}, # key = web socket signature (aka client id); value = web socket object
+        :channels => {}, # key = channel symbol; value = channel object
+        :channel_subscriptions => {}, # key = web socket signature (aka client id); value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
         :registered_message_handlers_for_method => {},
         :registered_message_handlers => []
       }
+      @sif[:channels][:broadcast] = EM::Channel.new
     end
 
     def init_logger(logger_name)
@@ -147,11 +151,6 @@ module Qeemono
 
     def start
 
-      @web_sockets = {} # key = web socket signature (aka client id); value = web socket object
-      @channels = {} # key = channel symbol; value = channel object
-      @channels[:broadcast] = EM::Channel.new
-      @channel_subscriptions = {} # key = web socket signature (aka client id); value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
-
       EventMachine.run do
         EventMachine::WebSocket.start(:host => @sif[:host], :port => @sif[:port], :debug => @sif[:options][:debug]) do |ws|
 
@@ -206,7 +205,7 @@ module Qeemono
       channel_subscriber_ids = []
 
       channel_symbols.each do |channel_symbol|
-        channel = (@channels[channel_symbol] ||= EM::Channel.new)
+        channel = (@sif[:channels][channel_symbol] ||= EM::Channel.new)
         # Create a subscriber id for the web socket client...
         channel_subscriber_id = channel.subscribe do |message|
           # Broadcast (push) message to all subscribers...
@@ -214,12 +213,12 @@ module Qeemono
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
-        (@channel_subscriptions[client_id] ||= {})[channel_symbol] = channel_subscriber_id
+        (@sif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
         channel_subscriber_ids << channel_subscriber_id
       end
 
       msg = "New client ##{client_id} has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
-      @channels[:broadcast].push msg
+      @sif[:channels][:broadcast].push msg
       logger.debug msg
 
       return channel_subscriber_ids
@@ -240,17 +239,17 @@ module Qeemono
       channel_subscriber_ids = []
 
       if channel_symbols == [:all]
-        channel_symbols = @channel_subscriptions[client_id].keys
+        channel_symbols = @sif[:channel_subscriptions][client_id].keys
       end
 
       channel_symbols.each do |channel_symbol|
-        channel_subscriber_id = @channel_subscriptions[client_id][channel_symbol]
-        @channels[channel_symbol].unsubscribe(channel_subscriber_id)
+        channel_subscriber_id = @sif[:channel_subscriptions][client_id][channel_symbol]
+        @sif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
         channel_subscriber_ids << channel_subscriber_id
       end
 
       msg = "Client ##{client_id} has been unsubscribed from channels #{channel_symbols.inspect} (subscriber ids were #{channel_subscriber_ids.inspect})."
-      @channels[:broadcast].push msg
+      @sif[:channels][:broadcast].push msg
       logger.debug msg
 
       return channel_subscriber_ids
@@ -262,7 +261,7 @@ module Qeemono
     #
     def remember_web_socket(web_socket)
       # Store the web socket for this client...
-      @web_sockets[web_socket.signature] = web_socket
+      @sif[:web_sockets][web_socket.signature] = web_socket
     end
 
     #
@@ -270,7 +269,7 @@ module Qeemono
     #
     def forget_web_socket(web_socket)
       # Store the web socket for this client...
-      @web_sockets.delete(web_socket.signature)
+      @sif[:web_sockets].delete(web_socket.signature)
     end
 
     #
@@ -316,10 +315,16 @@ module Qeemono
         logger.warn "Did not found any message handler registered for method '#{method_name}'! Ignoring."
       else
         message_handlers.each do |message_handler|
-          begin
-            message_handler.send("handle_#{method_name}".to_sym, @sif, message_hash['params'])
-          rescue NoMethodError => e
-            err_msg = "Message handler '#{message_handler.name}' does not respond to method '#{method_name}'! (Details: #{message_handler})"
+          handle_method_sym = "handle_#{method_name}".to_sym
+          if message_handler.respond_to?(handle_method_sym)
+            begin
+              message_handler.send(handle_method_sym, @sif, message_hash['params'])
+            rescue => e
+              backtrace = e.backtrace.map { |line| "\n#{line}" }.join
+              logger.fatal "Method '#{method_name}' of message handler '#{message_handler.name}' is buggy! (Details: #{e.to_s})#{backtrace}"
+            end
+          else
+            err_msg = "Message handler '#{message_handler.name}' does not respond to method '#{method_name}'! (Details: #{message_handler}, Params: #{message_hash['params'].inspect})"
             logger.error err_msg
             web_socket.send err_msg
           end

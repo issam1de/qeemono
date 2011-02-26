@@ -16,8 +16,8 @@ module Qeemono
 
         # ***
 
-        def handle_bar(sif, first)
-          sif[:logger].info "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHALLO!!!!!!!!!!! #{first}"
+        def handle_bar(sif, params)
+          sif[:logger].info "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHALLO!!!!!!!!!!! #{params}"
         end
       end
     end
