@@ -24,10 +24,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="server.rb" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="communication.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="server.rb" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="341" column="47" selection-start="12368" selection-end="12368" vertical-scroll-proportion="0.0">
+            <state line="373" column="0" selection-start="13769" selection-end="13769" vertical-scroll-proportion="1.8093386">
               <folding />
             </state>
           </provider>
@@ -36,43 +45,7 @@
       <file leaf-file-name="message_handler_registration_manager.rb" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="104" column="0" selection-start="4308" selection-end="4308" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="candidate_collection.rb" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="0" selection-start="747" selection-end="747" vertical-scroll-proportion="0.4744898">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="base.rb" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="41" column="0" selection-start="969" selection-end="969" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="system.rb" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="0" selection-start="488" selection-end="488" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="communication.rb" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="77" column="0" selection-start="2621" selection-end="2621" vertical-scroll-proportion="0.0">
+            <state line="46" column="70" selection-start="2082" selection-end="2082" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -104,10 +77,10 @@
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/start_server.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb" />
-        <option value="$PROJECT_DIR$/qeemono-server/qeemono/server.rb" />
         <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb" />
+        <option value="$PROJECT_DIR$/qeemono-server/qeemono/server.rb" />
       </list>
     </option>
   </component>
@@ -511,35 +484,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/system.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="0" selection-start="488" selection-end="488" vertical-scroll-proportion="0.0">
+        <state line="18" column="0" selection-start="488" selection-end="488" vertical-scroll-proportion="0.2755102">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/base.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="0" selection-start="969" selection-end="969" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="0" selection-start="2621" selection-end="2621" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="341" column="47" selection-start="12368" selection-end="12368" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="104" column="0" selection-start="4308" selection-end="4308" vertical-scroll-proportion="0.0">
+        <state line="41" column="0" selection-start="969" selection-end="969" vertical-scroll-proportion="0.627551">
           <folding />
         </state>
       </provider>
@@ -547,6 +499,27 @@
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/candidate_collection.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="31" column="0" selection-start="747" selection-end="747" vertical-scroll-proportion="0.4744898">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler_registration_manager.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="70" selection-start="2082" selection-end="2082" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/server.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="373" column="0" selection-start="13769" selection-end="13769" vertical-scroll-proportion="1.8093386">
           <folding />
         </state>
       </provider>

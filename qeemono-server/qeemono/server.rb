@@ -151,7 +151,7 @@ module Qeemono
 
         end # end - EventMachine::WebSocket.start
 
-        logger.info "The qeemono server has been started on host #{@qsif[:host]}:#{@qsif[:port]} at #{Time.now}."
+        logger.info "The qeemono server has been started on host #{@qsif[:host]}:#{@qsif[:port]} at #{Time.now}. Have Fun..."
       end # end - EventMachine.run
 
     end # end - start
@@ -253,13 +253,13 @@ module Qeemono
     def client_id(web_socket)
       client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
       if client_id.nil?
-        msg = "Client did not send its client_id! Ignoring."
+        msg = "Client did not send its client_id! Ignoring. (Web socket signature: #{web_socket.signature})"
         web_socket.send msg
         logger.error msg
         return false
       else
         if session_hijacking_attempt?(web_socket, client_id)
-          msg = "Attempt to steal session from client '#{client_id}'! Not allowed. Ignoring."
+          msg = "Attempt to steal session from client '#{client_id}'! Not allowed. Ignoring. (Web socket signature: #{web_socket.signature})"
           web_socket.send msg
           logger.fatal msg
           return false
@@ -336,10 +336,10 @@ module Qeemono
     # Dispatches the received message to the responsible message handler.
     #
     def dispatch_message(client_id, message_hash)
-      method_name = message_hash['method'].to_s
+      method_name = message_hash['method'].to_sym
       message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
-        logger.warn "Did not found any message handler registered for method '#{method_name}'! Ignoring."
+        logger.warn "Did not found any message handler registered for method '#{method_name}'! Ignoring. (Sent from client '#{client_id}')"
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym

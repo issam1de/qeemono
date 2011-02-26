@@ -22,7 +22,7 @@ module Qeemono
           handled_methods_as_strings = []
           handled_methods.each do |method|
             handled_methods_as_strings << method.to_s
-            (@qsif[:registered_message_handlers_for_method][method.to_s] ||= []) << message_handler
+            (@qsif[:registered_message_handlers_for_method][method.to_sym] ||= []) << message_handler
           end
           message_handler_name = message_handler.name.to_s
           @qsif[:registered_message_handlers] << message_handler
@@ -44,7 +44,7 @@ module Qeemono
         handled_methods = message_handler.handled_methods || []
         handled_methods = [handled_methods] unless handled_methods.is_a? Array
         handled_methods.each do |method|
-          @qsif[:registered_message_handlers_for_method][method.to_s].delete(message_handler)
+          @qsif[:registered_message_handlers_for_method][method.to_sym].delete(message_handler)
           @qsif[:registered_message_handlers].delete(message_handler)
         end
         message_handler_names << message_handler.name.to_s
