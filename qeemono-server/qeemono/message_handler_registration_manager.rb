@@ -8,8 +8,8 @@ module Qeemono
 
 
     def initialize(server_interface)
-      @sif = server_interface
-      @logger = @sif[:logger]
+      @qsif = server_interface
+      @logger = @qsif[:logger]
     end
 
     #
@@ -25,15 +25,16 @@ module Qeemono
           handled_methods_as_strings = []
           handled_methods.each do |method|
             handled_methods_as_strings << method.to_s
-            (@sif[:registered_message_handlers_for_method][method.to_s] ||= []) << message_handler
+            (@qsif[:registered_message_handlers_for_method][method.to_s] ||= []) << message_handler
           end
           message_handler_name = message_handler.name.to_s
-          @sif[:registered_message_handlers] << message_handler
+          @qsif[:registered_message_handlers] << message_handler
+          message_handler.qsif = @qsif # Set the service interface so that it is available in the message handler
           message_handler_names << message_handler_name
           logger.debug "Message handler '#{message_handler_name}' has been registered for methods #{handled_methods_as_strings.inspect}."
         end
       end
-      logger.debug "Total amount of registered message handlers: #{@sif[:registered_message_handlers].size}"
+      logger.debug "Total amount of registered message handlers: #{@qsif[:registered_message_handlers].size}"
     end
 
     #
@@ -46,13 +47,13 @@ module Qeemono
         handled_methods = message_handler.handled_methods || []
         handled_methods = [handled_methods] unless handled_methods.is_a? Array
         handled_methods.each do |method|
-          @sif[:registered_message_handlers_for_method][method.to_s].delete(message_handler)
-          @sif[:registered_message_handlers].delete(message_handler)
+          @qsif[:registered_message_handlers_for_method][method.to_s].delete(message_handler)
+          @qsif[:registered_message_handlers].delete(message_handler)
         end
         message_handler_names << message_handler.name.to_s
       end
       logger.debug "Unregistered #{message_handler_names.size} message handlers. (Details: #{message_handler_names.inspect})"
-      logger.debug "Total amount of registered message handlers: #{@sif[:registered_message_handlers].size}"
+      logger.debug "Total amount of registered message handlers: #{@qsif[:registered_message_handlers].size}"
     end
 
     protected
@@ -85,12 +86,12 @@ module Qeemono
         end
       end
 
-      if @sif[:registered_message_handlers].include?(message_handler)
+      if @qsif[:registered_message_handlers].include?(message_handler)
         logger.error "Message handler '#{message_handler.name}' is already registered! (Details: #{message_handler})"
         return false
       end
 
-      if !@sif[:registered_message_handlers].select { |mh| mh.name == message_handler.name }.empty?
+      if !@qsif[:registered_message_handlers].select { |mh| mh.name == message_handler.name }.empty?
         logger.error "A message handler with name '#{message_handler.name}' already exists! Names must be unique. (Details: #{message_handler})"
         return false
       end

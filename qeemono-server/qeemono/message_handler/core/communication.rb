@@ -14,26 +14,26 @@ module Qeemono
           '__communication_handler'
         end
 
-        def send_to_channels(sif, channels, payload)
+        def send_to_channels(channels, payload)
           return false if channels.nil?
           channels = [channels] unless channels.is_a? Array
           channels.each do |channel|
-            if sif[:channels][channel.to_sym].nil?
+            if @qsif[:channels][channel.to_sym].nil?
               raise "Failed to send to channel '#{channel}'! Unknown channel. (Payload: #{payload})"
             else
-              sif[:channels][channel.to_sym].push(payload)
+              @qsif[:channels][channel.to_sym].push(payload)
             end
           end
         end
 
-        def send_to_receivers(sif, receiver_client_ids, payload)
+        def send_to_receivers(receiver_client_ids, payload)
           return false if receiver_client_ids.nil?
           receiver_client_ids = [receiver_client_ids] unless receiver_client_ids.is_a? Array
           receiver_client_ids.each do |client_id|
-            if sif[:web_sockets][client_id.to_sym].nil?
+            if @qsif[:web_sockets][client_id.to_sym].nil?
               raise "Failed to send to client '#{client_id}'! Unknown client id. (Payload: #{payload})"
             else
-              sif[:web_sockets][client_id.to_sym].send(payload)
+              @qsif[:web_sockets][client_id.to_sym].send(payload)
             end
           end
         end
@@ -48,22 +48,22 @@ module Qeemono
         # * channels => array of channels (e.g. ['broadcasts', 'detectives'])
         # * payload => any object
         #
-        def handle_send(sif, params)
+        def handle_send(params)
           channels = params['channels']
           receiver_client_ids = params['receivers']
           if channels.nil? && receiver_client_ids.nil?
             raise "Neither parameter 'channels' nor 'receivers' is nil! At least one target (channel and/or receiver) must be specified."
           else
-            send_to_channels(sif, channels, params['payload'])
-            send_to_receivers(sif, receiver_client_ids, params['payload'])
+            send_to_channels(channels, params['payload'])
+            send_to_receivers(receiver_client_ids, params['payload'])
           end
         end
 
-        def handle_subscribe_to_channels(sif, params)
+        def handle_subscribe_to_channels(params)
           # TODO: implement
         end
 
-        def handle_unsubscribe_from_channels(sif, params)
+        def handle_unsubscribe_from_channels(params)
           # TODO: implement
         end
 

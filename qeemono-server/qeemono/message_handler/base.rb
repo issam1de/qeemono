@@ -20,7 +20,13 @@ module Qeemono
     #
     # Where <*m*> is replaced with the resp. method name.
     #
+    # All message handlers can interact with the qeemono server via the
+    # qeemono server interface (qsif).
+    #
     class Base
+
+      attr_writer :qsif # The qeemono server interface
+
 
       def handled_methods
         []

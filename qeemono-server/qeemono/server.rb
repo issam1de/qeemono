@@ -17,12 +17,13 @@
 #   - no boilerplate code (like e.g. queueing)
 #   - bi-directional push (Web Socket)
 #   - stateful
+#   - session aware
+#   - resistant against session hijacking attempts
 #   - thin JSON protocol
 #   - no thick framework underlying
-#   - communication can be broadcast, 1-to-1, and 1-to-group(s)
+#   - communication can be broadcast, 1-to-1, and 1-to-channels(s) (channel == user group)
 #   - clean and mean implemented
-#   - message handlers (you know them as action handlers) use observer pattern to register
-#   - completely designed by me (no copied code)
+#   - message handlers use observer pattern to register
 #
 # Requirements on server-side:
 # ----------------------------
@@ -69,6 +70,9 @@ module Qeemono
   #
   # This is the qeemono server. It is the main class of the qeemono server project.
   #
+  # Associated classes can interact with the qeemono server via the
+  # qeemono server interface (qsif).
+  #
   class Server
 
     include Log4r
@@ -88,7 +92,7 @@ module Qeemono
     def initialize(host, port, options)
       init_logger "#{host}:#{port}"
 
-      @sif = {   # The Server interface
+      @qsif = {   # The Server interface
         :logger => @logger,
         :host => host,
         :port => port,
@@ -99,9 +103,9 @@ module Qeemono
         :registered_message_handlers_for_method => {}, # key = method; value = message handler
         :registered_message_handlers => [] # all registered message handlers
       }
-      @sif[:channels][:broadcast] = EM::Channel.new
+      @qsif[:channels][:broadcast] = EM::Channel.new
 
-      @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@sif)
+      @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
     end
 
     def init_logger(logger_name)
@@ -112,7 +116,7 @@ module Qeemono
     def start
 
       EventMachine.run do
-        EventMachine::WebSocket.start(:host => @sif[:host], :port => @sif[:port], :debug => @sif[:options][:debug]) do |ws|
+        EventMachine::WebSocket.start(:host => @qsif[:host], :port => @qsif[:port], :debug => @qsif[:options][:debug]) do |ws|
 
           ws.onopen do
             client_id = client_id(ws)
@@ -149,7 +153,7 @@ module Qeemono
 
         end # end - EventMachine::WebSocket.start
 
-        logger.info "The qeemono server has been started on host #{@sif[:host]}:#{@sif[:port]} at #{Time.now}."
+        logger.info "The qeemono server has been started on host #{@qsif[:host]}:#{@qsif[:port]} at #{Time.now}."
       end # end - EventMachine.run
 
     end # end - start
@@ -167,20 +171,20 @@ module Qeemono
       channel_subscriber_ids = []
 
       channel_symbols.each do |channel_symbol|
-        channel = (@sif[:channels][channel_symbol] ||= EM::Channel.new)
+        channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
           # Broadcast (push) message to all subscribers...
-          @sif[:web_sockets][client_id].send message
+          @qsif[:web_sockets][client_id].send message
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
-        (@sif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
+        (@qsif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
         channel_subscriber_ids << channel_subscriber_id
       end
 
       msg = "Client '#{client_id}' has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
-      @sif[:channels][:broadcast].push msg
+      @qsif[:channels][:broadcast].push msg
       logger.debug msg
 
       return channel_subscriber_ids
@@ -200,23 +204,23 @@ module Qeemono
       channel_subscriber_ids = []
 
       if channel_symbols == [:all]
-        channel_symbols = @sif[:channel_subscriptions][client_id].keys
+        channel_symbols = @qsif[:channel_subscriptions][client_id].keys
       end
 
       channel_symbols.each do |channel_symbol|
-        channel_subscriber_id = @sif[:channel_subscriptions][client_id][channel_symbol]
-        @sif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
-        @sif[:channel_subscriptions][client_id].delete(channel_symbol)
+        channel_subscriber_id = @qsif[:channel_subscriptions][client_id][channel_symbol]
+        @qsif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
+        @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
         channel_subscriber_ids << channel_subscriber_id
       end
 
       msg = "Client '#{client_id}' has been unsubscribed from channels #{channel_symbols.inspect} (subscriber ids were #{channel_subscriber_ids.inspect})."
-      @sif[:channels][:broadcast].push msg
+      @qsif[:channels][:broadcast].push msg
       logger.debug msg
 
       #Test
       channel_symbols.each do |channel_symbol|
-        raise "ERROR" if !@sif[:channel_subscriptions][client_id][channel_symbol].nil?
+        raise "ERROR" if !@qsif[:channel_subscriptions][client_id][channel_symbol].nil?
       end
 
       return channel_subscriber_ids
@@ -258,7 +262,7 @@ module Qeemono
           return false
         end
         # Remeber the web socket for this client (establish the client/web socket association)...
-        @sif[:web_sockets][client_id] = web_socket
+        @qsif[:web_sockets][client_id] = web_socket
         return client_id
       end
     end
@@ -268,7 +272,7 @@ module Qeemono
     # false otherwise.
     #
     def session_hijacking_attempt?(web_socket, client_id)
-      older_web_socket = @sif[:web_sockets][client_id]
+      older_web_socket = @qsif[:web_sockets][client_id]
       return true if older_web_socket && older_web_socket.object_id != web_socket.object_id
       return false
     end
@@ -281,10 +285,10 @@ module Qeemono
     # Returns the client_id of the unlearned association.
     #
     def forget_client_web_socket_association(web_socket)
-      client_id_to_forget, ___web_socket = @sif[:web_sockets].rassoc(web_socket)
+      client_id_to_forget, ___web_socket = @qsif[:web_sockets].rassoc(web_socket)
       if client_id_to_forget
         unsubscribe_from_channels(client_id_to_forget, :all)
-        @sif[:web_sockets].delete(client_id_to_forget)
+        @qsif[:web_sockets].delete(client_id_to_forget)
         return client_id_to_forget
       end
     end
@@ -327,7 +331,7 @@ module Qeemono
     #
     def dispatch_message(client_id, message_hash)
       method_name = message_hash['method'].to_s
-      message_handlers = @sif[:registered_message_handlers_for_method][method_name] || []
+      message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
         logger.warn "Did not found any message handler registered for method '#{method_name}'! Ignoring."
       else
@@ -335,15 +339,16 @@ module Qeemono
           handle_method_sym = "handle_#{method_name}".to_sym
           if message_handler.respond_to?(handle_method_sym)
             begin
-              message_handler.send(handle_method_sym, @sif, message_hash['params'])
+              # Here's the actual dispatch...
+              message_handler.send(handle_method_sym, message_hash['params'])
             rescue => e
               backtrace = e.backtrace.map { |line| "\n#{line}" }.join
-              logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.inspect}) is buggy! (Details: #{e.to_s})#{backtrace}"
+              logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) is buggy! (Details: #{e.to_s})#{backtrace}"
             end
           else
             err_msg = "Message handler '#{message_handler.name}' does not respond to method '#{method_name}'! (Details: #{message_handler}, Params: #{message_hash['params'].inspect})"
             logger.error err_msg
-            @sif[:web_sockets][client_id].send err_msg
+            @qsif[:web_sockets][client_id].send err_msg
           end
         end
       end
