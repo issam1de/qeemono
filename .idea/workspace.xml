@@ -45,7 +45,7 @@
       <file leaf-file-name="communication.rb" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="36" selection-start="353" selection-end="353" vertical-scroll-proportion="0.41201717">
+            <state line="24" column="33" selection-start="689" selection-end="689" vertical-scroll-proportion="0.6180258">
               <folding />
             </state>
           </provider>
@@ -438,7 +438,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/qeemono-server/qeemono/message_handler/core/communication.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="36" selection-start="353" selection-end="353" vertical-scroll-proportion="0.41201717">
+        <state line="24" column="33" selection-start="689" selection-end="689" vertical-scroll-proportion="0.6180258">
           <folding />
         </state>
       </provider>

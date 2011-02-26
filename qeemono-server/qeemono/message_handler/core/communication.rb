@@ -14,6 +14,16 @@ module Qeemono
           '__communication_handler'
         end
 
+        #
+        # Send payload to one or more channels. A channel consists of
+        # many subscribers (clients) to which the message is sent. The
+        # 'broadcast' channel is used to send/broadcast to all clients.
+        #
+        # Params:
+        #
+        # * channels => array of channels (e.g. ['broadcasts', 'detectives'])
+        # * payload => any object
+        #
         def handle_send(sif, params)
           channels = params['channels']
           if channels.nil?
