@@ -227,6 +227,9 @@ module Qeemono
     end
 
     #
+    # This is the first thing what happens when client and
+    # qeemono server connect.
+    #
     # Extracts the client_id (which must be persistently stored on client-side) from
     # the given web socket and returns it. Additionally, the given web socket is
     # associated with its contained client id so that the web socket can be accessed
@@ -277,6 +280,9 @@ module Qeemono
       return false
     end
 
+    #
+    # This is the last thing what happens when client and
+    # qeemono server disconnect (e.g. caused by browser refresh).
     #
     # Forgets the association between the given web socket and its contained client.
     # For more information read the documentation  of
