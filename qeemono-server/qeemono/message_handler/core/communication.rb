@@ -14,6 +14,10 @@ module Qeemono
           '__communication_handler'
         end
 
+        # **************************************************************
+        # **************************************************************
+        # **************************************************************
+
         def send_to_channels(channels, payload)
           return false if channels.nil?
           channels = [channels] unless channels.is_a? Array

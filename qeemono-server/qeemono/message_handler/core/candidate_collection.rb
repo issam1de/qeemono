@@ -14,10 +14,16 @@ module Qeemono
           '__candidate_collection_handler'
         end
 
-        # ***
+        # **************************************************************
+        # **************************************************************
+        # **************************************************************
 
         def handle_bar(params)
-          @qsif[:logger].info "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHALLO!!!!!!!!!!! #{params}"
+          @qsif[:logger].info "BAR!!! #{params}"
+        end
+
+        def handle_foo(params)
+          @qsif[:logger].info "FOO!!! #{params}"
         end
       end
     end
