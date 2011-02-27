@@ -22,7 +22,7 @@ module Qeemono
 
       10000 => "Failed to send to channel '${channel}'! Unknown channel. (Payload: ${payload})",
       10010 => "Failed to send to client '${client_id}'! Unknown client id. (Payload: ${payload})",
-      10020 => "Neither parameter 'channels' nor 'receivers' is set! At least one target (channels and/or receivers) must be specified"
+      10020 => "Neither parameter 'channels' nor 'receivers' is set for method send! At least one target (channels and/or receivers) must be specified"
     }
 
 
@@ -60,6 +60,8 @@ module Qeemono
         receivers.each do |receiver|
           # TODO: send as protocol conform JSON message with code and all params so that client can parse and understand the notification message
           # TODO: allow also client ids as receivers
+
+          # Push to channel or send to web socket (client)...
           receiver.send("#{type} : #{msg}")
         end
       end
