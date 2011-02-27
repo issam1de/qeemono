@@ -156,8 +156,7 @@ module Qeemono
             rescue JSON::ParserError => e
               notify(:type => :error, :code => 9020, :receivers => ws, :params => {:err_msg => e.to_s})
             rescue => e
-              ws.send e.to_s
-              logger.fatal CommonUtils.backtrace(e)
+              notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
           end # end - ws.onmessage
 
@@ -168,8 +167,7 @@ module Qeemono
               @qsif[:channels][:broadcast].push msg
               logger.debug msg
             rescue => e
-              ws.send e.to_s
-              logger.fatal CommonUtils.backtrace(e)
+              notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
           end
 
