@@ -137,7 +137,7 @@ module Qeemono
               subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
               notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
             rescue => e
-              notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :backtrace => CommonUtils.backtrace(e))
+              notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
           end
 
@@ -154,9 +154,7 @@ module Qeemono
                 notify(:type => :error, :code => 9010, :receivers => ws, :params => {:err_msg => err_msg})
               end
             rescue JSON::ParserError => e
-              msg = "Received invalid message! Must be JSON. Ignoring. (Details: #{e.to_s})"
-              ws.send msg
-              logger.error msg
+              notify(:type => :error, :code => 9020, :receivers => ws, :params => {:err_msg => e.to_s})
             rescue => e
               ws.send e.to_s
               logger.fatal CommonUtils.backtrace(e)

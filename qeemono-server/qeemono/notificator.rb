@@ -8,8 +8,10 @@ module Qeemono
     NOTIFICATION_MESSAGES = {
       6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
       6100 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
+
       9000 => "${err_msg}",
-      9010 => "${err_msg}"
+      9010 => "${err_msg}",
+      9020 => "Received invalid message! Must be JSON. Ignoring. (Details: ${err_msg})"
     }
 
 
@@ -19,13 +21,16 @@ module Qeemono
     end
 
     #
+    # Notifies the receivers (clients) about the given incident.
+    # Additionally, the incident will be logged unless suppressed.
+    #
     # Options:
-    # * :type (symbol, :info, :debug, :warn, :error, :fatal)
-    # * :code (integer)
-    # * :receivers (web sockets and/or channels)
-    # * :params (hash)
-    # * :no_log (boolean) - Defaults to false
-    # * :backtrace (string)
+    # * :type (symbol) - Can be one of :info, :debug, :warn, :error, :fatal (aka log level)
+    # * :code (integer) - The notification message code
+    # * :receivers (web sockets and/or channels) - The receivers of the notification message
+    # * :params (hash) - The template variables for the notification message
+    # * :no_log (boolean) - Defaults to false. If true the notification will not be logged
+    # * :exception (exception) - Defaults to nil. If given the backtrace will be logged
     #
     # Example:
     #   {:type => :error, :code => 100, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature}, :no_log => true}
@@ -49,7 +54,7 @@ module Qeemono
       end
 
       unless options[:no_log]
-        logger.send(type.to_sym, msg + (options[:backtrace] || ''))
+        logger.send(type.to_sym, msg + CommonUtils.backtrace(options[:exception]))
       end
     end
 
@@ -58,8 +63,6 @@ module Qeemono
     def logger
       @logger
     end
-
-    private
 
     def message(options)
       msg = NOTIFICATION_MESSAGES[options[:code]]
