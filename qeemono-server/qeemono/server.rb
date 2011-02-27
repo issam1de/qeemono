@@ -173,7 +173,7 @@ module Qeemono
 
         end # end - EventMachine::WebSocket.start
 
-        logger.info "The qeemono server has been started on host #{@qsif[:host]}:#{@qsif[:port]} at #{Time.now}. Have Fun..."
+        notify(:type => :info, :code => 1000, :params => {:host => @qsif[:host], :port => @qsif[:port], :current_time => Time.now})
       end # end - EventMachine.run
 
     end # end - start

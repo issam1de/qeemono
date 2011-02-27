@@ -6,6 +6,8 @@ module Qeemono
   class Notificator
 
     NOTIFICATION_MESSAGES = {
+      1000 => "The qeemono server has been started on host ${host}:${port} at ${current_time}. Have Fun...",
+
       6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
       6100 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
 
