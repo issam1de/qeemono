@@ -21,7 +21,7 @@
 #   - resistant against session hijacking attempts
 #   - thin JSON protocol
 #   - no thick framework underlying
-#   - communication can be broadcast, broadcast-except-me, 1-to-1, and 1-to-channels(s)
+#   - communication can be broadcast, 1-to-1, and 1-to-channel (broadcast and channel communication possible with 'except-me' flag)
 #   - clean and mean implemented
 #   - message handlers use observer pattern to register
 #
@@ -63,6 +63,7 @@ require 'em-websocket'
 require 'json'
 require 'log4r'
 
+require './qeemono/notificator'
 require './qeemono/message_handler_registration_manager'
 require './qeemono/message_handler/base'
 require './qeemono/message_handler/core/system'
@@ -95,6 +96,8 @@ module Qeemono
     def initialize(host, port, options)
       init_logger "#{host}:#{port}"
 
+      @anonymous_client_id = 0
+
       @qsif = {   # The Server interface
         :logger => @logger,
         :host => host,
@@ -108,6 +111,7 @@ module Qeemono
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
 
+      @notificator = Qeemono::Notificator.new(@qsif)
       @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
     end
 
@@ -117,42 +121,49 @@ module Qeemono
         EventMachine::WebSocket.start(:host => @qsif[:host], :port => @qsif[:port], :debug => @qsif[:options][:debug]) do |ws|
 
           ws.onopen do
-            client_id = client_id(ws)
-            if client_id
-              begin
-                subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
-              rescue => e
-                logger.fatal backtrace(e)
-              end
+            begin
+              client_id = client_id(ws)
+              subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+              msg = "Client '#{client_id}' has been connected. (Web socket signature: #{ws.signature})"
+              @qsif[:channels][:broadcast].push msg
+              logger.debug msg
+            rescue => e
+              ws.send e.to_s
+              logger.fatal backtrace(e)
             end
           end
 
           ws.onmessage do |message|
-            client_id = client_id(ws)
-            if client_id
-              begin
-                message_hash = JSON.parse message
-                result = self.class.parse_message(message_hash)
-                if result == :ok
-                  logger.debug "Received valid message. Going to dispatch. (Details: #{message_hash.inspect})"
-                  dispatch_message(client_id, message_hash)
-                else
-                  err_msg = result[1]
-                  logger.error err_msg
-                  ws.send err_msg
-                end
-              rescue JSON::ParserError => e
-                msg = "Received invalid message! Must be JSON. Ignoring. (Details: #{e.to_s})"
-                ws.send msg
-                logger.error msg
+            begin
+              client_id = client_id(ws)
+              message_hash = JSON.parse message
+              result = self.class.parse_message(message_hash)
+              if result == :ok
+                logger.debug "Received valid message from client '#{client_id}'. Going to dispatch. (Message: #{message_hash.inspect})"
+                dispatch_message(client_id, message_hash)
+              else
+                err_msg = result[1]
+                ws.send err_msg
+                logger.error err_msg
               end
+            rescue JSON::ParserError => e
+              msg = "Received invalid message! Must be JSON. Ignoring. (Details: #{e.to_s})"
+              ws.send msg
+              logger.error msg
+            rescue => e
+              ws.send e.to_s
+              logger.fatal backtrace(e)
             end
           end # end - ws.onmessage
 
           ws.onclose do
             begin
-              forget_client_web_socket_association(ws)
+              client_id = forget_client_web_socket_association(ws)
+              msg = "Client '#{client_id}' has been disconnected. (Web socket signature: #{ws.signature})"
+              @qsif[:channels][:broadcast].push msg
+              logger.debug msg
             rescue => e
+              ws.send e.to_s
               logger.fatal backtrace(e)
             end
           end
@@ -184,6 +195,7 @@ module Qeemono
         channel_subscriber_id = channel.subscribe do |message|
           # Broadcast (push) message to all subscribers of this channel...
           @qsif[:web_sockets][client_id].send message
+          puts "*****************"   # TODO
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
@@ -257,22 +269,36 @@ module Qeemono
     #
     def client_id(web_socket)
       client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
+      new_client_id = nil
+
       if client_id.nil?
-        msg = "Client did not send its client_id! Ignoring. (Web socket signature: #{web_socket.signature})"
+        new_client_id = anonymous_client_id
+        msg = "Client did not send its client_id! Allocating unique anonymous client id '#{new_client_id}'. (Web socket signature: #{web_socket.signature})"
         web_socket.send msg
-        logger.error msg
-        return false
-      else
-        if session_hijacking_attempt?(web_socket, client_id)
-          msg = "Attempt to steal session from client '#{client_id}'! Not allowed. Ignoring. (Web socket signature: #{web_socket.signature})"
-          web_socket.send msg
-          logger.fatal msg
-          return false
-        end
-        # Remeber the web socket for this client (establish the client/web socket association)...
-        @qsif[:web_sockets][client_id] = web_socket
-        return client_id
+        logger.warn msg
       end
+
+      if session_hijacking_attempt?(web_socket, client_id)
+        new_client_id = anonymous_client_id
+        msg = "Attempt to hijack (steal) session from client '#{client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '#{new_client_id}'. (Web socket signature: #{web_socket.signature})"
+        web_socket.send msg
+        logger.fatal msg
+      end
+
+      client_id = new_client_id if new_client_id
+
+      # Remeber the web socket for this client (establish the client/web socket association)...
+      @qsif[:web_sockets][client_id] = web_socket
+
+      return client_id
+    end
+
+    #
+    # Generates and returns a unique client id.
+    # Used when a client does not submit its client id.
+    #
+    def anonymous_client_id
+      "__anonymous-client-#{(@anonymous_client_id += 1)}"
     end
 
     #
@@ -344,7 +370,9 @@ module Qeemono
       method_name = message_hash['method'].to_sym
       message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
-        logger.warn "Did not found any message handler registered for method '#{method_name}'! Ignoring. (Sent from client '#{client_id}')"
+        err_msg = "Did not find any message handler registered for method '#{method_name}'! Ignoring. (Sent from client '#{client_id}' with message #{message_hash.inspect})"
+        @qsif[:web_sockets][client_id].send err_msg
+        logger.warn err_msg
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym
@@ -353,12 +381,14 @@ module Qeemono
               # Here's the actual dispatch...
               message_handler.send(handle_method_sym, message_hash['params'])
             rescue => e
-              logger.fatal "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) is buggy! Exception trace: #{backtrace(e)}"
+              err_msg = "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) failed! (Sent from client '#{client_id}' with message #{message_hash.inspect})#{backtrace(e)}"
+              @qsif[:web_sockets][client_id].send err_msg
+              logger.fatal err_msg
             end
           else
-            err_msg = "Message handler '#{message_handler.name}' (#{message_handler.class}) is registered to handle method '#{method_name}' but does not respond to it! (Sent params: #{message_hash['params'].inspect})"
-            logger.error err_msg
+            err_msg = "Message handler '#{message_handler.name}' (#{message_handler.class}) is registered to handle method '#{method_name}' but does not respond to '#{handle_method_sym.to_s}'! (Sent from client '#{client_id}' with message #{message_hash.inspect})"
             @qsif[:web_sockets][client_id].send err_msg
+            logger.error err_msg
           end
         end
       end
@@ -376,7 +406,7 @@ module Qeemono
     end
 
     def backtrace(exception)
-      exception.to_s + exception.backtrace.map { |line| "\n#{line}" }.join
+      "\n" + exception.to_s + exception.backtrace.map { |line| "\n#{line}" }.join
     end
 
   end # end - class Server
