@@ -63,6 +63,7 @@ require 'em-websocket'
 require 'json'
 require 'log4r'
 
+require './qeemono/common_utils'
 require './qeemono/notificator'
 require './qeemono/message_handler_registration_manager'
 require './qeemono/message_handler/base'
@@ -87,6 +88,16 @@ module Qeemono
 
     attr_reader :message_handler_registration_manager
 
+
+    class EM::Channel
+      #
+      # For convenience introduce send method which
+      # delegates to push.
+      #
+      def send(*args)
+        push(*args)
+      end
+    end
 
     #
     # Available options are:
@@ -124,12 +135,9 @@ module Qeemono
             begin
               client_id = client_id(ws)
               subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
-              msg = "Client '#{client_id}' has been connected. (Web socket signature: #{ws.signature})"
-              @qsif[:channels][:broadcast].push msg
-              logger.debug msg
+              notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
             rescue => e
-              ws.send e.to_s
-              logger.fatal backtrace(e)
+              notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :backtrace => CommonUtils.backtrace(e))
             end
           end
 
@@ -139,12 +147,11 @@ module Qeemono
               message_hash = JSON.parse message
               result = self.class.parse_message(message_hash)
               if result == :ok
-                logger.debug "Received valid message from client '#{client_id}'. Going to dispatch. (Message: #{message_hash.inspect})"
+                notify(:type => :debug, :code => 6100, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
                 dispatch_message(client_id, message_hash)
               else
                 err_msg = result[1]
-                ws.send err_msg
-                logger.error err_msg
+                notify(:type => :error, :code => 9010, :receivers => ws, :params => {:err_msg => err_msg})
               end
             rescue JSON::ParserError => e
               msg = "Received invalid message! Must be JSON. Ignoring. (Details: #{e.to_s})"
@@ -152,7 +159,7 @@ module Qeemono
               logger.error msg
             rescue => e
               ws.send e.to_s
-              logger.fatal backtrace(e)
+              logger.fatal CommonUtils.backtrace(e)
             end
           end # end - ws.onmessage
 
@@ -164,7 +171,7 @@ module Qeemono
               logger.debug msg
             rescue => e
               ws.send e.to_s
-              logger.fatal backtrace(e)
+              logger.fatal CommonUtils.backtrace(e)
             end
           end
 
@@ -381,7 +388,7 @@ module Qeemono
               # Here's the actual dispatch...
               message_handler.send(handle_method_sym, message_hash['params'])
             rescue => e
-              err_msg = "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) failed! (Sent from client '#{client_id}' with message #{message_hash.inspect})#{backtrace(e)}"
+              err_msg = "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) failed! (Sent from client '#{client_id}' with message #{message_hash.inspect})#{CommonUtils.backtrace(e)}"
               @qsif[:web_sockets][client_id].send err_msg
               logger.fatal err_msg
             end
@@ -405,8 +412,8 @@ module Qeemono
       @logger
     end
 
-    def backtrace(exception)
-      "\n" + exception.to_s + exception.backtrace.map { |line| "\n#{line}" }.join
+    def notify(*args)
+      @notificator.notify(*args)
     end
 
   end # end - class Server
