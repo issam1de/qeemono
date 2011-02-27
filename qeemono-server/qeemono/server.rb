@@ -109,6 +109,8 @@ module Qeemono
 
       @anonymous_client_id = 0
 
+      @notificator = Qeemono::Notificator.new(@logger)
+
       @qsif = {   # The Server interface
         :logger => @logger,
         :host => host,
@@ -118,11 +120,11 @@ module Qeemono
         :channels => {}, # key = channel symbol; value = channel object
         :channel_subscriptions => {}, # key = client id; value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
         :registered_message_handlers_for_method => {}, # key = method; value = message handler
-        :registered_message_handlers => [] # all registered message handlers
+        :registered_message_handlers => [], # all registered message handlers
+        :notificator => @notificator
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
 
-      @notificator = Qeemono::Notificator.new(@qsif)
       @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
     end
 
@@ -379,12 +381,10 @@ module Qeemono
           handle_method_sym = "handle_#{method_name}".to_sym
           if message_handler.respond_to?(handle_method_sym)
             begin
-              # Here's the actual dispatch...
-              message_handler.send(handle_method_sym, message_hash['params'])
+              # Here is the actual dispatch (always pass the sender client id as first argument)...
+              message_handler.send(handle_method_sym, client_id, message_hash['params'])
             rescue => e
-              err_msg = "Method '#{handle_method_sym.to_s}' of message handler '#{message_handler.name}' (#{message_handler.class}) failed! (Sent from client '#{client_id}' with message #{message_hash.inspect})#{CommonUtils.backtrace(e)}"
-              @qsif[:web_sockets][client_id].send err_msg
-              logger.fatal err_msg
+              notify(:type => :fatal, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else
             err_msg = "Message handler '#{message_handler.name}' (#{message_handler.class}) is registered to handle method '#{method_name}' but does not respond to '#{handle_method_sym.to_s}'! (Sent from client '#{client_id}' with message #{message_hash.inspect})"

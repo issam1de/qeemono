@@ -18,24 +18,24 @@ module Qeemono
         # **************************************************************
         # **************************************************************
 
-        def send_to_channels(channels, payload)
+        def send_to_channels(sender_client_id, channels, payload)
           return false if channels.nil?
           channels = [channels] unless channels.is_a? Array
           channels.each do |channel|
             if @qsif[:channels][channel.to_sym].nil?
-              raise "Failed to send to channel '#{channel}'! Unknown channel. (Payload: #{payload})"
+              @qsif[:notificator].notify(:type => :error, :code => 10000, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:channel => channel, :payload => payload})
             else
               @qsif[:channels][channel.to_sym].push(payload)
             end
           end
         end
 
-        def send_to_receivers(receiver_client_ids, payload)
+        def send_to_receivers(sender_client_id, receiver_client_ids, payload)
           return false if receiver_client_ids.nil?
           receiver_client_ids = [receiver_client_ids] unless receiver_client_ids.is_a? Array
           receiver_client_ids.each do |client_id|
             if @qsif[:web_sockets][client_id.to_sym].nil?
-              raise "Failed to send to client '#{client_id}'! Unknown client id. (Payload: #{payload})"
+              @qsif[:notificator].notify(:type => :error, :code => 10010, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:client_id => client_id, :payload => payload})
             else
               @qsif[:web_sockets][client_id.to_sym].send(payload)
             end
@@ -52,14 +52,14 @@ module Qeemono
         # * channels => array of channels (e.g. ['broadcasts', 'detectives'])
         # * payload => any object
         #
-        def handle_send(params)
+        def handle_send(sender_client_id, params)
           channels = params['channels']
           receiver_client_ids = params['receivers']
           if channels.nil? && receiver_client_ids.nil?
-            raise "Neither parameter 'channels' nor 'receivers' is set! At least one target (channel and/or receiver) must be specified"
+            @qsif[:notificator].notify(:type => :warn, :code => 10020, :receivers => @qsif[:web_sockets][sender_client_id], :params => {})
           else
-            send_to_channels(channels, params['payload'])
-            send_to_receivers(receiver_client_ids, params['payload'])
+            send_to_channels(sender_client_id, channels, params['payload'])
+            send_to_receivers(sender_client_id, receiver_client_ids, params['payload'])
           end
         end
 

@@ -6,21 +6,28 @@ module Qeemono
   class Notificator
 
     NOTIFICATION_MESSAGES = {
-      1000 => "The qeemono server has been started on host ${host}:${port} at ${current_time}. Have Fun...",
+      0     => "${msg}",
 
-      6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
-      6010 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
-      6020 => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
+      1000  => "The qeemono server has been started on host ${host}:${port} at ${current_time}. Have Fun...",
 
-      9000 => "${err_msg}",
-      9010 => "${err_msg}",
-      9020 => "Received invalid message! Must be JSON. Ignoring. (Details: ${err_msg})"
+      6000  => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
+      6010  => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
+      6020  => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
+
+      9000  => "${err_msg}",
+      9010  => "${err_msg}",
+      9020  => "Received invalid message! Must be JSON. Ignoring. (Details: ${err_msg})",
+
+      9500  => "Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+
+      10000 => "Failed to send to channel '${channel}'! Unknown channel. (Payload: ${payload})",
+      10010 => "Failed to send to client '${client_id}'! Unknown client id. (Payload: ${payload})",
+      10020 => "Neither parameter 'channels' nor 'receivers' is set! At least one target (channels and/or receivers) must be specified"
     }
 
 
-    def initialize(server_interface)
-      @qsif = server_interface
-      @logger = @qsif[:logger]
+    def initialize(logger)
+      @logger = logger
     end
 
     #
@@ -30,7 +37,7 @@ module Qeemono
     # Options:
     # * :type (symbol) - Can be one of :info, :debug, :warn, :error, :fatal (aka log level)
     # * :code (integer) - The notification message code
-    # * :receivers (web sockets and/or channels) - The receivers of the notification message
+    # * :receivers (client ids, web sockets and/or channels) - The receivers of the notification message
     # * :params (hash) - The template variables for the notification message
     # * :no_log (boolean) - Defaults to false. If true the notification will not be logged
     # * :exception (exception) - Defaults to nil. If given the backtrace will be logged
@@ -52,6 +59,7 @@ module Qeemono
         receivers = [receivers] unless receivers.is_a? Array
         receivers.each do |receiver|
           # TODO: send as protocol conform JSON message with code and all params so that client can parse and understand the notification message
+          # TODO: allow also client ids as receivers
           receiver.send("#{type} : #{msg}")
         end
       end

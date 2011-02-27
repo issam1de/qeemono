@@ -7,7 +7,7 @@ module Qeemono
       class CandidateCollection < Qeemono::MessageHandler::Base
 
         def handled_methods
-          [:foo, :bar]
+          [:echo, :foo]
         end
 
         def name
@@ -18,12 +18,12 @@ module Qeemono
         # **************************************************************
         # **************************************************************
 
-        def handle_bar(params)
-          @qsif[:logger].info "BAR!!! #{params}"
+        def handle_echo(sender_client_id, params)
+          @qsif[:notificator].notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:msg => "Echo back to client '#{sender_client_id}': #{params}"}
         end
 
-        def handle_foo(params)
-          @qsif[:logger].info "FOO!!! #{params}"
+        def handle_foo(sender_client_id, params)
+          @qsif[:notificator].notify :type => :info, :code => 0, :params => {:msg => 'FOO!!!'}
         end
       end
     end
