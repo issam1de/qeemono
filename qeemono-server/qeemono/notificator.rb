@@ -9,7 +9,8 @@ module Qeemono
       1000 => "The qeemono server has been started on host ${host}:${port} at ${current_time}. Have Fun...",
 
       6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
-      6100 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
+      6010 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
+      6020 => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
 
       9000 => "${err_msg}",
       9010 => "${err_msg}",

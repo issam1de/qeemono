@@ -91,7 +91,7 @@ module Qeemono
 
     class EM::Channel
       #
-      # For convenience introduce send method which
+      # For convenience: introduce send method which
       # delegates to push.
       #
       def send(*args)
@@ -147,7 +147,7 @@ module Qeemono
               message_hash = JSON.parse message
               result = self.class.parse_message(message_hash)
               if result == :ok
-                notify(:type => :debug, :code => 6100, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
+                notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
                 dispatch_message(client_id, message_hash)
               else
                 err_msg = result[1]
@@ -163,9 +163,7 @@ module Qeemono
           ws.onclose do
             begin
               client_id = forget_client_web_socket_association(ws)
-              msg = "Client '#{client_id}' has been disconnected. (Web socket signature: #{ws.signature})"
-              @qsif[:channels][:broadcast].push msg
-              logger.debug msg
+              notify(:type => :debug, :code => 6020, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
             rescue => e
               notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
