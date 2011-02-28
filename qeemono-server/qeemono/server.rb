@@ -214,7 +214,7 @@ module Qeemono
         channel_subscriber_id = channel.subscribe do |message|
           # Broadcast (push) message to all subscribers of this channel...
           @qsif[:web_sockets][client_id].send message
-          puts "*****************"   # TODO
+          puts "*****************"   # TODO: implement 'except-me' flag behavior
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
