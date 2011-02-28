@@ -84,7 +84,15 @@ module Qeemono
 
     include Log4r
 
+    #
+    # The default (latest) protocol version used by the qeemono server
+    #
     PROTOCOL_VERSION = '1.0'
+
+    #
+    # Every message send to or from the server must be a JSON message
+    # containing the following keys:
+    #
     MANDATORY_KEYS = ['client_id', 'method', 'params', 'version']
 
     attr_reader :message_handler_registration_manager
