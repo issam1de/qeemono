@@ -24,6 +24,7 @@ module Qeemono
       9000  => "${err_msg}",
       9010  => "${err_msg}",
       9020  => "Received invalid message! Must be JSON. Ignoring. (Details: ${err_msg})",
+      9030  => "Attempt to hijack (steal) session from client '${client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
 
       9500  => "Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
 

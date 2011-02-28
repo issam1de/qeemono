@@ -295,9 +295,7 @@ module Qeemono
 
       if session_hijacking_attempt?(web_socket, client_id)
         new_client_id = anonymous_client_id
-        msg = "Attempt to hijack (steal) session from client '#{client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '#{new_client_id}'. (Web socket signature: #{web_socket.signature})"
-        web_socket.send msg
-        logger.fatal msg
+        notify(:type => :fatal, :code => 9030, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
       end
 
       client_id = new_client_id if new_client_id
