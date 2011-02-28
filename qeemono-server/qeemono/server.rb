@@ -289,7 +289,7 @@ module Qeemono
 
       client_id = new_client_id if new_client_id
 
-      # Remeber the web socket for this client (establish the client/web socket association)...
+      # Remember the web socket for this client (establish the client/web socket association)...
       @qsif[:web_sockets][client_id] = web_socket
 
       return client_id
