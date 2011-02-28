@@ -288,11 +288,9 @@ module Qeemono
       client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
       new_client_id = nil
 
-      if client_id.nil?
+      if client_id.nil? || client_id.to_s.strip == ''
         new_client_id = anonymous_client_id
-        msg = "Client did not send its client_id! Allocating unique anonymous client id '#{new_client_id}'. (Web socket signature: #{web_socket.signature})"
-        web_socket.send msg
-        logger.warn msg
+        notify(:type => :warn, :code => 7000, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
       end
 
       if session_hijacking_attempt?(web_socket, client_id)

@@ -19,6 +19,8 @@ module Qeemono
       6010  => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
       6020  => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
 
+      7000 => "Client did not send its client_id! Allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
+
       9000  => "${err_msg}",
       9010  => "${err_msg}",
       9020  => "Received invalid message! Must be JSON. Ignoring. (Details: ${err_msg})",
