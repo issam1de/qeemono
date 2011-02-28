@@ -43,10 +43,10 @@ module Qeemono
         end
 
         #
-        # Send payload to one or more channels. A channel consists of
-        # many subscribers (clients) to which the message is sent. The
-        # :broadcast channel is used to send/broadcast to all clients
-        # of the server.
+        # Sends payload to the server, one or more clients, and/or one or more
+        # channels. A channel consists of many subscribers (clients) to which
+        # the message is sent. The :broadcast channel is used to send (broadcast)
+        # to all clients of the server.
         #
         # Params:
         #
