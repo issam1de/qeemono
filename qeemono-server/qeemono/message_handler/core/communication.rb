@@ -25,7 +25,7 @@ module Qeemono
             if @qsif[:channels][channel.to_sym].nil?
               @qsif[:notificator].notify(:type => :error, :code => 10000, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:channel => channel, :payload => payload})
             else
-              @qsif[:channels][channel.to_sym].push(payload)
+              @qsif[:channels][channel.to_sym].push(payload) # TODO: send/relay message according to protocol
             end
           end
         end
@@ -37,7 +37,7 @@ module Qeemono
             if @qsif[:web_sockets][client_id.to_sym].nil?
               @qsif[:notificator].notify(:type => :error, :code => 10010, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:client_id => client_id, :payload => payload})
             else
-              @qsif[:web_sockets][client_id.to_sym].send(payload)
+              @qsif[:web_sockets][client_id.to_sym].send(payload) # TODO: send/relay message according to protocol
             end
           end
         end

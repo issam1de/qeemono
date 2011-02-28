@@ -72,13 +72,31 @@ module Qeemono
           # TODO: allow also client ids as receivers
 
           # Push to channel or send to web socket (client)...
-          receiver.send("#{type} : #{msg}")
+          # obsolete ::: receiver.send("#{type} : #{msg}") # TODO: send/relay message according to protocol
+          relay(receiver, {
+                  :client_id => '__server',
+                  :method => :notify,
+                  :params => {
+                          :arguments => options.reject { |key, value| [:receivers].include?(key) },
+                          :msg => "#{type} : #{msg}"
+                  },
+                  :version => Qeemono::Server::PROTOCOL_VERSION
+          })
         end
       end
 
       unless options[:no_log]
         logger.send(type.to_sym, msg + CommonUtils.backtrace(options[:exception]))
       end
+    end
+
+    #
+    # Relays (send or broadcast) the JSON message hash to
+    # the receiver client or channel.
+    #
+    def relay(receiver, message_hash)
+      # TODO: check for all mandatory key - extract code from parse_message method in Server class
+      receiver.send(message_hash) # TODO: send/relay message according to protocol
     end
 
     protected

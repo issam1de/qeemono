@@ -213,8 +213,8 @@ module Qeemono
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
           # Broadcast (push) message to all subscribers of this channel...
-          @qsif[:web_sockets][client_id].send message
-          puts "*****************"   # TODO: implement 'except-me' flag behavior
+          @qsif[:web_sockets][client_id].send message # TODO: send/relay message according to protocol
+          puts "****************222* #{message.inspect}"   # TODO: implement 'except-me' flag behavior
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
@@ -356,11 +356,6 @@ module Qeemono
         return [:error, "Message is nil! Ignoring. (Sent from client '#{client_id}')"]
       end
 
-      # Check for all mandatory keys...
-      (MANDATORY_KEYS-['version', 'client_id']).each do |key|
-        check_message_for_mandatory_key(key, message_hash)
-      end
-
       explicit_client_id = message_hash['client_id'].to_sym
       if explicit_client_id && explicit_client_id != client_id
         return [:error, "Ambiguous client id! Client id is given both, implicitly and explicitly, but not identical. Ignoring. ('#{client_id}' vs. '#{explicit_client_id }')"]
@@ -371,9 +366,14 @@ module Qeemono
       # If no protocol version is given, the latest/current version is assumed and added...
       message_hash['version'] = PROTOCOL_VERSION
 
+      # Check for all mandatory keys...
+      MANDATORY_KEYS.each do |key|
+        check_message_for_mandatory_key(key, message_hash)
+      end
+
       return :ok
     rescue => e
-      return [:error, e.to_s]
+      return [:error, "#{e.to_s} (Sent from client '#{client_id}' with message #{message_hash})"]
     end
 
     #
