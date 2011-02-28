@@ -205,11 +205,10 @@ module Qeemono
         (@qsif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
         channel_subscriber_ids << channel_subscriber_id
 
-        msg = "Client '#{client_id}' has been subscribed to channel #{channel_symbol.inspect} (subscriber id is #{channel_subscriber_id})."
-        @qsif[:channels][channel_symbol].push msg
+        notify(:type => :info, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
 
-      logger.debug "Client '#{client_id}' has been subscribed to channels #{channel_symbols.inspect} (subscriber ids are #{channel_subscriber_ids.inspect})."
+      notify(:type => :debug, :code => 2010, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
 
       return channel_subscriber_ids
     end
@@ -237,11 +236,10 @@ module Qeemono
         @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
         channel_subscriber_ids << channel_subscriber_id
 
-        msg = "Client '#{client_id}' has been unsubscribed from channel #{channel_symbol.inspect} (subscriber id was #{channel_subscriber_id})."
-        @qsif[:channels][channel_symbol].push msg
+        notify(:type => :info, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
 
-      logger.debug "Client '#{client_id}' has been unsubscribed from channels #{channel_symbols.inspect} (subscriber ids were #{channel_subscriber_ids.inspect})."
+      notify(:type => :debug, :code => 2030, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
 
       return channel_subscriber_ids
     end

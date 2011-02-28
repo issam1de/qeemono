@@ -10,6 +10,11 @@ module Qeemono
 
       1000  => "The qeemono server has been started on host ${host}:${port} at ${current_time}. Have Fun...",
 
+      2000  => "Client '${client_id}' has been subscribed to channel ${channel_symbol} (subscriber id is ${channel_subscriber_id}).",
+      2010  => "Client '${client_id}' has been subscribed to channels ${channel_symbols} (subscriber ids are ${channel_subscriber_ids}).",
+      2020  => "Client '${client_id}' has been unsubscribed from channel ${channel_symbol} (subscriber id was ${channel_subscriber_id}).",
+      2030  => "Client '${client_id}' has been unsubscribed from channels ${channel_symbols} (subscriber ids were ${channel_subscriber_ids}).",
+
       6000  => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
       6010  => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
       6020  => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
