@@ -48,10 +48,11 @@ module Qeemono
         # the message is sent. The :broadcast channel is used to send (broadcast)
         # to all clients of the server.
         #
-        # Params:
-        #
-        # * channels => array of channels (e.g. ['broadcasts', 'detectives'])
-        # * payload => any object
+        # * sender_client_id - The sender (originator) of the message
+        # * params:
+        #   * channels => array of channels (e.g. ['broadcast', 'detectives'])
+        #   * payload => any object (preferably a JSON hash)
+        # * version - The protocol version
         #
         def handle_send(sender_client_id, params, version)
           channels = params['channels']
