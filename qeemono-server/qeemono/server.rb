@@ -313,7 +313,7 @@ module Qeemono
     # Used when a client does not submit its client id.
     #
     def anonymous_client_id
-      "__anonymous-client-#{(@anonymous_client_id += 1)}"
+      "__anonymous-client-#{(@anonymous_client_id += 1)}".to_sym
     end
 
     #
