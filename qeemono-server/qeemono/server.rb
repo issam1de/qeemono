@@ -295,7 +295,7 @@ module Qeemono
 
       if session_hijacking_attempt?(web_socket, client_id)
         new_client_id = anonymous_client_id
-        notify(:type => :fatal, :code => 9030, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
+        notify(:type => :fatal, :code => 7010, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
       end
 
       client_id = new_client_id if new_client_id
@@ -395,9 +395,7 @@ module Qeemono
       method_name = message_hash['method'].to_sym
       message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
-        err_msg = "Did not find any message handler registered for method '#{method_name}'! Ignoring. (Sent from client '#{client_id}' with message #{message_hash.inspect})"
-        @qsif[:web_sockets][client_id].send err_msg
-        logger.warn err_msg
+        notify(:type => :warn, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym
@@ -406,12 +404,10 @@ module Qeemono
               # Here is the actual dispatch (always pass the sender client id as first argument)...
               message_handler.send(handle_method_sym, client_id, message_hash['params'], message_hash['version'])
             rescue => e
-              notify(:type => :fatal, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
+              notify(:type => :fatal, :code => 9510, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else
-            err_msg = "Message handler '#{message_handler.name}' (#{message_handler.class}) is registered to handle method '#{method_name}' but does not respond to '#{handle_method_sym.to_s}'! (Sent from client '#{client_id}' with message #{message_hash.inspect})"
-            @qsif[:web_sockets][client_id].send err_msg
-            logger.error err_msg
+            notify(:type => :error, :code => 9520, :receivers => @qsif[:web_sockets][client_id], :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
           end
         end
       end

@@ -19,14 +19,16 @@ module Qeemono
       6010  => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
       6020  => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
 
-      7000 => "Client did not send its client_id! Allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
+      7000  => "Client did not send its client_id! Allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
+      7010  => "Attempt to hijack (steal) session from client '${client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
 
       9000  => "${err_msg}",
       9010  => "${err_msg}",
       9020  => "Received invalid message! Must be JSON. Ignoring. (Details: ${err_msg})",
-      9030  => "Attempt to hijack (steal) session from client '${client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
 
-      9500  => "Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+      9500  => "Did not find any message handler registered for method '${method_name}'! Ignoring. (Sent from client '${client_id}' with message ${message_hash})",
+      9510  => "Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+      9520  => "Message handler '${message_handler_name}' (${message_handler_class}) is registered to handle method '${method_name}' but does not respond to '${handle_method_name}'! (Sent from client '${client_id}' with message ${message_hash})",
 
       10000 => "Failed to send to channel '${channel}'! Unknown channel. (Payload: ${payload})",
       10010 => "Failed to send to client '${client_id}'! Unknown client id. (Payload: ${payload})",
@@ -36,6 +38,7 @@ module Qeemono
 
     def initialize(logger)
       @logger = logger
+      check_notification_messages
     end
 
     #
@@ -92,6 +95,10 @@ module Qeemono
         msg = msg.gsub("${#{key.to_s}}", value.to_s)
       end
       msg
+    end
+
+    def check_notification_messages
+
     end
 
   end
