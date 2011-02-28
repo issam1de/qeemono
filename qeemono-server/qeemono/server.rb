@@ -21,7 +21,8 @@
 #   - resistant against session hijacking attempts
 #   - thin JSON protocol
 #   - no thick framework underlying
-#   - communication can be broadcast, 1-to-1, and 1-to-channel (broadcast and channel communication possible with 'except-me' flag)
+#   - communication can be 1-to-1, 1-to-channel, 1-to-broadcast, and 1-to-server
+#       (broadcast and channel communication is possible with 'except-me' flag)
 #   - clean and mean implemented
 #   - message handlers use observer pattern to register
 #
