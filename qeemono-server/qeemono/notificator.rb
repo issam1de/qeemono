@@ -38,7 +38,6 @@ module Qeemono
 
     def initialize(logger)
       @logger = logger
-      check_notification_messages
     end
 
     #
@@ -95,10 +94,6 @@ module Qeemono
         msg = msg.gsub("${#{key.to_s}}", value.to_s)
       end
       msg
-    end
-
-    def check_notification_messages
-
     end
 
   end
