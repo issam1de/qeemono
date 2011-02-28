@@ -84,7 +84,7 @@ module Qeemono
     include Log4r
 
     PROTOCOL_VERSION = '1.0'
-    MANDATORY_KEYS = ['method', 'params', 'version']
+    MANDATORY_KEYS = ['client_id', 'method', 'params', 'version']
 
     attr_reader :message_handler_registration_manager
 
@@ -147,10 +147,10 @@ module Qeemono
             begin
               client_id = client_id(ws)
               message_hash = JSON.parse message
-              result = self.class.parse_message(message_hash)
+              result = self.class.parse_message(client_id, message_hash)
               if result == :ok
                 notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
-                dispatch_message(client_id, message_hash)
+                dispatch_message(message_hash)
               else
                 err_msg = result[1]
                 notify(:type => :error, :code => 9010, :receivers => ws, :params => {:err_msg => err_msg})
@@ -334,18 +334,29 @@ module Qeemono
     end
 
     #
-    # Returns :ok if all mandatory keys are existent in the JSON message;
-    # otherwise an array [:error, <err_msg>] containing :error as the first
-    # and the resp. error message as the second element is returned.
+    # Returns :ok if all mandatory keys are existent in the JSON message (message_hash);
+    # otherwise an array [:error, <err_msg>] containing :error as the first and the
+    # resp. error message as the second element is returned.
     #
-    def self.parse_message(message_hash)
-      return [:error, 'Message is nil'] if message_hash.nil?
+    # Additionally, optional keys like the originator client id (:client_id) and the
+    # protocol version (:version) are added to the JSON message if not existent.
+    #
+    def self.parse_message(client_id, message_hash)
+      if message_hash.nil?
+        return [:error, "Message is nil! Ignoring. (Sent from client '#{client_id}')"]
+      end
 
       # Check for all mandatory keys...
-      (MANDATORY_KEYS-['version']).each do |key|
+      (MANDATORY_KEYS-['version', 'client_id']).each do |key|
         check_message_for_mandatory_key(key, message_hash)
       end
-      # end - Check for all mandatory keys
+
+      explicit_client_id = message_hash['client_id'].to_sym
+      if explicit_client_id && explicit_client_id != client_id
+        return [:error, "Ambiguous client id! Client id is given both, implicitly and explicitly, but not identical. Ignoring. ('#{client_id}' vs. '#{explicit_client_id }')"]
+      else
+        message_hash['client_id'] = client_id
+      end
 
       # If no protocol version is given, the latest/current version is assumed and added...
       message_hash['version'] = PROTOCOL_VERSION
@@ -369,7 +380,8 @@ module Qeemono
     #
     # Dispatches the received message to the responsible message handler.
     #
-    def dispatch_message(client_id, message_hash)
+    def dispatch_message(message_hash)
+      client_id = message_hash['client_id']
       method_name = message_hash['method'].to_sym
       message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
@@ -382,7 +394,7 @@ module Qeemono
           if message_handler.respond_to?(handle_method_sym)
             begin
               # Here is the actual dispatch (always pass the sender client id as first argument)...
-              message_handler.send(handle_method_sym, client_id, message_hash['params'])
+              message_handler.send(handle_method_sym, client_id, message_hash['params'], message_hash['version'])
             rescue => e
               notify(:type => :fatal, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end

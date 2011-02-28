@@ -18,11 +18,11 @@ module Qeemono
         # **************************************************************
         # **************************************************************
 
-        def handle_echo(sender_client_id, params)
+        def handle_echo(sender_client_id, params, version)
           @qsif[:notificator].notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:msg => "Echo back to client '#{sender_client_id}': #{params}"}
         end
 
-        def handle_foo(sender_client_id, params)
+        def handle_foo(sender_client_id, params, version)
           @qsif[:notificator].notify :type => :info, :code => 0, :params => {:msg => 'FOO!!!'}
         end
       end

@@ -52,7 +52,7 @@ module Qeemono
         # * channels => array of channels (e.g. ['broadcasts', 'detectives'])
         # * payload => any object
         #
-        def handle_send(sender_client_id, params)
+        def handle_send(sender_client_id, params, version)
           channels = params['channels']
           receiver_client_ids = params['receivers']
           if channels.nil? && receiver_client_ids.nil?
