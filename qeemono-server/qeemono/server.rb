@@ -93,7 +93,14 @@ module Qeemono
     # Every message send to or from the server must be a JSON message
     # containing the following keys:
     #
-    MANDATORY_KEYS = ['client_id', 'method', 'params', 'version']
+    MANDATORY_KEYS = [
+      'client_id', # The originator (some client or the server) which initially has sent the message
+                   #   - Can be given implicitly and/or explicitly
+                   #   - If not given, an anonymous client id is creates and allocated
+      'method',    # The method to call (respective message handler(s) have to subscribe in the first place)
+      'params',    # The parameters to pass to the method
+      'version'    # The protocol version to use (if not given the default (latest) version is assumed)
+    ]
 
     attr_reader :message_handler_registration_manager
 
