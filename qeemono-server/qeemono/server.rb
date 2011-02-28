@@ -351,6 +351,8 @@ module Qeemono
     # Additionally, optional keys like the originator client id (:client_id) and the
     # protocol version (:version) are added to the JSON message if not existent.
     #
+    # TODO: return error codes instead of the actual error string
+    #
     def self.parse_message(client_id, message_hash)
       if message_hash.nil?
         return [:error, "Message is nil! Ignoring. (Sent from client '#{client_id}')"]
