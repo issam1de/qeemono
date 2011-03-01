@@ -18,11 +18,17 @@ module Qeemono
         # **************************************************************
         # **************************************************************
 
-        def handle_echo(sender_client_id, params, version)
-          @qsif[:notificator].notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][sender_client_id], :params => {:msg => "Echo back to client '#{sender_client_id}': #{params}"}
+        #
+        # Just for testing...
+        #
+        def handle_echo(origin_client_id, params)
+          @qsif[:notificator].notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][origin_client_id], :params => {:msg => "Echo back to client '#{origin_client_id}': #{params}"}
         end
 
-        def handle_foo(sender_client_id, params, version)
+        #
+        # Just for testing...
+        #
+        def handle_foo(origin_client_id, params)
           @qsif[:notificator].notify :type => :info, :code => 0, :params => {:msg => 'FOO!!!'}
         end
       end

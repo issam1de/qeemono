@@ -18,60 +18,61 @@ module Qeemono
         # **************************************************************
         # **************************************************************
 
-        def send_to_channels(sender_client_id, channels, message)
-          return false if channels.nil?
-          channels = [channels] unless channels.is_a? Array
-          channels.each do |channel|
-            if @qsif[:channels][channel.to_sym].nil?
-              raise "Failed to send to channel! Unknown channel."
-            else
-              @qsif[:notificator].relay(sender_client_id, @qsif[:channels][channel.to_sym], message)
-            end
-          end
-        end
+        #
+        # receiver_type = :channels or :web_sockets
+        #
+        def send_to_channels_or_clients(origin_client_id, receivers, receiver_type, message)
+          return false if receivers.nil?
+          receivers = [receivers] unless receivers.is_a? Array
+          receivers.each do |receiver|
+            receiver = receiver.to_sym
 
-        def send_to_receivers(sender_client_id, receiver_client_ids, message)
-          return false if receiver_client_ids.nil?
-          receiver_client_ids = [receiver_client_ids] unless receiver_client_ids.is_a? Array
-          receiver_client_ids.each do |client_id|
-            if @qsif[:web_sockets][client_id.to_sym].nil?
-              raise "Failed to send to client. Unknown client id."
+            if receiver_type == :channels
+              receiver_type_name = 'channel'
+            elsif receiver_type == :web_sockets
+              receiver_type_name = 'client'
             else
-              @qsif[:notificator].relay(sender_client_id, @qsif[:web_sockets][client_id.to_sym], message)
+              raise "Unknown receiver type '#{receiver_type.to_s}'!"
+            end
+
+            if @qsif[receiver_type][receiver].nil?
+              raise "Failed to send to #{receiver_type_name} '#{receiver}'. Unknown."
+            else
+              @qsif[:notificator].relay(origin_client_id, @qsif[receiver_type][receiver], message)
             end
           end
         end
 
         #
-        # Sends message to the server, one or more clients, and/or one or more
-        # channels. A channel consists of many subscribers (clients) to which
-        # the message is sent. The :broadcast channel is used to send (broadcast)
-        # to all clients of the server.
+        # Sends a JSON message to one or more clients and/or one or more channels.
+        # A channel consists of many subscribers (clients) who the message is
+        # broadcasted to. The :broadcast channel is used to broadcast to all
+        # clients of the server.
         #
-        # * sender_client_id - The sender (originator) of the message
+        # * origin_client_id - The originator (sender) of the message
         # * params:
-        #   * channels => array of channels (e.g. ['broadcast', 'detectives'])
-        #   * message => JSON message following the qeemono protocol
-        # * version - The protocol version
+        #   - :channels => array of channels (e.g. [:broadcast, :detectives])
+        #   - :client_ids => array of client ids (e.g. [:client_4711, :mark])
+        #   - :message => the JSON message (following the qeemono protocol) to be sent
         #
-        def handle_send(sender_client_id, params, version)
+        def handle_send(origin_client_id, params)
           channels = params[:channels]
-          receiver_client_ids = params[:receivers]
+          receiver_client_ids = params[:client_ids]
           if channels.nil? && receiver_client_ids.nil?
-            raise "Neither parameter 'channels' nor 'receivers' is set! At least one target (channels and/or receivers) must be specified."
+            raise "Neither parameter 'channels' nor 'client_ids' is set! At least one target (channels and/or client_ids) must be specified."
           elsif params[:message].nil?
-            raise "Parameter 'message' (a JSON message) is missing! Must be specified."
+            raise "Parameter 'message' (a qeemono JSON message) is missing! Must be specified."
           else
-            send_to_channels(sender_client_id, channels, params[:message])
-            send_to_receivers(sender_client_id, receiver_client_ids, params[:message])
+            send_to_channels_or_clients(origin_client_id, channels, :channels, params[:message])
+            send_to_channels_or_clients(origin_client_id, receiver_client_ids, :web_sockets, params[:message])
           end
         end
 
-        def handle_subscribe_to_channels(params)
+        def handle_subscribe_to_channels(origin_client_id, params)
           # TODO: implement
         end
 
-        def handle_unsubscribe_from_channels(params)
+        def handle_unsubscribe_from_channels(origin_client_id, params)
           # TODO: implement
         end
 

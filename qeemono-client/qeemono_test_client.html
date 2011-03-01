@@ -30,8 +30,8 @@
         ws = new WebSocket("ws://localhost:8080?client_id=" + clientId);
 
         ws.onopen = function() {
-          debug("This is client " + clientId + ". Connected...");
-          example('Open your Javascript console and enter the following: <pre>ws.send(\'{"method":"send", "params":{"receivers":["test-client-1"], "channels":["broadcast"], "message":"Hello Mark!"}}\');</pre>');
+          debug("Connected...");
+          example('Open your Javascript console and enter the following: <pre>ws.send(\'{"method":"send", "params":{"client_ids":["test-client-1"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}\');</pre>');
         }
 
         ws.onmessage = function(evt) {

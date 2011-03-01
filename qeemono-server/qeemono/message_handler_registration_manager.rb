@@ -2,6 +2,8 @@ module Qeemono
   #
   # The registration manager for all message handlers.
   #
+  # TODO: convert all logger.x into notify calls to the Notificator
+  #
   class MessageHandlerRegistrationManager
 
     def initialize(server_interface)

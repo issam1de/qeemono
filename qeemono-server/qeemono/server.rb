@@ -64,7 +64,7 @@ require 'em-websocket'
 require 'json'
 require 'log4r'
 
-require './qeemono/common_utils'
+require './qeemono/lib/util/common_utils'
 require './qeemono/notificator'
 require './qeemono/message_handler_registration_manager'
 require './qeemono/message_handler/base'
@@ -122,7 +122,9 @@ module Qeemono
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
 
-      Qeemono::Notificator.new(@qsif)
+      # ************************
+
+      Qeemono::Notificator.new(@qsif) # Must be the first because all following are going to use the Notificator
       @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
     end
 
@@ -134,8 +136,12 @@ module Qeemono
           ws.onopen do
             begin
               client_id = client_id(ws)
-              subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
-              notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
+              begin
+                subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+                notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
+              rescue => e
+                notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)
+              end
             rescue => e
               notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
@@ -144,9 +150,13 @@ module Qeemono
           ws.onmessage do |message|
             begin
               client_id = client_id(ws)
-              @qsif[:notificator].parse_message(client_id, message) do |message_hash|
-                notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
-                dispatch_message(message_hash)
+              begin
+                @qsif[:notificator].parse_message(client_id, message) do |message_hash|
+                  notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
+                  dispatch_message(message_hash)
+                end
+              rescue => e
+                notify(:type => :fatal, :code => 9002, :receivers => ws, :params => {:client_id => client_id, :message_hash => message.inspect, :err_msg => e.to_s}, :exception => e)
               end
             rescue => e
               notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
@@ -155,8 +165,12 @@ module Qeemono
 
           ws.onclose do
             begin
-              client_id = forget_client_web_socket_association(ws)
-              notify(:type => :debug, :code => 6020, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
+              begin
+                client_id = forget_client_web_socket_association(ws)
+                notify(:type => :debug, :code => 6020, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
+              rescue => e
+                notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)
+              end
             rescue => e
               notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
@@ -187,22 +201,16 @@ module Qeemono
         channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
-          begin
-            # TODO: implement 'except-me' flag behavior
-            # Broadcast (push) message to all subscribers of this channel...
-            @qsif[:web_sockets][client_id].send message
-            #::: @qsif[:notificator].relay(message[:client_id], @qsif[:web_sockets][client_id], message)
-          rescue => e
-            # Do not use the notificator for logging this error since there is something wrong with it...
-            logger.fatal "***** Notificator broken: #{CommonUtils.backtrace(e)}"
-          end
+          # TODO: implement 'except-me' flag behavior
+          # Broadcast the message to all subscribers of this channel...
+          @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
         (@qsif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
         channel_subscriber_ids << channel_subscriber_id
 
-        notify(:type => :info, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
+        notify(:type => :debug, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
 
       notify(:type => :debug, :code => 2010, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
@@ -233,7 +241,7 @@ module Qeemono
         @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
         channel_subscriber_ids << channel_subscriber_id
 
-        notify(:type => :info, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
+        notify(:type => :debug, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
 
       notify(:type => :debug, :code => 2030, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
@@ -276,7 +284,12 @@ module Qeemono
 
       if session_hijacking_attempt?(web_socket, client_id)
         new_client_id = anonymous_client_id
-        notify(:type => :fatal, :code => 7010, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
+        notify(:type => :error, :code => 7010, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
+      end
+
+      if client_id == Notificator::SERVER_CLIENT_ID
+        new_client_id = anonymous_client_id
+        notify(:type => :error, :code => 7020, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
       end
 
       client_id = new_client_id if new_client_id
@@ -332,19 +345,21 @@ module Qeemono
       method_name = message_hash[:method].to_sym
       message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
-        notify(:type => :warn, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
+        notify(:type => :error, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym
           if message_handler.respond_to?(handle_method_sym)
             begin
-              # Here is the actual dispatch (always pass the sender client id as first argument)...
-              message_handler.send(handle_method_sym, client_id, message_hash[:params], message_hash[:version])
+              # Here, the actual dispatch to the message handler happens!
+              # The origin client id (the sender) is passed as first argument, the actual message as second...
+              # TODO: load the message handler to dispatch to depending on the given protocol version (message_hash[:version])
+              message_handler.send(handle_method_sym, client_id, message_hash[:params])
             rescue => e
               notify(:type => :fatal, :code => 9510, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else
-            notify(:type => :error, :code => 9520, :receivers => @qsif[:web_sockets][client_id], :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
+            notify(:type => :fatal, :code => 9520, :receivers => @qsif[:web_sockets][client_id], :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
           end
         end
       end
