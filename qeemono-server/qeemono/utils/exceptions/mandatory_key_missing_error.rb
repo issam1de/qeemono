@@ -1,0 +1,2 @@
+class MandatoryKeyMissingError < StandardError
+end

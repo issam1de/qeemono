@@ -84,24 +84,6 @@ module Qeemono
 
     include Log4r
 
-    #
-    # The default (latest) protocol version used by the qeemono server
-    #
-    PROTOCOL_VERSION = '1.0'
-
-    #
-    # Every message send to or from the server must be a JSON message
-    # containing the following keys:
-    #
-    MANDATORY_KEYS = [
-      'client_id', # The originator (some client or the server) which initially has sent the message
-                   #   - Can be given implicitly and/or explicitly
-                   #   - If not given, an anonymous client id is creates and allocated
-      'method',    # The method to call (respective message handler(s) have to subscribe in the first place)
-      'params',    # The parameters to pass to the method
-      'version'    # The protocol version to use (if not given the default (latest) version is assumed)
-    ]
-
     attr_reader :message_handler_registration_manager
 
 
@@ -125,8 +107,6 @@ module Qeemono
 
       @anonymous_client_id = 0
 
-      @notificator = Qeemono::Notificator.new(@logger)
-
       @qsif = {   # The Server interface
         :logger => @logger,
         :host => host,
@@ -137,10 +117,12 @@ module Qeemono
         :channel_subscriptions => {}, # key = client id; value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
         :registered_message_handlers_for_method => {}, # key = method; value = message handler
         :registered_message_handlers => [], # all registered message handlers
-        :notificator => @notificator
+        :notificator => nil, # Is set by the Notificator itself
+        :message_handler_registration_manager => nil # Is set by the MessageHandlerRegistrationManager itself
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
 
+      Qeemono::Notificator.new(@qsif)
       @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
     end
 
@@ -162,17 +144,10 @@ module Qeemono
           ws.onmessage do |message|
             begin
               client_id = client_id(ws)
-              message_hash = JSON.parse message
-              result = self.class.parse_message(client_id, message_hash)
-              if result == :ok
+              @qsif[:notificator].parse_message(client_id, message) do |message_hash|
                 notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
                 dispatch_message(message_hash)
-              else
-                err_msg = result[1]
-                notify(:type => :error, :code => 9010, :receivers => ws, :params => {:err_msg => err_msg})
               end
-            rescue JSON::ParserError => e
-              notify(:type => :error, :code => 9020, :receivers => ws, :params => {:err_msg => e.to_s})
             rescue => e
               notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
             end
@@ -212,9 +187,15 @@ module Qeemono
         channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
-          # Broadcast (push) message to all subscribers of this channel...
-          @qsif[:web_sockets][client_id].send message # TODO: send/relay message according to protocol
-          puts "****************222* #{message.inspect}"   # TODO: implement 'except-me' flag behavior
+          begin
+            # TODO: implement 'except-me' flag behavior
+            # Broadcast (push) message to all subscribers of this channel...
+            @qsif[:web_sockets][client_id].send message
+            #::: @qsif[:notificator].relay(message[:client_id], @qsif[:web_sockets][client_id], message)
+          rescue => e
+            # Do not use the notificator for logging this error since there is something wrong with it...
+            logger.fatal "***** Notificator broken: #{CommonUtils.backtrace(e)}"
+          end
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
@@ -344,57 +325,11 @@ module Qeemono
     end
 
     #
-    # Returns :ok if all mandatory keys are existent in the JSON message (message_hash);
-    # otherwise an array [:error, <err_msg>] containing :error as the first and the
-    # resp. error message as the second element is returned.
-    #
-    # Additionally, optional keys like the originator client id (:client_id) and the
-    # protocol version (:version) are added to the JSON message if not existent.
-    #
-    # TODO: return error codes instead of the actual error string
-    #
-    def self.parse_message(client_id, message_hash)
-      if message_hash.nil?
-        return [:error, "Message is nil! Ignoring. (Sent from client '#{client_id}')"]
-      end
-
-      explicit_client_id = message_hash['client_id'].to_sym
-      if explicit_client_id && explicit_client_id != client_id
-        return [:error, "Ambiguous client id! Client id is given both, implicitly and explicitly, but not identical. Ignoring. ('#{client_id}' vs. '#{explicit_client_id }')"]
-      else
-        message_hash['client_id'] = client_id
-      end
-
-      # If no protocol version is given, the latest/current version is assumed and added...
-      message_hash['version'] = PROTOCOL_VERSION
-
-      # Check for all mandatory keys...
-      MANDATORY_KEYS.each do |key|
-        check_message_for_mandatory_key(key, message_hash)
-      end
-
-      return :ok
-    rescue => e
-      return [:error, "#{e.to_s} (Sent from client '#{client_id}' with message #{message_hash})"]
-    end
-
-    #
-    # Returns true if the given key is existent in the JSON message;
-    # raises an exception otherwise.
-    #
-    def self.check_message_for_mandatory_key(key, message_hash)
-      if message_hash[key.to_s].nil?
-        raise "Key '#{key.to_s}' is missing in the JSON message! Ignoring." # TODO: raise dedicated exception here
-      end
-      return true
-    end
-
-    #
     # Dispatches the received message to the responsible message handler.
     #
     def dispatch_message(message_hash)
-      client_id = message_hash['client_id']
-      method_name = message_hash['method'].to_sym
+      client_id = message_hash[:client_id]
+      method_name = message_hash[:method].to_sym
       message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
       if message_handlers.empty?
         notify(:type => :warn, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
@@ -404,7 +339,7 @@ module Qeemono
           if message_handler.respond_to?(handle_method_sym)
             begin
               # Here is the actual dispatch (always pass the sender client id as first argument)...
-              message_handler.send(handle_method_sym, client_id, message_hash['params'], message_hash['version'])
+              message_handler.send(handle_method_sym, client_id, message_hash[:params], message_hash[:version])
             rescue => e
               notify(:type => :fatal, :code => 9510, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
@@ -427,7 +362,7 @@ module Qeemono
     end
 
     def notify(*args)
-      @notificator.notify(*args)
+      @qsif[:notificator].notify(*args)
     end
 
   end # end - class Server

@@ -31,7 +31,7 @@
 
         ws.onopen = function() {
           debug("This is client " + clientId + ". Connected...");
-          example('Open your Javascript console and enter the following: <pre>ws.send(\'{"method":"send", "params":{"receivers":["test-client-1"], "channels":["broadcast"], "payload":"Hello Mark!"}}\');</pre>');
+          example('Open your Javascript console and enter the following: <pre>ws.send(\'{"method":"send", "params":{"receivers":["test-client-1"], "channels":["broadcast"], "message":"Hello Mark!"}}\');</pre>');
         }
 
         ws.onmessage = function(evt) {

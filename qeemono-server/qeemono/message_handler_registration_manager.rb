@@ -6,7 +6,7 @@ module Qeemono
 
     def initialize(server_interface)
       @qsif = server_interface
-      @logger = @qsif[:logger]
+      @qsif[:message_handler_registration_manager] = self
     end
 
     #
@@ -97,7 +97,7 @@ module Qeemono
     end
 
     def logger
-      @logger
+      @qsif[:logger]
     end
 
   end
