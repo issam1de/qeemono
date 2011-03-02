@@ -25,7 +25,8 @@ module Qeemono
       channel_subscriber_ids = []
 
       channel_symbols.each do |channel_symbol|
-        channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
+        channel_symbol = channel_symbol.to_sym
+        channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new) # If the channel is not existent yet, create it
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
           # Here the actual relay to the receiver clients happens...
@@ -41,6 +42,7 @@ module Qeemono
         notify(:type => :debug, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
 
+      # TODO: log channels *symbols* instead of strings (convert them)
       notify(:type => :debug, :code => 2010, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
 
       return channel_subscriber_ids
@@ -54,6 +56,8 @@ module Qeemono
     #
     # Returns the channel subscriber ids (array) of all channels being unsubscribed from.
     #
+    # TODO: send nice notification (:warn log level) if client tries to unsubscribe but is not subscribed
+    #
     def unsubscribe(client_id, channel_symbols, options = {})
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
 
@@ -64,6 +68,7 @@ module Qeemono
       end
 
       channel_symbols.each do |channel_symbol|
+        channel_symbol = channel_symbol.to_sym
         channel_subscriber_id = @qsif[:channel_subscriptions][client_id][channel_symbol]
         @qsif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
         @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
@@ -72,6 +77,7 @@ module Qeemono
         notify(:type => :debug, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
 
+      # TODO: log channels *symbols* instead of strings (convert them)
       notify(:type => :debug, :code => 2030, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
 
       return channel_subscriber_ids
