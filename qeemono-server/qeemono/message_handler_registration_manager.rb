@@ -2,7 +2,7 @@ module Qeemono
   #
   # The registration manager for all message handlers.
   #
-  # TODO: convert all logger.x into notify calls to the Notificator
+  # TODO: convert all logger calls into notify calls to the Notificator
   #
   class MessageHandlerRegistrationManager
 
