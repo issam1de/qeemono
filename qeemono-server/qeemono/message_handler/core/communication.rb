@@ -54,16 +54,10 @@ module Qeemono
         #   - :channels => array of channels (e.g. [:broadcast, :detectives])
         #   - :client_ids => array of client ids (e.g. [:client_4711, :mark])
         #   - :message => the JSON message (following the qeemono protocol) to be sent
-        #   - :include_me => Note: has an effect only when broadcasting to channels!
-        #             If true the message will also be sent (bounce) to the sender (origin client) provided
-        #             that the client is subscribed to the resp. channel. If false (the default) the sender
-        #             will not receive the message although being subscribed to the channel.
         #
         def handle_send(origin_client_id, params)
           channels = params[:channels]
           receiver_client_ids = params[:client_ids]
-          # TODO: has to be implemented
-          include_me = params[:include_me]
           if channels.nil? && receiver_client_ids.nil?
             raise "Neither parameter 'channels' nor 'client_ids' is set! At least one target (channels and/or client_ids) must be specified."
           elsif params[:message].nil?
@@ -74,6 +68,16 @@ module Qeemono
           end
         end
 
+        #
+        # Subscribes the client (origin_client_id) to channels.
+        #
+        # * origin_client_id - The originator (sender) of the message
+        # * params:
+        #   - :bounce => Note: has an effect only when broadcasting to channels!
+        #                If true the message will also be sent (bounce) to the sender (origin client) provided
+        #                that the client is subscribed to the resp. channel. If false (the default) the sender
+        #                will not receive the message although being subscribed to the channel.
+        #
         def handle_subscribe_to_channels(origin_client_id, params)
           # TODO: implement
         end

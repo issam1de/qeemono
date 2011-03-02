@@ -113,7 +113,7 @@ module Qeemono
     # In this method the message is actually sent to the receiver. The receiver can be
     # a web socket (aka client) or a channel. If sent to a channel the actual sending
     # to the destination clients is done in the Ruby block passed to the EM::Channel#subscribe
-    # method which is called in Qeemono::Server#subscribe_to_channels.
+    # method which is called in Qeemono::ChannelSubscriptionManager#subscribe.
     #
     def relay(origin_client_id, receiver, message)
       relay_internal(origin_client_id, receiver, message, false)

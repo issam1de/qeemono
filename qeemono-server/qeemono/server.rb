@@ -67,6 +67,7 @@ require 'log4r'
 require './qeemono/lib/util/common_utils'
 require './qeemono/notificator'
 require './qeemono/message_handler_registration_manager'
+require './qeemono/channel_subscription_manager'
 require './qeemono/message_handler/base'
 require './qeemono/message_handler/core/system'
 require './qeemono/message_handler/core/communication'
@@ -118,7 +119,8 @@ module Qeemono
         :registered_message_handlers_for_method => {}, # key = method; value = message handler
         :registered_message_handlers => [], # all registered message handlers
         :notificator => nil, # Is set by the Notificator itself
-        :message_handler_registration_manager => nil # Is set by the MessageHandlerRegistrationManager itself
+        :message_handler_registration_manager => nil, # Is set by the MessageHandlerRegistrationManager itself
+        :channel_subscription_manager => nil  # Is set by the ChannelSubscriptionManager itself
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
 
@@ -126,6 +128,7 @@ module Qeemono
 
       Qeemono::Notificator.new(@qsif) # Must be the first because all following are going to use the Notificator
       @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
+      @channel_subscription_manager = Qeemono::ChannelSubscriptionManager.new(@qsif)
     end
 
     def start
@@ -137,7 +140,7 @@ module Qeemono
             begin
               client_id = client_id(ws)
               begin
-                subscribe_to_channels(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+                @qsif[:channel_subscription_manager].subscribe(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
                 notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
               rescue => e
                 notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)
@@ -184,75 +187,6 @@ module Qeemono
     end # end - start
 
     protected
-
-    #
-    # Subscribes the client represented by client_id to the channels represented by
-    # the channel_symbols array (instead of an array also a single channel symbol
-    # can be passed). Channels are created on-the-fly if not existent yet.
-    #
-    # Returns the channel subscriber ids (array) of all channels being subscribed to.
-    #
-    def subscribe_to_channels(client_id, channel_symbols)
-      channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
-
-      channel_subscriber_ids = []
-
-      channel_symbols.each do |channel_symbol|
-        channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
-        # Create a subscriber id for the client...
-        channel_subscriber_id = channel.subscribe do |message|
-          # Here the actual relay to the receiver clients happens...
-          # FIXME: :include_me does not work!!! Solution:Add message header which is consumed by the server only and removed before relaying to the destination clients
-          puts "******* MESSAGE: #{message}"
-          if client_id != message[:client_id]# || message[:include_me]
-            # include_me == true:                Broadcast the message to all subscribers of this channel including me if I am subscribed
-            # include_me == false (the default): Broadcast the message to all subscribers of this channel excluding me although I might be subscribed
-            @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
-          end
-        end
-        # ... and add the channel (a hash of the channel symbol and subscriber id) to
-        # the hash of channel subscriptions for the resp. client...
-        (@qsif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
-        channel_subscriber_ids << channel_subscriber_id
-
-        notify(:type => :debug, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
-      end
-
-      notify(:type => :debug, :code => 2010, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
-
-      return channel_subscriber_ids
-    end
-
-    #
-    # Unsubscribes the client represented by client_id from the channels represented by
-    # the channel_symbols array (instead of an array also a single channel symbol can
-    # be passed). If :all is passed as channel symbol the client is unsubscribed from
-    # all channels it is subscribed to.
-    #
-    # Returns the channel subscriber ids (array) of all channels being unsubscribed from.
-    #
-    def unsubscribe_from_channels(client_id, channel_symbols)
-      channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
-
-      channel_subscriber_ids = []
-
-      if channel_symbols == [:all]
-        channel_symbols = @qsif[:channel_subscriptions][client_id].keys
-      end
-
-      channel_symbols.each do |channel_symbol|
-        channel_subscriber_id = @qsif[:channel_subscriptions][client_id][channel_symbol]
-        @qsif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
-        @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
-        channel_subscriber_ids << channel_subscriber_id
-
-        notify(:type => :debug, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
-      end
-
-      notify(:type => :debug, :code => 2030, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
-
-      return channel_subscriber_ids
-    end
 
     #
     # This is the first thing what happens when client and
@@ -336,7 +270,7 @@ module Qeemono
     def forget_client_web_socket_association(web_socket)
       client_id_to_forget, _web_socket = @qsif[:web_sockets].rassoc(web_socket)
       if client_id_to_forget
-        unsubscribe_from_channels(client_id_to_forget, :all)
+        @qsif[:channel_subscription_manager].unsubscribe(client_id_to_forget, :all)
         @qsif[:web_sockets].delete(client_id_to_forget)
         return client_id_to_forget
       end
