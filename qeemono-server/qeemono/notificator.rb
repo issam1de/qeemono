@@ -17,12 +17,12 @@ module Qeemono
     # containing the following keys:
     #
     MANDATORY_KEYS = [
-      :client_id, # The originator (some client or the server) which initially has sent the message
-                   #   - Can be given implicitly and/or explicitly
-                   #   - If not given, an anonymous client id is creates and allocated
-      :method,    # The method to call (respective message handler(s) have to subscribe in the first place)
-      :params,    # The parameters to pass to the method
-      :version    # The protocol version to use (if not given the default (latest) version is assumed)
+      :client_id, # * The originator (some client or the server) which initially has sent the message
+                  #     - Can be passed implicitly and/or explicitly
+                  #     - If not passed, an anonymous client id is creates and allocated
+      :method,    # * The method to call (respective message handler(s) have to subscribe in the first place)
+      :params,    # * The parameters to pass to the method
+      :version    # * The protocol version to use (if not given the default (latest) version is assumed)
     ]
 
     SERVER_CLIENT_ID = :__server
@@ -107,12 +107,13 @@ module Qeemono
     end
 
     #
-    # Relays (send or broadcast) the JSON message hash to the
-    # receiver (web socket or channel). origin_client_id is the
-    # client id of the sender of the message.
+    # Relays (send or broadcast) the JSON message hash to the receiver (web socket or channel).
+    # origin_client_id is the client id of the sender of the message.
     #
-    # In this method the message is actually sent to some
-    # web socket (aka client) resp. channel!
+    # In this method the message is actually sent to the receiver. The receiver can be
+    # a web socket (aka client) or a channel. If sent to a channel the actual sending
+    # to the destination clients is done in the Ruby block passed to the EM::Channel#subscribe
+    # method which is called in Qeemono::Server#subscribe_to_channels.
     #
     def relay(origin_client_id, receiver, message)
       relay_internal(origin_client_id, receiver, message, false)
@@ -177,7 +178,7 @@ module Qeemono
       end
 
       # If no protocol version is given, the latest/current version is assumed and added...
-      message_hash[:version] = PROTOCOL_VERSION
+      message_hash[:version] ||= PROTOCOL_VERSION
 
       # Check for all mandatory keys...
       MANDATORY_KEYS.each do |key|

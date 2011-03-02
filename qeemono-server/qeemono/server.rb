@@ -201,9 +201,14 @@ module Qeemono
         channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new)
         # Create a subscriber id for the client...
         channel_subscriber_id = channel.subscribe do |message|
-          # TODO: implement 'except-me' flag behavior
-          # Broadcast the message to all subscribers of this channel...
-          @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
+          # Here the actual relay to the receiver clients happens...
+          # FIXME: :include_me does not work!!! Solution:Add message header which is consumed by the server only and removed before relaying to the destination clients
+          puts "******* MESSAGE: #{message}"
+          if client_id != message[:client_id]# || message[:include_me]
+            # include_me == true:                Broadcast the message to all subscribers of this channel including me if I am subscribed
+            # include_me == false (the default): Broadcast the message to all subscribers of this channel excluding me although I might be subscribed
+            @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
+          end
         end
         # ... and add the channel (a hash of the channel symbol and subscriber id) to
         # the hash of channel subscriptions for the resp. client...
@@ -329,7 +334,7 @@ module Qeemono
     # Returns the client_id of the unlearned association.
     #
     def forget_client_web_socket_association(web_socket)
-      client_id_to_forget, ___web_socket = @qsif[:web_sockets].rassoc(web_socket)
+      client_id_to_forget, _web_socket = @qsif[:web_sockets].rassoc(web_socket)
       if client_id_to_forget
         unsubscribe_from_channels(client_id_to_forget, :all)
         @qsif[:web_sockets].delete(client_id_to_forget)
