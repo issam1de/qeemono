@@ -7,7 +7,7 @@ module Qeemono
       class Communication < Qeemono::MessageHandler::Base
 
         def handled_methods
-          [:send]
+          [:send, :subscribe_to_channels, :unsubscribe_from_channels]
         end
 
         def name
@@ -51,8 +51,8 @@ module Qeemono
         #
         # * origin_client_id - The originator (sender) of the message
         # * params:
-        #   - :channels => array of channels (e.g. [:broadcast, :detectives])
-        #   - :client_ids => array of client ids (e.g. [:client_4711, :mark])
+        #   - :channels => array of channels to broadcast to (e.g. [:broadcast, :detectives])
+        #   - :client_ids => array of client ids to send to (e.g. [:client_4711, :mark])
         #   - :message => the JSON message (following the qeemono protocol) to be sent
         #
         def handle_send(origin_client_id, params)
@@ -71,19 +71,31 @@ module Qeemono
         #
         # Subscribes the client (origin_client_id) to channels.
         #
-        # * origin_client_id - The originator (sender) of the message
+        # * origin_client_id - The originator (sender) of the message (who has to be subscribed)
         # * params:
-        #   - :bounce => Note: has an effect only when broadcasting to channels!
-        #                If true the message will also be sent (bounce) to the sender (origin client) provided
+        #   - :channels => array of channels to subscribe to (e.g. [:broadcast, :detectives])
+        #   - :bounce => If true the message will also be sent (bounce) to the sender (origin client) provided
         #                that the client is subscribed to the resp. channel. If false (the default) the sender
         #                will not receive the message although being subscribed to the channel.
         #
         def handle_subscribe_to_channels(origin_client_id, params)
-          # TODO: implement
+          channel_symbols = params[:channels]
+          options = {}
+          options[:bounce] = params[:bounce]
+          @qsif[:channel_subscription_manager].subscribe(origin_client_id, channel_symbols, options)
         end
 
+        #
+        # Unsubscribes the client (origin_client_id) from channels.
+        #
+        # * origin_client_id - The originator (sender) of the message (who has to be unsubscribed)
+        # * params:
+        #   - :channels => array of channels to unsubscribe from (e.g. [:broadcast, :detectives])
+        #
         def handle_unsubscribe_from_channels(origin_client_id, params)
-          # TODO: implement
+          channel_symbols = params[:channels]
+          options = {}
+          @qsif[:channel_subscription_manager].unsubscribe(origin_client_id, channel_symbols, options)
         end
 
       end
