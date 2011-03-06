@@ -11,7 +11,8 @@ module Qeemono
     # the channel_symbols array (instead of an array also a single channel symbol
     # can be passed). Channels are created on-the-fly if not existent yet.
     #
-    # Returns the channel subscriber ids (array) of all channels being subscribed to.
+    # Returns the channel subscriber ids (array) of all channels which just have
+    # been subscribed to.
     #
     # options:
     #   * :bounce (bool) - If true, broadcasting messages to all subscribers of the given
@@ -23,27 +24,32 @@ module Qeemono
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
 
       channel_subscriber_ids = []
+      subscriptions_hash = @qsif[:channel_subscriptions][client_id] ||= {}
 
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
-        channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new) # If the channel is not existent yet, create it
-        # Create a subscriber id for the client...
-        channel_subscriber_id = channel.subscribe do |message|
-          # Here the actual relay to the receiver clients happens...
-          if client_id != message[:client_id] || options[:bounce]
-            @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
+        if subscriptions_hash[channel_symbol].nil?
+          # Only if the client has not been subscribed already...
+
+          channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new) # If the channel is not existent yet, create it
+
+          # Create a subscriber id for the client...
+          channel_subscriber_id = channel.subscribe do |message|
+            # Here the actual relay to the receiver clients happens...
+            if client_id != message[:client_id] || options[:bounce]
+              @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
+            end
           end
+          # ... and add the channel information (channel symbol and subscriber id) to
+          # the hash of channel subscriptions for the resp. client...
+          subscriptions_hash[channel_symbol] = channel_subscriber_id
+          channel_subscriber_ids << channel_subscriber_id
+
+          notify(:type => :debug, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
+        else
+          notify(:type => :debug, :code => 2001, :receivers => @qsif[:web_sockets][client_id], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
         end
-        # ... and add the channel (a hash of the channel symbol and subscriber id) to
-        # the hash of channel subscriptions for the resp. client...
-        (@qsif[:channel_subscriptions][client_id] ||= {})[channel_symbol] = channel_subscriber_id
-        channel_subscriber_ids << channel_subscriber_id
-
-        notify(:type => :debug, :code => 2000, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
       end
-
-      # TODO: log channels *symbols* instead of strings (convert them)
-      notify(:type => :debug, :code => 2010, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
 
       return channel_subscriber_ids
     end
@@ -54,31 +60,34 @@ module Qeemono
     # be passed). If :all is passed as channel symbol the client is unsubscribed from
     # all channels it is subscribed to.
     #
-    # Returns the channel subscriber ids (array) of all channels being unsubscribed from.
-    #
-    # TODO: send nice notification (:warn log level) if client tries to unsubscribe but is not subscribed
+    # Returns the channel subscriber ids (array) of all channels which just have
+    # been unsubscribed from.
     #
     def unsubscribe(client_id, channel_symbols, options = {})
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
 
       channel_subscriber_ids = []
+      subscriptions_hash = @qsif[:channel_subscriptions][client_id] ||= {}
 
       if channel_symbols == [:all]
-        channel_symbols = @qsif[:channel_subscriptions][client_id].keys
+        channel_symbols = subscriptions_hash.keys
       end
 
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
-        channel_subscriber_id = @qsif[:channel_subscriptions][client_id][channel_symbol]
-        @qsif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
-        @qsif[:channel_subscriptions][client_id].delete(channel_symbol)
-        channel_subscriber_ids << channel_subscriber_id
+        if !subscriptions_hash[channel_symbol].nil?
+          # Only if the client is subscribed...
 
-        notify(:type => :debug, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.inspect, :channel_subscriber_id => channel_subscriber_id}, :no_log => true)
+          channel_subscriber_id = subscriptions_hash[channel_symbol]
+          @qsif[:channels][channel_symbol].unsubscribe(channel_subscriber_id)
+          subscriptions_hash.delete(channel_symbol)
+          channel_subscriber_ids << channel_subscriber_id
+
+          notify(:type => :debug, :code => 2020, :receivers => @qsif[:channels][channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => channel_subscriber_id})
+        else
+          notify(:type => :debug, :code => 2021, :receivers => @qsif[:web_sockets][client_id], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
+        end
       end
-
-      # TODO: log channels *symbols* instead of strings (convert them)
-      notify(:type => :debug, :code => 2030, :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect, :channel_subscriber_ids => channel_subscriber_ids.inspect})
 
       return channel_subscriber_ids
     end

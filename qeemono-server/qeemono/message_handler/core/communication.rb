@@ -1,3 +1,6 @@
+require './qeemono/lib/exception/unknown_receiver_type_error'
+require './qeemono/lib/exception/unknown_receiver_error'
+
 module Qeemono
   module MessageHandler
     module Core
@@ -7,7 +10,7 @@ module Qeemono
       class Communication < Qeemono::MessageHandler::Base
 
         def handled_methods
-          [:send, :subscribe_to_channels, :unsubscribe_from_channels]
+          [:send, :subscribe, :unsubscribe]
         end
 
         def name
@@ -32,11 +35,11 @@ module Qeemono
             elsif receiver_type == :web_sockets
               receiver_type_name = 'client'
             else
-              raise "Unknown receiver type '#{receiver_type.to_s}'!"
+              raise Qeemono::UnknownReceiverTypeError.new("Unknown receiver type '#{receiver_type.to_s}'!")
             end
 
             if @qsif[receiver_type][receiver].nil?
-              raise "Failed to send to #{receiver_type_name} '#{receiver}'. Unknown."
+              raise Qeemono::UnknownReceiverError.new("Failed to send to #{receiver_type_name} '#{receiver}'. Unknown.")
             else
               @qsif[:notificator].relay(origin_client_id, @qsif[receiver_type][receiver], message)
             end
@@ -54,6 +57,8 @@ module Qeemono
         #   - :channels => array of channels to broadcast to (e.g. [:broadcast, :detectives])
         #   - :client_ids => array of client ids to send to (e.g. [:client_4711, :mark])
         #   - :message => the JSON message (following the qeemono protocol) to be sent
+        #
+        # TODO: raise dedicated exception!
         #
         def handle_send(origin_client_id, params)
           channels = params[:channels]
@@ -78,7 +83,7 @@ module Qeemono
         #                that the client is subscribed to the resp. channel. If false (the default) the sender
         #                will not receive the message although being subscribed to the channel.
         #
-        def handle_subscribe_to_channels(origin_client_id, params)
+        def handle_subscribe(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
           options[:bounce] = params[:bounce]
@@ -92,7 +97,7 @@ module Qeemono
         # * params:
         #   - :channels => array of channels to unsubscribe from (e.g. [:broadcast, :detectives])
         #
-        def handle_unsubscribe_from_channels(origin_client_id, params)
+        def handle_unsubscribe(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
           @qsif[:channel_subscription_manager].unsubscribe(origin_client_id, channel_symbols, options)

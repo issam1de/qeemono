@@ -65,6 +65,7 @@ require 'json'
 require 'log4r'
 
 require './qeemono/lib/util/common_utils'
+require './qeemono/lib/exception/qeemono_standard_error'
 require './qeemono/notificator'
 require './qeemono/message_handler_registration_manager'
 require './qeemono/channel_subscription_manager'
@@ -157,7 +158,7 @@ module Qeemono
               client_id = client_id(ws)
               begin
                 @qsif[:notificator].parse_message(client_id, message) do |message_hash|
-                  notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
+                  #notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
                   dispatch_message(message_hash)
                 end
               rescue => e
@@ -297,6 +298,7 @@ module Qeemono
               # TODO: load the message handler to dispatch to depending on the given protocol version (message_hash[:version])
               message_handler.send(handle_method_sym, client_id, message_hash[:params])
             rescue => e
+              # TODO: distinct between qeemono and other exceptions...
               notify(:type => :fatal, :code => 9510, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else

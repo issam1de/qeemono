@@ -32,10 +32,10 @@ module Qeemono
 
       1000 => "*** The qeemono server has been started on host ${host}:${port} at ${current_time}. Version: ${app_version}   -   Have Fun...",
 
-      2000 => "Client '${client_id}' has been subscribed to channel ${channel_symbol} (subscriber id is ${channel_subscriber_id}).",
-      2010 => "Client '${client_id}' has been subscribed to channels ${channel_symbols} (subscriber ids are ${channel_subscriber_ids}).",
-      2020 => "Client '${client_id}' has been unsubscribed from channel ${channel_symbol} (subscriber id was ${channel_subscriber_id}).",
-      2030 => "Client '${client_id}' has been unsubscribed from channels ${channel_symbols} (subscriber ids were ${channel_subscriber_ids}).",
+      2000 => "Client '${client_id}' has been subscribed to channel '${channel_symbol}' (subscriber id is ${channel_subscriber_id}).",
+      2001 => "Client '${client_id}' has already been subscribed to channel '${channel_symbol}' (subscriber id is ${channel_subscriber_id}).",
+      2020 => "Client '${client_id}' has been unsubscribed from channel '${channel_symbol}' (subscriber id was ${channel_subscriber_id}).",
+      2021 => "Client '${client_id}' is not subscribed to channel '${channel_symbol}'.",
 
       5000 => "Message handler '${message_handler_name}' has been registered for methods ${handled_methods}.",
       5010 => "Total amount of registered message handlers: ${amount}",

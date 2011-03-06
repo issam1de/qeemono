@@ -1,4 +1,4 @@
 module Qeemono
-  class MandatoryKeyMissingError < StandardError
+  class MandatoryKeyMissingError < Qeemono::QeemonoStandardError
   end
 end
