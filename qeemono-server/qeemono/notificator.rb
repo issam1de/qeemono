@@ -47,6 +47,7 @@ module Qeemono
       5130 => "Message handler '${message_handler_name}' tries to listen to invalid method! Methods must be strings or symbols. (Details: ${clazz})",
       5140 => "Message handler '${message_handler_name}' is already registered! (Details: ${clazz})",
       5150 => "A message handler with name '${message_handler_name}' already exists! Names must be unique. (Details: ${clazz})",
+      5160 => "Message handler '${message_handler_name}' must have a non-empty version! (Details: ${clazz})",
 
       6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
       6010 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
