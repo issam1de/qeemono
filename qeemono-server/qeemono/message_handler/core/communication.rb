@@ -41,7 +41,7 @@ module Qeemono
             if @qsif[receiver_type][receiver].nil?
               raise Qeemono::UnknownReceiverError.new("Failed to send to #{receiver_type_name} '#{receiver}'. Unknown.")
             else
-              @qsif[:notificator].relay(origin_client_id, @qsif[receiver_type][receiver], message)
+              relay(origin_client_id, @qsif[receiver_type][receiver], message)
             end
           end
         end
@@ -58,7 +58,7 @@ module Qeemono
         #   - :client_ids => array of client ids to send to (e.g. [:client_4711, :mark])
         #   - :message => the JSON message (following the qeemono protocol) to be sent
         #
-        # TODO: raise dedicated exception!
+        # TODO: raise dedicated exceptions!
         #
         def handle_send(origin_client_id, params)
           channels = params[:channels]
@@ -86,7 +86,7 @@ module Qeemono
         def handle_subscribe(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
-          options[:bounce] = params[:bounce]
+          options[:bounce] = (params[:bounce] == 'true')
           @qsif[:channel_subscription_manager].subscribe(origin_client_id, channel_symbols, options)
         end
 

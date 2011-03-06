@@ -297,8 +297,9 @@ module Qeemono
               # The origin client id (the sender) is passed as first argument, the actual message as second...
               # TODO: load the message handler to dispatch to depending on the given protocol version (message_hash[:version])
               message_handler.send(handle_method_sym, client_id, message_hash[:params])
+            rescue Qeemono::QeemonoStandardError => e
+              notify(:type => :error, :code => 9515, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
             rescue => e
-              # TODO: distinct between qeemono and other exceptions...
               notify(:type => :fatal, :code => 9510, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else

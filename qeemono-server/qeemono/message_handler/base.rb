@@ -22,8 +22,20 @@ module Qeemono
     # Where <*m*> is replaced with the resp. method name.
     #
     # Each handle method must raise a suited exception if the coated
-    # action(s) could not be executed successfully. Return values are
-    # ignored.
+    # action(s) could not be executed successfully. But only use exceptions
+    # when appropriate.
+    #
+    # Use the Qeemono::Notificator#notify method to send formatted information
+    # to the server, other clients, and/or channels. This information can be
+    # incident reports, arbitrary feedback, debug, or just normal information.
+    # See Qeemono::Notificator#notify for more details.
+    #
+    # With the Qeemono::Notificator#relay method you send messages to clients
+    # and/or channels. See Qeemono::Notificator#relay for more details.
+    #
+    # Both notify and relay send qeemono-protocol conform messages.
+    #
+    # Returned values from handle methods are ignored.
     #
     # All message handlers can interact with the qeemono server via the
     # qeemono server interface (qsif).
@@ -43,6 +55,16 @@ module Qeemono
 
       def version
         Qeemono::Notificator::PROTOCOL_VERSION
+      end
+
+      protected
+
+      def notify(*args)
+        @qsif[:notificator].notify(*args)
+      end
+
+      def relay(*args)
+        @qsif[:notificator].relay(*args)
       end
 
     end
