@@ -126,6 +126,7 @@ module Qeemono
         :channel_subscription_manager => nil  # Is set by the ChannelSubscriptionManager itself
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
+      @qsif[:channels][:broadcastwb] = EM::Channel.new
 
       # ************************
 

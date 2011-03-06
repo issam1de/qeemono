@@ -50,7 +50,8 @@ module Qeemono
         # Sends a JSON message to one or more clients and/or one or more channels.
         # A channel consists of many subscribers (clients) who the message is
         # broadcasted to. The :broadcast channel is used to broadcast to all
-        # clients of the server.
+        # clients of the server. The :broadcastwb channel (wb = with bounce) does
+        # the same but also sends (bounces) the message to the origin client.
         #
         # * origin_client_id - The originator (sender) of the message
         # * params:
