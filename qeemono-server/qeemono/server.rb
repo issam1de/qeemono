@@ -111,6 +111,7 @@ module Qeemono
 
       @anonymous_client_id = 0
 
+      # FIXME: do not expose too much information! Create a public qsif for message handlers!
       @qsif = {   # The Server interface
         :logger => @logger,
         :host => host,
