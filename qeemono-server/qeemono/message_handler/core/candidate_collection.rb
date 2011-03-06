@@ -22,14 +22,14 @@ module Qeemono
         # Just for testing...
         #
         def handle_echo(origin_client_id, params)
-          @qsif[:notificator].notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][origin_client_id], :params => {:msg => "Echo back to client '#{origin_client_id}': #{params}"}
+          notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][origin_client_id], :params => {:msg => "Echo back to client '#{origin_client_id}': #{params}"}
         end
 
         #
         # Just for testing...
         #
         def handle_foo(origin_client_id, params)
-          @qsif[:notificator].notify :type => :info, :code => 0, :params => {:msg => 'FOO!!!'}
+          notify :type => :info, :code => 0, :params => {:msg => 'FOO!!!'}
         end
       end
     end
