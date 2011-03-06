@@ -31,7 +31,10 @@
 
         ws.onopen = function() {
           debug("Connected...");
-          example('Open your Javascript console and enter the following: <pre>ws.send(\'{"method":"send", "params":{"client_ids":["test-client-1"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}\');</pre>');
+          example('Open your Javascript console and try the following examples:');
+          example('<pre>ws.send(\'{"method":"send", "params":{"client_ids":["test-client-1"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"subscribe", "params":{"channels":["My Channel"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"unsubscribe", "params":{"channels":["My Channel"]}}\');</pre>');
         }
 
         ws.onmessage = function(evt) {
