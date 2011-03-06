@@ -28,30 +28,41 @@ module Qeemono
     SERVER_CLIENT_ID = :__server
 
     NOTIFICATION_MESSAGES = {
-      0     => "${msg}",
+      0    => "${msg}",
 
-      1000  => "The qeemono server has been started on host ${host}:${port} at ${current_time}. Have Fun...",
+      1000 => "*** The qeemono server has been started on host ${host}:${port} at ${current_time}. Version: ${app_version}   -   Have Fun...",
 
-      2000  => "Client '${client_id}' has been subscribed to channel ${channel_symbol} (subscriber id is ${channel_subscriber_id}).",
-      2010  => "Client '${client_id}' has been subscribed to channels ${channel_symbols} (subscriber ids are ${channel_subscriber_ids}).",
-      2020  => "Client '${client_id}' has been unsubscribed from channel ${channel_symbol} (subscriber id was ${channel_subscriber_id}).",
-      2030  => "Client '${client_id}' has been unsubscribed from channels ${channel_symbols} (subscriber ids were ${channel_subscriber_ids}).",
+      2000 => "Client '${client_id}' has been subscribed to channel ${channel_symbol} (subscriber id is ${channel_subscriber_id}).",
+      2010 => "Client '${client_id}' has been subscribed to channels ${channel_symbols} (subscriber ids are ${channel_subscriber_ids}).",
+      2020 => "Client '${client_id}' has been unsubscribed from channel ${channel_symbol} (subscriber id was ${channel_subscriber_id}).",
+      2030 => "Client '${client_id}' has been unsubscribed from channels ${channel_symbols} (subscriber ids were ${channel_subscriber_ids}).",
 
-      6000  => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
-      6010  => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
-      6020  => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
+      5000 => "Message handler '${message_handler_name}' has been registered for methods ${handled_methods}.",
+      5010 => "Total amount of registered message handlers: ${amount}",
+      5020 => "Unregistered ${amount} message handlers. (Details: ${message_handler_names})",
+      5030 => "Total amount of registered message handlers: ${amount}",
+      5100 => "${clazz} is not a message handler! Must subclass '${parent_class}'.",
+      5110 => "Message handler ${clazz} must have a non-empty name!",
+      5120 => "Message handler '${message_handler_name}' does not listen to any method! (Details: ${clazz})",
+      5130 => "Message handler '${message_handler_name}' tries to listen to invalid method! Methods must be strings or symbols. (Details: ${clazz})",
+      5140 => "Message handler '${message_handler_name}' is already registered! (Details: ${clazz})",
+      5150 => "A message handler with name '${message_handler_name}' already exists! Names must be unique. (Details: ${clazz})",
 
-      7000  => "Client did not send its client_id! Allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
-      7010  => "Attempt to hijack (steal) session from client '${client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
-      7020  => "Attempt to use client id '#{SERVER_CLIENT_ID}'! Not allowed. Is reserved for the server only. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
+      6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
+      6010 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
+      6020 => "Client '${client_id}' has been disconnected. (Web socket signature: ${wss})",
 
-      9000  => "${err_msg}",
-      9001  => "Error occured! (Sent from client '${client_id}') Error message: ${err_msg}",
-      9002  => "Error occured! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+      7000 => "Client did not send its client_id! Allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
+      7010 => "Attempt to hijack (steal) session from client '${client_id}' by using its client id! Not allowed. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
+      7020 => "Attempt to use client id '#{SERVER_CLIENT_ID}'! Not allowed. Is reserved for the server only. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
 
-      9500  => "Did not find any message handler registered for method '${method_name}'! Ignoring. (Sent from client '${client_id}' with message ${message_hash})",
-      9510  => "Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
-      9520  => "Message handler '${message_handler_name}' (${message_handler_class}) is registered to handle method '${method_name}' but does not respond to '${handle_method_name}'! (Sent from client '${client_id}' with message ${message_hash})",
+      9000 => "${err_msg}",
+      9001 => "Error occured! (Sent from client '${client_id}') Error message: ${err_msg}",
+      9002 => "Error occured! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+
+      9500 => "Did not find any message handler registered for method '${method_name}'! Ignoring. (Sent from client '${client_id}' with message ${message_hash})",
+      9510 => "Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+      9520 => "Message handler '${message_handler_name}' (${message_handler_class}) is registered to handle method '${method_name}' but does not respond to '${handle_method_name}'! (Sent from client '${client_id}' with message ${message_hash})",
     }
 
 
@@ -206,10 +217,6 @@ module Qeemono
       return true
     end
 
-    def logger
-      @qsif[:logger]
-    end
-
     def message(options)
       msg = NOTIFICATION_MESSAGES[options[:code]]
       return nil unless msg
@@ -217,6 +224,12 @@ module Qeemono
         msg = msg.gsub("${#{key.to_s}}", value.to_s)
       end
       msg
+    end
+
+    private
+
+    def logger
+      @qsif[:logger]
     end
 
   end

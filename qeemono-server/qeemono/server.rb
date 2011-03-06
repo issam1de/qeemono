@@ -85,6 +85,8 @@ module Qeemono
 
     include Log4r
 
+    APPLICATION_VERSION = '0.1'
+
     attr_reader :message_handler_registration_manager
 
 
@@ -181,7 +183,7 @@ module Qeemono
 
         end # end - EventMachine::WebSocket.start
 
-        notify(:type => :info, :code => 1000, :params => {:host => @qsif[:host], :port => @qsif[:port], :current_time => Time.now})
+        notify(:type => :info, :code => 1000, :params => {:host => @qsif[:host], :port => @qsif[:port], :current_time => Time.now, :app_version => APPLICATION_VERSION})
       end # end - EventMachine.run
 
     end # end - start
@@ -310,6 +312,8 @@ module Qeemono
       @logger.outputters << Outputter.stdout
       @logger.outputters << file_outputter
     end
+
+    private
 
     def logger
       @logger
