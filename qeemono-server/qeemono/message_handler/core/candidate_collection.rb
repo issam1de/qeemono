@@ -22,7 +22,11 @@ module Qeemono
         # Just for testing...
         #
         def handle_echo(origin_client_id, params)
-          notify :type => :info, :code => 0, :receivers => @qsif[:web_sockets][origin_client_id], :params => {:msg => "Echo back to client '#{origin_client_id}': #{params}"}
+          relay(
+                  origin_client_id,
+                  @qsif[:web_sockets][origin_client_id],
+                  {:method => :echo, :params => params}
+          )
         end
 
         #

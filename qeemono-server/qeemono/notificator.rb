@@ -153,7 +153,7 @@ module Qeemono
     #
     def relay_internal(origin_client_id, receiver, message, send_from_server=false)
       parse_message_internal(origin_client_id, message, send_from_server) do |message_hash|
-        receiver.send(message_hash)
+        receiver.send(message_hash.to_json)
       end
     end
 

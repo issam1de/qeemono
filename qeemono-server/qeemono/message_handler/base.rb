@@ -15,11 +15,14 @@ module Qeemono
     # per handled qeemono method *m*. qeemono methods function like protocol
     # actions. Each handle method looks like this:
     #
-    # def handle_<*m*>(server_interface, args*)
-    #   # ...
+    # def handle_<*m*>(origin_client_id, <*args*>)
+    #   # Your implementation...
     # end
     #
-    # Where <*m*> is replaced with the resp. method name.
+    # Where <*m*> is replaced with the resp. method name. origin_client_id
+    # is the client id of the sender of the message and is automatically set
+    # by the qeemono framework. <*args*> are the comma separated method
+    # parameters to be passed when calling the method.
     #
     # Each handle method must raise a suited exception if the coated
     # action(s) could not be executed successfully. But only use exceptions
@@ -38,11 +41,12 @@ module Qeemono
     # Returned values from handle methods are ignored.
     #
     # All message handlers can interact with the qeemono server via the
-    # qeemono server interface (qsif).
+    # qeemono server interface (qsif) which is available for all message
+    # handlers via the qsif method.
     #
     class Base
 
-      attr_writer :qsif # The qeemono server interface
+      attr_writer :qsif # The qeemono server interface    #FIXME: should not be writable!
 
 
       def handled_methods
