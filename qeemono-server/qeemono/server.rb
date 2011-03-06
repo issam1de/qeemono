@@ -144,6 +144,7 @@ module Qeemono
               client_id = client_id(ws)
               begin
                 @qsif[:channel_subscription_manager].subscribe(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+                @qsif[:channel_subscription_manager].subscribe(client_id, :broadcastwb, {:bounce => true}) # Every client is automatically subscribed to the broadcastwb (wb = with bounce) channel
                 notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
               rescue => e
                 notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)

@@ -103,6 +103,7 @@ module Qeemono
           @qsif[:channel_subscription_manager].unsubscribe(origin_client_id, channel_symbols, options)
         end
 
+        #TODO: add create/destroy_channels handle methods
       end
     end
   end
