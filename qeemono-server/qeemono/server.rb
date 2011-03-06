@@ -22,7 +22,7 @@
 #   - thin JSON protocol
 #   - no thick framework underlying
 #   - communication can be 1-to-1, 1-to-channel, 1-to-broadcast, and 1-to-server
-#       (broadcast and channel communication is possible with 'except-me' flag)
+#       (broadcast and channel communication is possible with 'bounce' flag)
 #   - clean and mean implemented
 #   - message handlers use observer pattern to register
 #
