@@ -1,19 +1,27 @@
 module Qeemono
   #
-  # The registration manager for all message handlers.
+  # The manager for all message handlers.
   #
-  class MessageHandlerRegistrationManager
+  class MessageHandlerManager
 
     def initialize(server_interface, public_server_interface)
       @qsif = server_interface
-      @qsif[:message_handler_registration_manager] = self
+      @qsif[:message_handler_manager] = self
       @qsif_public = public_server_interface
+
+      @registered_message_handlers_for_method = {} # key = method; value = message handler
+      @registered_message_handlers = [] # all registered message handlers
+    end
+
+    def get(conditions = {})
+      @registered_message_handlers_for_method[conditions[:method].to_sym] || []
     end
 
     #
-    # Registers the given message handlers (of type Qeemono::MessageHandler::Base).
+    # Registers the given message handlers (of type Qeemono::MessageHandler::Base)
+    # for the given namespace.
     #
-    def register(message_handlers)
+    def register(message_handlers, namespace=nil)
       message_handler_names = []
       message_handlers = [message_handlers] unless message_handlers.is_a? Array
       message_handlers.each do |message_handler|
@@ -23,35 +31,36 @@ module Qeemono
           handled_methods_as_strings = []
           handled_methods.each do |method|
             handled_methods_as_strings << method.to_s
-            (@qsif[:registered_message_handlers_for_method][method.to_sym] ||= []) << message_handler
+            (@registered_message_handlers_for_method[method.to_sym] ||= []) << message_handler
           end
           message_handler_name = message_handler.name.to_s
-          @qsif[:registered_message_handlers] << message_handler
+          @registered_message_handlers << message_handler
           message_handler.qsif = @qsif_public # Set the public service interface so that it is available in the message handler
           message_handler_names << message_handler_name
           notify(:type => :debug, :code => 5000, :params => {:message_handler_name => message_handler_name, :handled_methods => handled_methods_as_strings.inspect})
         end
       end
-      notify(:type => :debug, :code => 5010, :params => {:amount => @qsif[:registered_message_handlers].size})
+      notify(:type => :debug, :code => 5010, :params => {:amount => @registered_message_handlers.size})
     end
 
     #
-    # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base).
+    # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base)
+    # for the given namespace.
     #
-    def unregister(message_handlers)
+    def unregister(message_handlers, namespace=nil)
       message_handler_names = []
       message_handlers = [message_handlers] unless message_handlers.is_a? Array
       message_handlers.each do |message_handler|
         handled_methods = message_handler.handled_methods || []
         handled_methods = [handled_methods] unless handled_methods.is_a? Array
         handled_methods.each do |method|
-          @qsif[:registered_message_handlers_for_method][method.to_sym].delete(message_handler) if @qsif[:registered_message_handlers_for_method][method.to_sym]
-          @qsif[:registered_message_handlers].delete(message_handler)
+          @registered_message_handlers_for_method[method.to_sym].delete(message_handler) if @registered_message_handlers_for_method[method.to_sym]
+          @registered_message_handlers.delete(message_handler)
         end
         message_handler_names << message_handler.name.to_s
       end
       notify(:type => :debug, :code => 5020, :params => {:amount => message_handler_names.size, :message_handler_names => message_handler_names.inspect})
-      notify(:type => :debug, :code => 5030, :params => {:amount => @qsif[:registered_message_handlers].size})
+      notify(:type => :debug, :code => 5030, :params => {:amount => @registered_message_handlers.size})
     end
 
     protected
@@ -84,12 +93,12 @@ module Qeemono
         end
       end
 
-      if @qsif[:registered_message_handlers].include?(message_handler)
+      if @registered_message_handlers.include?(message_handler)
         notify(:type => :error, :code => 5140, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
         return false
       end
 
-      if !@qsif[:registered_message_handlers].select { |mh| mh.name == message_handler.name }.empty?
+      if !@registered_message_handlers.select { |mh| mh.name == message_handler.name }.empty?
         notify(:type => :error, :code => 5150, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
         return false
       end

@@ -66,7 +66,7 @@ require 'log4r'
 require './qeemono/lib/util/common_utils'
 require './qeemono/lib/exception/qeemono_standard_error'
 require './qeemono/notificator'
-require './qeemono/message_handler_registration_manager'
+require './qeemono/message_handler_manager'
 require './qeemono/channel_subscription_manager'
 require './qeemono/message_handler/base'
 require './qeemono/message_handler/core/system'
@@ -112,7 +112,7 @@ module Qeemono
 
     APPLICATION_VERSION = '0.1.2'
 
-    attr_reader :message_handler_registration_manager
+    attr_reader :message_handler_manager
 
 
     #
@@ -133,10 +133,8 @@ module Qeemono
         :web_sockets => {}, # key = client id; value = web socket object
         :channels => {}, # key = channel symbol; value = channel object
         :channel_subscriptions => {}, # key = client id; value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
-        :registered_message_handlers_for_method => {}, # key = method; value = message handler
-        :registered_message_handlers => [], # all registered message handlers
         :notificator => nil, # Is set by the Notificator itself
-        :message_handler_registration_manager => nil, # Is set by the MessageHandlerRegistrationManager itself
+        :message_handler_manager => nil, # Is set by the MessageHandlerManager itself
         :channel_subscription_manager => nil  # Is set by the ChannelSubscriptionManager itself
       }
       @qsif[:channels][:broadcast] = EM::Channel.new
@@ -148,8 +146,8 @@ module Qeemono
       # ************************
 
       Qeemono::Notificator.new(@qsif) # Must be the first because all following are going to use the Notificator
-      @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif, @qsif_public)
-      @channel_subscription_manager = Qeemono::ChannelSubscriptionManager.new(@qsif)
+      @message_handler_manager = Qeemono::MessageHandlerManager.new(@qsif, @qsif_public)
+      Qeemono::ChannelSubscriptionManager.new(@qsif)
     end
 
     def start
@@ -304,7 +302,7 @@ module Qeemono
     def dispatch_message(message_hash)
       client_id = message_hash[:client_id]
       method_name = message_hash[:method].to_sym
-      message_handlers = @qsif[:registered_message_handlers_for_method][method_name] || []
+      message_handlers = @qsif[:message_handler_manager].get(:method => method_name)
       if message_handlers.empty?
         notify(:type => :error, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
       else
