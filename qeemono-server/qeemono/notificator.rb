@@ -1,4 +1,8 @@
 require './qeemono/lib/exception/mandatory_key_missing_error'
+require './qeemono/lib/exception/ambiguous_client_id_error'
+require './qeemono/lib/exception/invalid_client_id_error'
+require './qeemono/lib/exception/invalid_key_error'
+require './qeemono/lib/exception/no_message_given_error'
 
 module Qeemono
   #
@@ -172,7 +176,7 @@ module Qeemono
       end
 
       if message_hash.nil?
-        raise "Message is nil! Ignoring."
+        raise Qeemono::NoMessageGivenError.new("Message is nil! Ignoring.")
       end
 
       if message_hash[:client_id] != nil
@@ -180,12 +184,12 @@ module Qeemono
       end
 
       if !send_from_server && message_hash[:client_id] == SERVER_CLIENT_ID
-        raise "The client id '#{SERVER_CLIENT_ID}' is reserved for the server only! Ignoring."
+        raise Qeemono::InvalidClientIdError.new("The client id '#{SERVER_CLIENT_ID}' is reserved for the server only! Ignoring.")
       end
 
       explicit_client_id = message_hash[:client_id]
       if explicit_client_id && explicit_client_id.to_sym != origin_client_id
-        raise "Ambiguous client id! Client id is given both, implicitly and explicitly, but not identical. Ignoring. ('#{origin_client_id}' vs. '#{explicit_client_id }')"
+        raise Qeemono::AmbiguousClientIdError.new("Ambiguous client id! Client id is given both, implicitly and explicitly, but not identical. Ignoring. ('#{origin_client_id}' vs. '#{explicit_client_id }')")
       else
         message_hash[:client_id] = origin_client_id.to_sym
       end
@@ -200,7 +204,7 @@ module Qeemono
 
       keys = message_hash.keys - MANDATORY_KEYS
       if keys.size > 0
-        raise "JSON message contains not allowed keys ${keys}! Ignoring."
+        raise Qeemono::InvalidKeyError.new("JSON message contains not allowed keys ${keys}! Ignoring.")
       end
 
       yield message_hash

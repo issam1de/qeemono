@@ -1,5 +1,7 @@
 require './qeemono/lib/exception/unknown_receiver_type_error'
 require './qeemono/lib/exception/unknown_receiver_error'
+require './qeemono/lib/exception/no_receiver_given_error'
+require './qeemono/lib/exception/no_message_given_error'
 
 module Qeemono
   module MessageHandler
@@ -59,15 +61,13 @@ module Qeemono
         #   - :client_ids => array of client ids to send to (e.g. [:client_4711, :mark])
         #   - :message => the JSON message (following the qeemono protocol) to be sent
         #
-        # TODO: raise dedicated exceptions!
-        #
         def handle_send(origin_client_id, params)
           channels = params[:channels]
           receiver_client_ids = params[:client_ids]
           if channels.nil? && receiver_client_ids.nil?
-            raise "Neither parameter 'channels' nor 'client_ids' is set! At least one target (channels and/or client_ids) must be specified."
+            raise Qeemono::NoReceiverGivenError.new("Neither parameter 'channels' nor 'client_ids' is set! At least one target (channels and/or client_ids) must be specified.")
           elsif params[:message].nil?
-            raise "Parameter 'message' (a qeemono JSON message) is missing! Must be specified."
+            raise Qeemono::NoMessageGivenError.new("Parameter 'message' (a qeemono JSON message) is missing! Must be specified.")
           else
             send_to_channels_or_clients(origin_client_id, channels, :channels, params[:message])
             send_to_channels_or_clients(origin_client_id, receiver_client_ids, :web_sockets, params[:message])
