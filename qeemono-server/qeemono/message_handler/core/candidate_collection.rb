@@ -15,7 +15,7 @@ module Qeemono
         end
 
         def modules
-          [:__candidate_collection]
+          [:__candidate_collection, :test]
         end
 
         # **************************************************************

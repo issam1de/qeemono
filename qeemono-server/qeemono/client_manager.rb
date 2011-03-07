@@ -109,20 +109,30 @@ module Qeemono
     # Assigns the given client id to the given modules.
     #
     def assign_to_modules(client_id, modules)
+      receiver = @qsif[:client_manager].web_socket(:client_id => client_id)
+
       modules ||= []
       modules = [modules] unless modules.is_a? Array
       if modules.empty?
-        notify(:type => :error, :code => 5170, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+        notify(:type => :error, :code => 3100, :receivers => receiver, :params => {:client_id => client_id})
         return false
       end
 
+      @modules[client_id] ||= []
+
       modules.each do |the_module|
-        if the_module.nil? || the_module.to_s.strip.empty?
-          notify(:type => :error, :code => 5180, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
-          return false
+        params = {:client_id => client_id, :module_name => the_module}
+
+        if !Qeemono::Util::CommonUtils.non_empty_symbol(the_module.to_sym)
+          notify(:type => :error, :code => 3110, :receivers => receiver, :params => params)
         else
-          (@modules[client_id] ||= []) << the_module.to_sym
-          notify(:type => :debug, :code => 3000, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :module_names => modules.inspect})
+          module_symbol = the_module.to_sym
+          if @modules[client_id].include?(module_symbol)
+            notify(:type => :error, :code => 3010, :receivers => receiver, :params => params)
+          else
+            @modules[client_id] << module_symbol
+            notify(:type => :debug, :code => 3000, :receivers => receiver, :params => params)
+          end
         end
       end
 
@@ -133,12 +143,31 @@ module Qeemono
     # Unassigns the given client id from the given modules.
     #
     def unassign_from_modules(client_id, modules)
+      receiver = @qsif[:client_manager].web_socket(:client_id => client_id)
+
       modules ||= []
       modules = [modules] unless modules.is_a? Array
+      if modules.empty?
+        notify(:type => :error, :code => 3120, :receivers => receiver, :params => {:client_id => client_id})
+        return false
+      end
+
+      @modules[client_id] ||= []
 
       modules.each do |the_module|
-        (@modules[client_id] ||= []).delete(the_module.to_sym)
-        notify(:type => :debug, :code => 3010, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :module_names => modules.inspect})
+        params = {:client_id => client_id, :module_name => the_module}
+
+        if !Qeemono::Util::CommonUtils.non_empty_symbol(the_module.to_sym)
+          notify(:type => :error, :code => 3130, :receivers => receiver, :params => params)
+        else
+          module_symbol = the_module.to_sym
+          if !@modules[client_id].include?(module_symbol)
+            notify(:type => :error, :code => 3030, :receivers => receiver, :params => params)
+          else
+            @modules[client_id].delete(module_symbol)
+            notify(:type => :debug, :code => 3020, :receivers => receiver, :params => params)
+          end
+        end
       end
 
       return true

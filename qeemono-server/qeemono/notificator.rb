@@ -41,17 +41,25 @@ module Qeemono
       2020 => "Client '${client_id}' has been unsubscribed from channel '${channel_symbol}' (subscriber id was ${channel_subscriber_id}).",
       2021 => "Client '${client_id}' is not subscribed to channel '${channel_symbol}'.",
 
-      3000 => "Client '${client_id}' has been assigned to modules ${module_names}.",
-      3010 => "Client '${client_id}' has been unassigned from modules ${module_names}.",
+      3000 => "Client '${client_id}' has been assigned to module '${module_name}'.",
+      3010 => "Client '${client_id}' has already been assigned to module '${module_name}'.",
+      3020 => "Client '${client_id}' has been unassigned from module '${module_name}'.",
+      3030 => "Client '${client_id}' is not assigned to module '${module_name}'.",
+
+      3100 => "Client '${client_id}' cannot be assigned to modules! No modules given.",
+      3110 => "Client '${client_id}' cannot be assigned to module! Invalid module name given. Must be a non-empty symbol.",
+      3120 => "Client '${client_id}' cannot be unassigned from modules! No modules given.",
+      3130 => "Client '${client_id}' cannot be unassigned from module! Invalid module name given. Must be a non-empty symbol.",
 
       5000 => "Message handler '${message_handler_name}' has been registered for methods ${handled_methods}.",
       5010 => "Total amount of registered message handlers: ${amount}",
       5020 => "Unregistered ${amount} message handlers. (Details: ${message_handler_names})",
       5030 => "Total amount of registered message handlers: ${amount}",
+
       5100 => "${clazz} is not a message handler! Must subclass '${parent_class}'.",
       5110 => "Message handler ${clazz} has an invalid name! Must be a non-empty symbol!",
       5120 => "Message handler '${message_handler_name}' does not listen to any method! (Details: ${clazz})",
-      5130 => "Message handler '${message_handler_name}' tries to listen to invalid method! Method names must be non-empty symbols. (Details: ${clazz})",
+      5130 => "Message handler '${message_handler_name}' tries to listen to an invalid method! Method names must be non-empty symbols. (Details: ${clazz})",
       5140 => "Message handler '${message_handler_name}' is already registered! (Details: ${clazz})",
       5150 => "A message handler with name '${message_handler_name}' already exists! Names must be unique. (Details: ${clazz})",
       5160 => "Message handler '${message_handler_name}' must have a non-empty version string! (Details: ${clazz})",
