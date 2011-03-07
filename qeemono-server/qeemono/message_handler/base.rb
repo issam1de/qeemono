@@ -46,8 +46,12 @@ module Qeemono
     #
     class Base
 
-      attr_writer :qsif # The qeemono server interface    #FIXME: should not be writable!
+      attr_reader :qsif # The qeemono server interface
 
+
+      def qsif=(qsif)
+        @qsif = qsif if @qsif.nil? # Only if not already set
+      end
 
       def handled_methods
         []
