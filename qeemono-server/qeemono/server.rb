@@ -38,7 +38,6 @@
 # ----------------------------
 #
 #    - jQuery (http://jquery.com)
-#    - jStorage (http://www.jstorage.info)
 #    - Web Socket support - built-in in most modern browsers. If not built-in, you can
 #                           utilize e.g. the HTML5 Web Socket implementation powered
 #                           by Flash (see https://github.com/gimite/web-socket-js).
