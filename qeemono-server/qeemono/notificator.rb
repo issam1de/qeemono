@@ -90,7 +90,7 @@ module Qeemono
     # * :exception (exception) - Defaults to nil; otherwise the backtrace of the passed exception will be logged
     #
     # Example:
-    #   {:type => :error, :code => 100, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature}, :no_log => true}
+    #   {:type => :error, :code => 100, :receivers => @qsif[:channel_manager].get(:channel => :broadcast), :params => {:client_id => client_id, :wss => ws.signature}, :no_log => true}
     #
     def notify(options)
       msg = message(options)
@@ -130,7 +130,7 @@ module Qeemono
     # In this method the message is actually sent to the receiver. The receiver can be
     # a web socket (aka client) or a channel. If sent to a channel the actual sending
     # to the destination clients is done in the Ruby block passed to the EM::Channel#subscribe
-    # method which is called in Qeemono::ChannelSubscriptionManager#subscribe.
+    # method which is called in Qeemono::ChannelManager#subscribe.
     #
     def relay(origin_client_id, receiver, message)
       relay_internal(origin_client_id, receiver, message, false)

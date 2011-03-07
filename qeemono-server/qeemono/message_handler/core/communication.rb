@@ -34,16 +34,18 @@ module Qeemono
 
             if receiver_type == :channels
               receiver_type_name = 'channel'
+              relay_destination = @qsif[:channel_manager].get(:channel => receiver)
             elsif receiver_type == :web_sockets
               receiver_type_name = 'client'
+              relay_destination = @qsif[:web_sockets][receiver]
             else
               raise Qeemono::UnknownReceiverTypeError.new("Unknown receiver type '#{receiver_type.to_s}'!")
             end
 
-            if @qsif[receiver_type][receiver].nil?
+            if relay_destination.nil?
               raise Qeemono::UnknownReceiverError.new("Failed to send to #{receiver_type_name} '#{receiver}'. Unknown.")
             else
-              relay(origin_client_id, @qsif[receiver_type][receiver], message)
+              relay(origin_client_id, relay_destination, message)
             end
           end
         end
@@ -88,7 +90,7 @@ module Qeemono
           channel_symbols = params[:channels]
           options = {}
           options[:bounce] = (params[:bounce] == 'true')
-          @qsif[:channel_subscription_manager].subscribe(origin_client_id, channel_symbols, options)
+          @qsif[:channel_manager].subscribe(origin_client_id, channel_symbols, options)
         end
 
         #
@@ -101,7 +103,7 @@ module Qeemono
         def handle_unsubscribe(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
-          @qsif[:channel_subscription_manager].unsubscribe(origin_client_id, channel_symbols, options)
+          @qsif[:channel_manager].unsubscribe(origin_client_id, channel_symbols, options)
         end
 
         #TODO: add create/destroy_channels handle methods

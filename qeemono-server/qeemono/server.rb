@@ -67,7 +67,7 @@ require './qeemono/lib/util/common_utils'
 require './qeemono/lib/exception/qeemono_standard_error'
 require './qeemono/notificator'
 require './qeemono/message_handler_manager'
-require './qeemono/channel_subscription_manager'
+require './qeemono/channel_manager'
 require './qeemono/message_handler/base'
 require './qeemono/message_handler/core/system'
 require './qeemono/message_handler/core/communication'
@@ -81,7 +81,7 @@ class EM::Channel
   def relay(*args)
     # Broadcast to all subscribers of the channel. Actual sending to
     # the clients is done in the Ruby block passed to the EM::Channel#subscribe
-    # method which is called in Qeemono::ChannelSubscriptionManager#subscribe.
+    # method which is called in Qeemono::ChannelManager#subscribe.
     push(*args)
   end
 end
@@ -131,14 +131,10 @@ module Qeemono
         :port => port,
         :options => options,
         :web_sockets => {}, # key = client id; value = web socket object
-        :channels => {}, # key = channel symbol; value = channel object
-        :channel_subscriptions => {}, # key = client id; value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
         :notificator => nil, # Is set by the Notificator itself
         :message_handler_manager => nil, # Is set by the MessageHandlerManager itself
-        :channel_subscription_manager => nil  # Is set by the ChannelSubscriptionManager itself
+        :channel_manager => nil  # Is set by the ChannelManager itself
       }
-      @qsif[:channels][:broadcast] = EM::Channel.new
-      @qsif[:channels][:broadcastwb] = EM::Channel.new
 
       # TODO: do not expose too much information! Create a public qsif for message handlers!
       @qsif_public = @qsif # The public server interface
@@ -147,7 +143,7 @@ module Qeemono
 
       Qeemono::Notificator.new(@qsif) # Must be the first because all following are going to use the Notificator
       @message_handler_manager = Qeemono::MessageHandlerManager.new(@qsif, @qsif_public)
-      Qeemono::ChannelSubscriptionManager.new(@qsif)
+      Qeemono::ChannelManager.new(@qsif)
     end
 
     def start
@@ -159,9 +155,9 @@ module Qeemono
             begin
               client_id = client_id(ws)
               begin
-                @qsif[:channel_subscription_manager].subscribe(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
-                @qsif[:channel_subscription_manager].subscribe(client_id, :broadcastwb, {:bounce => true}) # Every client is automatically subscribed to the broadcastwb (wb = with bounce) channel
-                notify(:type => :debug, :code => 6000, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
+                @qsif[:channel_manager].subscribe(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
+                @qsif[:channel_manager].subscribe(client_id, :broadcastwb, {:bounce => true}) # Every client is automatically subscribed to the broadcastwb (wb = with bounce) channel
+                notify(:type => :debug, :code => 6000, :receivers => @qsif[:channel_manager].get(:channel => :broadcast), :params => {:client_id => client_id, :wss => ws.signature})
               rescue => e
                 notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)
               end
@@ -190,7 +186,7 @@ module Qeemono
             begin
               begin
                 client_id = forget_client_web_socket_association(ws)
-                notify(:type => :debug, :code => 6020, :receivers => @qsif[:channels][:broadcast], :params => {:client_id => client_id, :wss => ws.signature})
+                notify(:type => :debug, :code => 6020, :receivers => @qsif[:channel_manager].get(:channel => :broadcast), :params => {:client_id => client_id, :wss => ws.signature})
               rescue => e
                 notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)
               end
@@ -290,7 +286,7 @@ module Qeemono
     def forget_client_web_socket_association(web_socket)
       client_id_to_forget, _web_socket = @qsif[:web_sockets].rassoc(web_socket)
       if client_id_to_forget
-        @qsif[:channel_subscription_manager].unsubscribe(client_id_to_forget, :all)
+        @qsif[:channel_manager].unsubscribe(client_id_to_forget, :all)
         @qsif[:web_sockets].delete(client_id_to_forget)
         return client_id_to_forget
       end
