@@ -75,6 +75,31 @@ require './qeemono/message_handler/core/communication'
 require './qeemono/message_handler/core/candidate_collection'
 
 
+class EM::Channel
+  #
+  # For convenience: introduce relay method which delegates to push.
+  #
+  def relay(*args)
+    # Broadcast to all subscribers of the channel. Actual sending to
+    # the clients is done in the Ruby block passed to the EM::Channel#subscribe
+    # method which is called in Qeemono::ChannelSubscriptionManager#subscribe.
+    push(*args)
+  end
+end
+
+module EventMachine
+  module WebSocket
+    class Connection
+      #
+      # For convenience: introduce relay method which delegates to send.
+      #
+      def relay(data)
+        send(data.to_json)
+      end
+    end
+  end
+end
+
 module Qeemono
   #
   # This is the qeemono server. It is the main class of the qeemono server project.
@@ -90,16 +115,6 @@ module Qeemono
 
     attr_reader :message_handler_registration_manager
 
-
-    class EM::Channel
-      #
-      # For convenience: introduce send method which
-      # delegates to push.
-      #
-      def send(*args)
-        push(*args)
-      end
-    end
 
     #
     # Available options are:

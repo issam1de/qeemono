@@ -34,10 +34,10 @@ module Qeemono
           channel = (@qsif[:channels][channel_symbol] ||= EM::Channel.new) # If the channel is not existent yet, create it
 
           # Create a subscriber id for the client...
-          channel_subscriber_id = channel.subscribe do |message|
+          channel_subscriber_id = channel.subscribe do |message_hash|
             # Here the actual relay to the receiver clients happens...
-            if client_id != message[:client_id] || options[:bounce]
-              @qsif[:web_sockets][client_id].send message # DO NOT MODIFY THIS LINE!
+            if client_id != message_hash[:client_id] || options[:bounce]
+              @qsif[:web_sockets][client_id].relay(message_hash) # DO NOT MODIFY THIS LINE!
             end
           end
           # ... and add the channel information (channel symbol and subscriber id) to
