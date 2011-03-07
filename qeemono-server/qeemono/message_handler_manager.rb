@@ -30,10 +30,12 @@ module Qeemono
       modules = conditions[:modules] || []
       modules = [modules] unless modules.is_a? Array
 
+      version = conditions[:version]
+
       if modules.empty?
-        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) }
+        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) && mh.version == version }
       else
-        message_handlers = message_handlers.select { |mh| (mh.modules & modules) != [] || mh.modules.include?(:core) }
+        message_handlers = message_handlers.select { |mh| ( (mh.modules & modules) != [] || mh.modules.include?(:core) ) && mh.version == version }
       end
 
       message_handlers

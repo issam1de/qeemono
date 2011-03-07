@@ -172,7 +172,7 @@ module Qeemono
               client_id = @qsif[:client_manager].bind(ws)
               begin
                 @qsif[:notificator].parse_message(client_id, message) do |message_hash|
-                  #notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
+                  notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
                   dispatch_message(message_hash)
                 end
               rescue => e
@@ -211,9 +211,9 @@ module Qeemono
     def dispatch_message(message_hash)
       client_id = message_hash[:client_id]
       method_name = message_hash[:method].to_sym
-      message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :modules => @qsif[:client_manager].modules(client_id))
+      message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :modules => @qsif[:client_manager].modules(client_id), :version => message_hash[:version])
       if message_handlers.empty?
-        notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
+        notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :client_id => client_id, :version => message_hash[:version], :modules => @qsif[:client_manager].modules(client_id).inspect, :message_hash => message_hash.inspect})
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym
@@ -221,7 +221,6 @@ module Qeemono
             begin
               # Here, the actual dispatch to the message handler happens!
               # The origin client id (the sender) is passed as first argument, the actual message as second...
-              # TODO: load the message handler to dispatch to depending on the given protocol version (message_hash[:version])
               message_handler.send(handle_method_sym, client_id, message_hash[:params])
             rescue Qeemono::QeemonoStandardError => e
               notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
@@ -229,7 +228,7 @@ module Qeemono
               notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else
-            notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
+            notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :version => message_hash[:version], :message_hash => message_hash.inspect})
           end
         end
       end
