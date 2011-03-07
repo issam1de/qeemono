@@ -50,7 +50,7 @@ module Qeemono
           channel_subscriber_id = channel.subscribe do |message_hash|
             # Here the actual relay to the receiver clients happens...
             if client_id != message_hash[:client_id] || options[:bounce]
-              @qsif[:web_sockets][client_id].relay(message_hash) # DO NOT MODIFY THIS LINE!
+              @qsif[:client_manager].get(:client_id => client_id).relay(message_hash) # DO NOT MODIFY THIS LINE!
             end
           end
           # ... and add the channel information (channel symbol and subscriber id) to
@@ -60,7 +60,7 @@ module Qeemono
 
           notify(:type => :debug, :code => 2000, :receivers => @channels[channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
         else
-          notify(:type => :debug, :code => 2001, :receivers => @qsif[:web_sockets][client_id], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
+          notify(:type => :debug, :code => 2001, :receivers => @qsif[:client_manager].get(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
         end
       end
 
@@ -98,7 +98,7 @@ module Qeemono
 
           notify(:type => :debug, :code => 2020, :receivers => @channels[channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => channel_subscriber_id})
         else
-          notify(:type => :debug, :code => 2021, :receivers => @qsif[:web_sockets][client_id], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
+          notify(:type => :debug, :code => 2021, :receivers => @qsif[:client_manager].get(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
         end
       end
 

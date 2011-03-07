@@ -6,10 +6,16 @@ module Qeemono
     #
     # Actual message handling must not be done here.
     #
-    # Every message handler must implement the following action:
-    # * handled_methods
-    # * name
-    # * version (defaults to the current protocol version)
+    # Every message handler must implement the following methods:
+    #   * handled_methods
+    #   * name
+    #   * version (defaults to the current protocol version)
+    #   * modules (used to group related message handlers)
+    #
+    # Each message handler can only be called (is available) if at least one
+    # of its module names is contained in the list of the calling client's
+    # module names. Core message handlers belong to the reserved module :core
+    # and are automatically available for all clients.
     #
     # Additionally, the message handler must implement one handle_<*m*> method
     # per handled qeemono method *m*. qeemono methods function like protocol
@@ -63,6 +69,10 @@ module Qeemono
 
       def version
         Qeemono::Notificator::PROTOCOL_VERSION
+      end
+
+      def modules
+        []
       end
 
       protected

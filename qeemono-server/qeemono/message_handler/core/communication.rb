@@ -19,12 +19,18 @@ module Qeemono
           '__communication_handler'
         end
 
+        def modules
+          :core
+        end
+
         # **************************************************************
         # **************************************************************
         # **************************************************************
 
         #
-        # receiver_type = :channels or :web_sockets
+        # receivers = array of client ids or array of channels (depending on the receiver_type)
+        # receiver_type = :channels or :client_ids
+        # message = The message to send
         #
         def send_to_channels_or_clients(origin_client_id, receivers, receiver_type, message)
           return false if receivers.nil?
@@ -35,9 +41,9 @@ module Qeemono
             if receiver_type == :channels
               receiver_type_name = 'channel'
               relay_destination = @qsif[:channel_manager].get(:channel => receiver)
-            elsif receiver_type == :web_sockets
+            elsif receiver_type == :client_ids
               receiver_type_name = 'client'
-              relay_destination = @qsif[:web_sockets][receiver]
+              relay_destination = @qsif[:client_manager].get(:client_id => receiver)
             else
               raise Qeemono::UnknownReceiverTypeError.new("Unknown receiver type '#{receiver_type.to_s}'!")
             end
@@ -72,7 +78,7 @@ module Qeemono
             raise Qeemono::NoMessageGivenError.new("Parameter 'message' (a qeemono JSON message) is missing! Must be specified.")
           else
             send_to_channels_or_clients(origin_client_id, channels, :channels, params[:message])
-            send_to_channels_or_clients(origin_client_id, receiver_client_ids, :web_sockets, params[:message])
+            send_to_channels_or_clients(origin_client_id, receiver_client_ids, :client_ids, params[:message])
           end
         end
 

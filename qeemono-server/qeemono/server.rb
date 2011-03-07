@@ -69,6 +69,7 @@ require './qeemono/lib/exception/qeemono_standard_error'
 require './qeemono/notificator'
 require './qeemono/message_handler_manager'
 require './qeemono/channel_manager'
+require './qeemono/client_manager'
 require './qeemono/message_handler/base'
 require './qeemono/message_handler/core/system'
 require './qeemono/message_handler/core/communication'
@@ -131,10 +132,10 @@ module Qeemono
         :host => host,
         :port => port,
         :options => options,
-        :web_sockets => {}, # key = client id; value = web socket object
         :notificator => nil, # Is set by the Notificator itself
         :message_handler_manager => nil, # Is set by the MessageHandlerManager itself
-        :channel_manager => nil  # Is set by the ChannelManager itself
+        :channel_manager => nil,  # Is set by the ChannelManager itself
+        :client_manager => nil # Is set by the ClientManager itself
       }
 
       # TODO: do not expose too much information! Create a public qsif for message handlers!
@@ -145,6 +146,7 @@ module Qeemono
       Qeemono::Notificator.new(@qsif) # Must be the first because all following are going to use the Notificator
       @message_handler_manager = Qeemono::MessageHandlerManager.new(@qsif, @qsif_public)
       Qeemono::ChannelManager.new(@qsif)
+      Qeemono::ClientManager.new(@qsif)
     end
 
     def start
@@ -154,7 +156,7 @@ module Qeemono
 
           ws.onopen do
             begin
-              client_id = client_id(ws)
+              client_id = @qsif[:client_manager].bind(ws)
               begin
                 @qsif[:channel_manager].subscribe(client_id, :broadcast) # Every client is automatically subscribed to the broadcast channel
                 @qsif[:channel_manager].subscribe(client_id, :broadcastwb, {:bounce => true}) # Every client is automatically subscribed to the broadcastwb (wb = with bounce) channel
@@ -169,7 +171,7 @@ module Qeemono
 
           ws.onmessage do |message|
             begin
-              client_id = client_id(ws)
+              client_id = @qsif[:client_manager].bind(ws)
               begin
                 @qsif[:notificator].parse_message(client_id, message) do |message_hash|
                   #notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
@@ -186,7 +188,7 @@ module Qeemono
           ws.onclose do
             begin
               begin
-                client_id = forget_client_web_socket_association(ws)
+                client_id = @qsif[:client_manager].unbind(ws)
                 notify(:type => :debug, :code => 6020, :receivers => @qsif[:channel_manager].get(:channel => :broadcast), :params => {:client_id => client_id, :wss => ws.signature})
               rescue => e
                 notify(:type => :fatal, :code => 9001, :receivers => ws, :params => {:client_id => client_id, :err_msg => e.to_s}, :exception => e)
@@ -206,94 +208,6 @@ module Qeemono
     protected
 
     #
-    # This is the first thing what happens when client and
-    # qeemono server connect.
-    #
-    # Extracts the client_id (which must be persistently stored on client-side) from
-    # the given web socket and returns it. Additionally, the given web socket is
-    # associated with its contained client id so that the web socket can be accessed
-    # via the client_id.
-    #
-    # Since web sockets are not session aware and therefore can change over time
-    # (e.g. when the refresh button of the browser was hit) the association has to be
-    # refreshed in order that the client_id always points to the current web socket
-    # for this resp. client.
-    #
-    # If no client_id is contained in the web socket an error is sent back to the
-    # requesting client and false is returned. Further processing of the request is
-    # ignored.
-    #
-    # If another client is trying to steal another client's session (by passing the
-    # same client_id) an error is sent back to the requesting client and false is
-    # returned. Further processing of the request is ignored.
-    #
-    # Returns true if everything went well.
-    #
-    def client_id(web_socket)
-      client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
-      new_client_id = nil
-
-      if client_id.nil? || client_id.to_s.strip == ''
-        new_client_id = anonymous_client_id
-        notify(:type => :warn, :code => 7000, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
-      end
-
-      if session_hijacking_attempt?(web_socket, client_id)
-        new_client_id = anonymous_client_id
-        notify(:type => :error, :code => 7010, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
-      end
-
-      if client_id == Notificator::SERVER_CLIENT_ID
-        new_client_id = anonymous_client_id
-        notify(:type => :error, :code => 7020, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
-      end
-
-      client_id = new_client_id if new_client_id
-
-      # Remember the web socket for this client (establish the client/web socket association)...
-      @qsif[:web_sockets][client_id] = web_socket
-
-      return client_id
-    end
-
-    #
-    # Generates and returns a unique client id.
-    # Used when a client does not submit its client id.
-    #
-    def anonymous_client_id
-      "__anonymous-client-#{(@anonymous_client_id += 1)}".to_sym
-    end
-
-    #
-    # Returns true if there is already a different web socket for the same client_id;
-    # false otherwise.
-    #
-    def session_hijacking_attempt?(web_socket, client_id)
-      older_web_socket = @qsif[:web_sockets][client_id]
-      return true if older_web_socket && older_web_socket.object_id != web_socket.object_id
-      return false
-    end
-
-    #
-    # This is the last thing what happens when client and
-    # qeemono server disconnect (e.g. caused by browser refresh).
-    #
-    # Forgets the association between the given web socket and its contained client.
-    # For more information read the documentation  of
-    # remember_client_web_socket_association
-    #
-    # Returns the client_id of the unlearned association.
-    #
-    def forget_client_web_socket_association(web_socket)
-      client_id_to_forget, _web_socket = @qsif[:web_sockets].rassoc(web_socket)
-      if client_id_to_forget
-        @qsif[:channel_manager].unsubscribe(client_id_to_forget, :all)
-        @qsif[:web_sockets].delete(client_id_to_forget)
-        return client_id_to_forget
-      end
-    end
-
-    #
     # Dispatches the received message to the responsible message handler.
     #
     def dispatch_message(message_hash)
@@ -301,7 +215,7 @@ module Qeemono
       method_name = message_hash[:method].to_sym
       message_handlers = @qsif[:message_handler_manager].get(:method => method_name)
       if message_handlers.empty?
-        notify(:type => :error, :code => 9500, :receivers => @qsif[:web_sockets][client_id], :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
+        notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].get(:client_id => client_id), :params => {:method_name => method_name, :client_id => client_id, :message_hash => message_hash.inspect})
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym
@@ -312,12 +226,12 @@ module Qeemono
               # TODO: load the message handler to dispatch to depending on the given protocol version (message_hash[:version])
               message_handler.send(handle_method_sym, client_id, message_hash[:params])
             rescue Qeemono::QeemonoStandardError => e
-              notify(:type => :error, :code => 9515, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
+              notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].get(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
             rescue => e
-              notify(:type => :fatal, :code => 9510, :receivers => @qsif[:web_sockets][client_id], :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
+              notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].get(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else
-            notify(:type => :fatal, :code => 9520, :receivers => @qsif[:web_sockets][client_id], :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
+            notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].get(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
           end
         end
       end

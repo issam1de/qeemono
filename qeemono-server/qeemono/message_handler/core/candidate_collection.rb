@@ -14,6 +14,10 @@ module Qeemono
           '__candidate_collection_handler'
         end
 
+        def modules
+          :core
+        end
+
         # **************************************************************
         # **************************************************************
         # **************************************************************
@@ -24,7 +28,7 @@ module Qeemono
         def handle_echo(origin_client_id, params)
           relay(
                   origin_client_id,
-                  @qsif[:web_sockets][origin_client_id],
+                  @qsif[:client_manager].get(:client_id => origin_client_id),
                   {:method => :echo, :params => params}
           )
         end

@@ -13,6 +13,18 @@ module Qeemono
       @registered_message_handlers = [] # all registered message handlers
     end
 
+    #
+    # Returns message handlers
+    #
+    # conditions:
+    #   * :method - (symbol) - The method to call on the message handler
+    #   * :any_module - (array of symbols) - Filters the message handlers to
+    #                                        only those which belong to any of
+    #                                        the modules
+    #   * :all_modules - (array of symbols) - Filters the message handlers to
+    #                                         only those which belong to all of
+    #                                         the modules
+    #
     def get(conditions = {})
       @registered_message_handlers_for_method[conditions[:method].to_sym] || []
     end
@@ -21,7 +33,10 @@ module Qeemono
     # Registers the given message handlers (of type Qeemono::MessageHandler::Base)
     # for the given namespace.
     #
-    def register(message_handlers, namespace=nil)
+    # options:
+    #   * :context (symbol) - The context the to be registered message handler will run in
+    #
+    def register(message_handlers, options={})
       message_handler_names = []
       message_handlers = [message_handlers] unless message_handlers.is_a? Array
       message_handlers.each do |message_handler|
@@ -47,7 +62,10 @@ module Qeemono
     # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base)
     # for the given namespace.
     #
-    def unregister(message_handlers, namespace=nil)
+    # options:
+    #   * :context (symbol) - The context the to be unregistered message handler runs in
+    #
+    def unregister(message_handlers, options={})
       message_handler_names = []
       message_handlers = [message_handlers] unless message_handlers.is_a? Array
       message_handlers.each do |message_handler|
@@ -106,6 +124,20 @@ module Qeemono
       if message_handler.version.nil? || message_handler.version.to_s.strip.empty?
         notify(:type => :error, :code => 5160, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
         return false
+      end
+
+      modules = message_handler.modules || []
+      modules = [modules] unless modules.is_a? Array
+      if modules.empty?
+        notify(:type => :error, :code => 5170, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+        return false
+      end
+
+      modules.each do |the_module|
+        if the_module.nil? || the_module.to_s.strip.empty?
+          notify(:type => :error, :code => 5180, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+          return false
+        end
       end
 
       return true
