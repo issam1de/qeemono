@@ -1,4 +1,7 @@
 module Qeemono
+  #
+  # The manager for all EventMachine channels.
+  #
   class ChannelManager
 
     def initialize(server_interface)
