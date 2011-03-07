@@ -125,8 +125,6 @@ module Qeemono
     def initialize(host, port, options)
       init_logger "#{host}:#{port}"
 
-      @anonymous_client_id = 0
-
       @qsif = {   # The internal server interface
         :logger => @logger,
         :host => host,

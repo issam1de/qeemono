@@ -8,6 +8,8 @@ module Qeemono
       @qsif = server_interface
       @qsif[:client_manager] = self
 
+      @anonymous_client_id = 0
+
       @web_sockets = {} # key = client id; value = web socket object
     end
 
