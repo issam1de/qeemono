@@ -37,6 +37,7 @@
           example('<pre>ws.send(\'{"method":"unsubscribe", "params":{"channels":["My Channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"echo", "params":{"a":"123"}}\');</pre>');
           example('<pre>ws.send(\'{"method":"assign_to_modules", "params":{"modules":["__candidate_collection"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}}\');</pre>');
         }
 
         ws.onmessage = function(evt) {
