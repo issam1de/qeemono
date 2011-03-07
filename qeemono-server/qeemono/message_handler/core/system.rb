@@ -7,20 +7,30 @@ module Qeemono
       class System < Qeemono::MessageHandler::Base
 
         def handled_methods
+          [:assign_to_modules, :unassign_from_modules]
         end
 
         def name
-          '__system_handler'
+          :__system_handler
         end
 
         def modules
-          :core
+          [:core]
         end
 
         # **************************************************************
         # **************************************************************
         # **************************************************************
 
+        def handle_assign_to_modules(origin_client_id, params)
+          modules = params[:modules]
+          @qsif[:client_manager].assign_to_modules(origin_client_id, modules)
+        end
+
+        def handle_unassign_from_modules(origin_client_id, params)
+          modules = params[:modules]
+          @qsif[:client_manager].unassign_from_modules(origin_client_id, modules)
+        end
       end
     end
   end

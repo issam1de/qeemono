@@ -35,6 +35,7 @@
           example('<pre>ws.send(\'{"method":"send", "params":{"client_ids":["test-client-1"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}\');</pre>');
           example('<pre>ws.send(\'{"method":"subscribe", "params":{"channels":["My Channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"unsubscribe", "params":{"channels":["My Channel"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"echo", "params":{"a":"123"}}\');</pre>');
         }
 
         ws.onmessage = function(evt) {

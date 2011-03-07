@@ -14,19 +14,29 @@ module Qeemono
     end
 
     #
-    # Returns message handlers
+    # Returns message handlers filtered by the given conditions hash.
     #
     # conditions:
-    #   * :method - (symbol) - The method to call on the message handler
-    #   * :any_module - (array of symbols) - Filters the message handlers to
-    #                                        only those which belong to any of
-    #                                        the modules
-    #   * :all_modules - (array of symbols) - Filters the message handlers to
-    #                                         only those which belong to all of
-    #                                         the modules
+    #   * :method - (symbol) - Filters the message handlers to only those
+    #                          which are registered for the given method
+    #                          name (Must be given!)
+    #   * :modules - (array of symbols) - Filters the message handlers to
+    #                                     only those which belong to *any* of
+    #                                     the given modules or the :core module
     #
-    def get(conditions = {})
-      @registered_message_handlers_for_method[conditions[:method].to_sym] || []
+    def message_handlers(conditions = {})
+      message_handlers = @registered_message_handlers_for_method[conditions[:method].to_sym] || []
+
+      modules = conditions[:modules] || []
+      modules = [modules] unless modules.is_a? Array
+
+      if modules.empty?
+        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) }
+      else
+        message_handlers = message_handlers.select { |mh| (mh.modules & modules) != [] || mh.modules.include?(:core) }
+      end
+
+      message_handlers
     end
 
     #
@@ -92,7 +102,7 @@ module Qeemono
         return false
       end
 
-      if message_handler.name.nil? || message_handler.name.to_s.strip.empty?
+      if !Qeemono::Util::CommonUtils.non_empty_symbol(message_handler.name)
         notify(:type => :error, :code => 5110, :params => {:clazz => message_handler.class})
         return false
       end
@@ -105,7 +115,7 @@ module Qeemono
       end
 
       handled_methods.each do |method|
-        if method.nil? || method.to_s.strip.empty?
+        if !Qeemono::Util::CommonUtils.non_empty_symbol(method)
           notify(:type => :error, :code => 5130, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
           return false
         end
@@ -121,21 +131,24 @@ module Qeemono
         return false
       end
 
-      if message_handler.version.nil? || message_handler.version.to_s.strip.empty?
+      if !Qeemono::Util::CommonUtils.non_empty_string(message_handler.version)
         notify(:type => :error, :code => 5160, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
         return false
       end
 
-      modules = message_handler.modules || []
-      modules = [modules] unless modules.is_a? Array
-      if modules.empty?
+      if message_handler.modules.nil? || !message_handler.modules.is_a?(Array)
         notify(:type => :error, :code => 5170, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
         return false
       end
 
-      modules.each do |the_module|
-        if the_module.nil? || the_module.to_s.strip.empty?
-          notify(:type => :error, :code => 5180, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+      if message_handler.modules.empty?
+        notify(:type => :error, :code => 5180, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+        return false
+      end
+
+      message_handler.modules.each do |module_name|
+        if !Qeemono::Util::CommonUtils.non_empty_symbol(module_name)
+          notify(:type => :error, :code => 5190, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
           return false
         end
       end

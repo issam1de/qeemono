@@ -11,10 +11,28 @@ module Qeemono
       @anonymous_client_id = 0
 
       @web_sockets = {} # key = client id; value = web socket object
+      @modules = {} # key = client id; value = array of module symbols
     end
 
-    def get(conditions = {})
+    #
+    # Returns web socket object (aka client) filtered by the given conditions hash.
+    #
+    # conditions:
+    #   * :client_id - (symbol) - The client id of the client (web socket) to be returned
+    #
+    def web_socket(conditions = {})
       @web_sockets[conditions[:client_id]]
+    end
+
+    #
+    # Returns the modules the given client id is assigned to.
+    #
+    # Only message handlers belonging to the :core module and
+    # belonging to modules also the client belongs to are
+    # available to (callable by) the client.
+    #
+    def modules(client_id)
+      @modules[client_id.to_sym] || []
     end
 
     #
@@ -87,6 +105,45 @@ module Qeemono
       end
     end
 
+    #
+    # Assigns the given client id to the given modules.
+    #
+    def assign_to_modules(client_id, modules)
+      modules ||= []
+      modules = [modules] unless modules.is_a? Array
+      if modules.empty?
+        notify(:type => :error, :code => 5170, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+        return false
+      end
+
+      modules.each do |the_module|
+        if the_module.nil? || the_module.to_s.strip.empty?
+          notify(:type => :error, :code => 5180, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+          return false
+        else
+          (@modules[client_id] ||= []) << the_module.to_sym
+          notify(:type => :debug, :code => 3000, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :module_names => modules.inspect})
+        end
+      end
+
+      return true
+    end
+
+    #
+    # Unassigns the given client id from the given modules.
+    #
+    def unassign_from_modules(client_id, modules)
+      modules ||= []
+      modules = [modules] unless modules.is_a? Array
+
+      modules.each do |the_module|
+        (@modules[client_id] ||= []).delete(the_module.to_sym)
+        notify(:type => :debug, :code => 3010, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :module_names => modules.inspect})
+      end
+
+      return true
+    end
+
     protected
 
     #
@@ -102,7 +159,7 @@ module Qeemono
     # false otherwise.
     #
     def session_hijacking_attempt?(web_socket, client_id)
-      older_web_socket = @qsif[:client_manager].get(:client_id => client_id)
+      older_web_socket = @qsif[:client_manager].web_socket(:client_id => client_id)
       return true if older_web_socket && older_web_socket.object_id != web_socket.object_id
       return false
     end

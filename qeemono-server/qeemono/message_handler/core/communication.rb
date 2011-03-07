@@ -16,11 +16,11 @@ module Qeemono
         end
 
         def name
-          '__communication_handler'
+          :__communication_handler
         end
 
         def modules
-          :core
+          [:core]
         end
 
         # **************************************************************
@@ -40,10 +40,10 @@ module Qeemono
 
             if receiver_type == :channels
               receiver_type_name = 'channel'
-              relay_destination = @qsif[:channel_manager].get(:channel => receiver)
+              relay_destination = @qsif[:channel_manager].channel(:channel => receiver)
             elsif receiver_type == :client_ids
               receiver_type_name = 'client'
-              relay_destination = @qsif[:client_manager].get(:client_id => receiver)
+              relay_destination = @qsif[:client_manager].web_socket(:client_id => receiver)
             else
               raise Qeemono::UnknownReceiverTypeError.new("Unknown receiver type '#{receiver_type.to_s}'!")
             end
