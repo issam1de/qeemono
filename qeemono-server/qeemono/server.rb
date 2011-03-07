@@ -111,8 +111,7 @@ module Qeemono
 
       @anonymous_client_id = 0
 
-      # FIXME: do not expose too much information! Create a public qsif for message handlers!
-      @qsif = {   # The Server interface
+      @qsif = {   # The internal server interface
         :logger => @logger,
         :host => host,
         :port => port,
@@ -129,10 +128,13 @@ module Qeemono
       @qsif[:channels][:broadcast] = EM::Channel.new
       @qsif[:channels][:broadcastwb] = EM::Channel.new
 
+      # TODO: do not expose too much information! Create a public qsif for message handlers!
+      @qsif_public = @qsif # The public server interface
+
       # ************************
 
       Qeemono::Notificator.new(@qsif) # Must be the first because all following are going to use the Notificator
-      @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif)
+      @message_handler_registration_manager = Qeemono::MessageHandlerRegistrationManager.new(@qsif, @qsif_public)
       @channel_subscription_manager = Qeemono::ChannelSubscriptionManager.new(@qsif)
     end
 

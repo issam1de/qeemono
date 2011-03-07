@@ -4,9 +4,10 @@ module Qeemono
   #
   class MessageHandlerRegistrationManager
 
-    def initialize(server_interface)
+    def initialize(server_interface, public_server_interface)
       @qsif = server_interface
       @qsif[:message_handler_registration_manager] = self
+      @qsif_public = public_server_interface
     end
 
     #
@@ -26,7 +27,7 @@ module Qeemono
           end
           message_handler_name = message_handler.name.to_s
           @qsif[:registered_message_handlers] << message_handler
-          message_handler.qsif = @qsif # Set the service interface so that it is available in the message handler
+          message_handler.qsif = @qsif_public # Set the public service interface so that it is available in the message handler
           message_handler_names << message_handler_name
           notify(:type => :debug, :code => 5000, :params => {:message_handler_name => message_handler_name, :handled_methods => handled_methods_as_strings.inspect})
         end
