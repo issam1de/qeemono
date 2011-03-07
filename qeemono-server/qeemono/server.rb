@@ -30,9 +30,10 @@
 # ----------------------------
 #
 #   Needed Ruby Gems:
-#     - em-websocket (https://github.com/igrigorik/em-websocket)
-#     - json
-#     - log4r
+#     - em-websocket (https://rubygems.org/gems/em-websocket)
+#     - json (https://rubygems.org/gems/json
+#     - log4r (https://rubygems.org/gems/log4r)
+#     - rspec (https://rubygems.org/gems/rspec)
 #
 # Requirements on client-side:
 # ----------------------------
@@ -110,7 +111,7 @@ module Qeemono
 
     include Log4r
 
-    APPLICATION_VERSION = '0.1.2'
+    APPLICATION_VERSION = '0.1.3'
 
     attr_reader :message_handler_manager
 
