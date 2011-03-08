@@ -1,10 +1,8 @@
 #
 # This is the qeemono server.
-# A lightwight, Web Socket based server.
+# A lightwight, Web Socket and EventMachine based server.
 #
-#   - by Mark von Zeschau, Qeevee
-#
-# (c) 2011
+# (c) 2011, Mark von Zeschau
 #
 #
 # Core features:
@@ -13,17 +11,15 @@
 #   - lightweight
 #   - modular
 #   - event-driven
-#   - no boilerplate code (like e.g. queueing)
 #   - bi-directional push (Web Socket)
 #   - stateful
 #   - session aware
-#   - resistant against session hijacking attempts
+#   - resistant against session hijacking
 #   - thin JSON protocol
 #   - automatic protocol validation
 #   - no thick framework underlying
-#   - communication can be 1-to-1, 1-to-channel, 1-to-broadcast, and 1-to-server
+#   - communication can be 1-to-1, 1-to-many, 1-to-channel(s), 1-to-broadcast, and 1-to-server
 #       (broadcast and channel communication is possible with 'bounce' flag)
-#   - clean and mean implemented
 #   - message handlers use observer pattern to register
 #
 # Requirements on server-side:
@@ -33,7 +29,7 @@
 #     - em-websocket (https://rubygems.org/gems/em-websocket)
 #     - json (https://rubygems.org/gems/json
 #     - log4r (https://rubygems.org/gems/log4r)
-#     - rspec (https://rubygems.org/gems/rspec)
+#     - rspec (https://rubygems.org/gems/rspec) [for running the tests]
 #
 # Requirements on client-side:
 # ----------------------------
@@ -52,11 +48,11 @@
 # -----------------------
 #
 #   - Web Sockets (http://www.w3.org/TR/websockets/)
-#   - EventMachine
+#   - EventMachine (http://rubyeventmachine.com/)
 #
 #
 #
-# [ qeemono server is tested under Ruby 1.9.x ]
+# [ The qeemono server and all its dependencies are tested under Ruby 1.9.x ]
 #
 
 
@@ -108,6 +104,8 @@ module Qeemono
   # Associated classes can interact with the qeemono server via the
   # qeemono server interface (qsif).
   #
+  # Start the server with the start method.
+  #
   class Server
 
     include Log4r
@@ -120,7 +118,7 @@ module Qeemono
     #
     # Available options are:
     #
-    # * :debug (boolean) - If true the server logs debug information. Defaults to false.
+    #   * :ws_debug (boolean) - If true the server logs web socket debug information. Defaults to false.
     #
     def initialize(host, port, options)
       init_logger "#{host}:#{port}"
@@ -136,8 +134,8 @@ module Qeemono
         :client_manager => nil # Is set by the ClientManager itself
       }
 
-      # TODO: do not expose too much information! Create a public qsif for message handlers!
-      @qsif_public = @qsif # The public server interface
+      @qsif_public = @qsif # Set the public server interface used by all message handlers
+      # ... until now internal == public qsif
 
       # ************************
 
@@ -150,7 +148,7 @@ module Qeemono
     def start
 
       EventMachine.run do
-        EventMachine::WebSocket.start(:host => @qsif[:host], :port => @qsif[:port], :debug => @qsif[:options][:debug]) do |ws|
+        EventMachine::WebSocket.start(:host => @qsif[:host], :port => @qsif[:port], :debug => @qsif[:options][:ws_debug]) do |ws|
 
           ws.onopen do
             begin
