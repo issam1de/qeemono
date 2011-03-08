@@ -128,8 +128,9 @@ module Qeemono
         return false
       end
 
-      if !@registered_message_handlers.select { |mh| mh.name == message_handler.name }.empty?
-        notify(:type => :error, :code => 5150, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+      matching_modules = nil
+      if !@registered_message_handlers.select { |mh| mh.name == message_handler.name && (matching_modules=(mh.modules & message_handler.modules)) != []  }.empty?
+        notify(:type => :error, :code => 5150, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class, :matching_modules => matching_modules.inspect})
         return false
       end
 
