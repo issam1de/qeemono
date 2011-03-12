@@ -1,7 +1,7 @@
-require './qeemono/lib/exception/unknown_receiver_type_error'
-require './qeemono/lib/exception/unknown_receiver_error'
-require './qeemono/lib/exception/no_receiver_given_error'
-require './qeemono/lib/exception/no_message_given_error'
+require_relative '../../lib/exception/unknown_receiver_type_error'
+require_relative '../../lib/exception/unknown_receiver_error'
+require_relative '../../lib/exception/no_receiver_given_error'
+require_relative '../../lib/exception/no_message_given_error'
 
 module Qeemono
   module MessageHandler

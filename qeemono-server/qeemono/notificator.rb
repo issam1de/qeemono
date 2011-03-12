@@ -1,8 +1,8 @@
-require './qeemono/lib/exception/mandatory_key_missing_error'
-require './qeemono/lib/exception/ambiguous_client_id_error'
-require './qeemono/lib/exception/invalid_client_id_error'
-require './qeemono/lib/exception/invalid_key_error'
-require './qeemono/lib/exception/no_message_given_error'
+require_relative 'lib/exception/mandatory_key_missing_error'
+require_relative 'lib/exception/ambiguous_client_id_error'
+require_relative 'lib/exception/invalid_client_id_error'
+require_relative 'lib/exception/invalid_key_error'
+require_relative 'lib/exception/no_message_given_error'
 
 module Qeemono
   #

@@ -26,10 +26,16 @@
 # ----------------------------
 #
 #   Needed Ruby Gems:
-#     - em-websocket (https://rubygems.org/gems/em-websocket)
-#     - json (https://rubygems.org/gems/json
+#     - eventmachine (https://rubygems.org/gems/eventmachine)
+#     - em-websocket (https://rubygems.org/gems/em-websocket) [depends on eventmachine]
+#     - iconv (see also http://rvm.beginrescueend.com/packages/iconv/)
+#     - json (https://rubygems.org/gems/json [depends on iconv]
 #     - log4r (https://rubygems.org/gems/log4r)
-#     - rspec (https://rubygems.org/gems/rspec) [for running the tests]
+#     - [needed for testing] rspec (https://rubygems.org/gems/rspec)
+#     - [needed for testing] em-http-request (https://github.com/igrigorik/em-http-request)
+#
+#   To install them all just execute the following in a terminal window:
+#   gem install em-websocket json log4r rspec em-http-request
 #
 # Requirements on client-side:
 # ----------------------------
@@ -60,16 +66,16 @@ require 'em-websocket'
 require 'json'
 require 'log4r'
 
-require './qeemono/lib/util/common_utils'
-require './qeemono/lib/exception/qeemono_standard_error'
-require './qeemono/notificator'
-require './qeemono/message_handler_manager'
-require './qeemono/channel_manager'
-require './qeemono/client_manager'
-require './qeemono/message_handler/base'
-require './qeemono/message_handler/core/system'
-require './qeemono/message_handler/core/communication'
-require './qeemono/message_handler/core/candidate_collection'
+require_relative 'lib/util/common_utils'
+require_relative 'lib/exception/qeemono_standard_error'
+require_relative 'notificator'
+require_relative 'message_handler_manager'
+require_relative 'channel_manager'
+require_relative 'client_manager'
+require_relative 'message_handler/base'
+require_relative 'message_handler/core/system'
+require_relative 'message_handler/core/communication'
+require_relative 'message_handler/core/candidate_collection'
 
 
 class EM::Channel
@@ -119,9 +125,14 @@ module Qeemono
     # Available options are:
     #
     #   * :ws_debug (boolean) - If true the server logs web socket debug information. Defaults to false.
+    #   * :log_file_fq_path - The full qualified log file path - Defaults to ./log/qeemono_server.log
     #
-    def initialize(host, port, options)
-      init_logger "#{host}:#{port}"
+    def initialize(host, port, options = {})
+      options[:log_file_fq_path] ||= 'log/qeemono_server.log'
+
+      init_logger("#{host}:#{port}", options[:log_file_fq_path])
+
+      # ************************
 
       @qsif = {   # The internal server interface
         :logger => @logger,
@@ -232,9 +243,9 @@ module Qeemono
       end
     end
 
-    def init_logger(logger_name)
+    def init_logger(logger_name, log_file)
       @logger = Logger.new logger_name
-      file_outputter = FileOutputter.new('file_outputter', :filename => 'log/qeemono_server.log')
+      file_outputter = FileOutputter.new('file_outputter', :filename => log_file)
       @logger.outputters << Outputter.stdout
       @logger.outputters << file_outputter
     end

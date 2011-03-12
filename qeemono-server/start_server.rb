@@ -1,6 +1,6 @@
 require './qeemono/server.rb'
 
-server = Qeemono::Server.new('127.0.0.1', '8080', {:ws_debug => false})
+server = Qeemono::Server.new('127.0.0.1', '8080', {:ws_debug => false, :log_file_fq_path => 'log/qeemono_server.log'})
 
 mh_system = Qeemono::MessageHandler::Core::System.new
 mh_communication = Qeemono::MessageHandler::Core::Communication.new
