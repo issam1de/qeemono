@@ -4,4 +4,4 @@
 # If you change this key, all old signed cookies will become invalid!
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
-QeemonoPortal::Application.config.secret_token = 'f8d0452c4f84a065366e5f0a1289681a461e28270b77768b05a737983da436226b94361cdbee577c096660e0f870ff043c786ea2cf7cfd639c64d41728f389a2'
+QeemonoPortal::Application.config.secret_token = '415797ddcc539fa721a0e7e6728e5c0a00c40e2978c7d2675c5ec604e7dcc2f7428d0ec4554cee5f702ca9acf47c9cc7870187b640903902978ee5c7c892b737'
