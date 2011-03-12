@@ -28,11 +28,11 @@
 #   Needed Ruby Gems:
 #     - eventmachine (https://rubygems.org/gems/eventmachine)
 #     - em-websocket (https://rubygems.org/gems/em-websocket) [depends on eventmachine]
-#     - iconv (see also http://rvm.beginrescueend.com/packages/iconv/)
+#     - iconv (https://rubygems.org/gems/iconv - see also http://rvm.beginrescueend.com/packages/iconv/)
 #     - json (https://rubygems.org/gems/json [depends on iconv]
 #     - log4r (https://rubygems.org/gems/log4r)
 #     - [needed for testing] rspec (https://rubygems.org/gems/rspec)
-#     - [needed for testing] em-http-request (https://github.com/igrigorik/em-http-request)
+#     - [needed for testing] em-http-request (https://rubygems.org/gems/em-http-request)
 #
 #   To install them all just execute the following in a terminal window:
 #   gem install em-websocket json log4r rspec em-http-request
