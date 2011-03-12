@@ -40,9 +40,9 @@ module Qeemono
     # qeemono server connect.
     #
     # Extracts the client_id (which must be persistently stored on client-side) from
-    # the given web socket and returns it. Additionally, the given web socket is
-    # associated with its contained client id so that the web socket can be accessed
-    # via the client_id.
+    # the given web socket and returns it as symbol. Additionally, the given web
+    # socket is associated with its contained client id so that the web socket can be
+    # accessed via the client_id.
     #
     # Since web sockets are not session aware and therefore can change over time
     # (e.g. when the refresh button of the browser was hit) the association has to be
@@ -60,12 +60,15 @@ module Qeemono
     # Returns true if everything went well.
     #
     def bind(web_socket)
-      client_id = web_socket.request['Query']['client_id'].to_sym # Extract client_id from web socket
+      client_id = web_socket.request['Query']['client_id'] # Extract client_id from web socket
       new_client_id = nil
 
       if client_id.nil? || client_id.to_s.strip == ''
         new_client_id = anonymous_client_id
         notify(:type => :warn, :code => 7000, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
+      else
+        # Client id must be a symbol...
+        client_id = client_id.to_sym
       end
 
       if session_hijacking_attempt?(web_socket, client_id)
@@ -176,7 +179,7 @@ module Qeemono
     protected
 
     #
-    # Generates and returns a unique client id.
+    # Generates and returns a unique client id (as symbol).
     # Used when a client does not submit its client id.
     #
     def anonymous_client_id
