@@ -11,6 +11,7 @@ module Qeemono
       @anonymous_client_id = 0
 
       @web_sockets = {} # key = client id; value = web socket object
+      @clients = {} # key = web socket object; value = client id (the reverse of @web_sockets for fast access)
       @modules = {} # key = client id; value = array of module symbols
     end
 
@@ -36,35 +37,31 @@ module Qeemono
     end
 
     #
-    # This is the first thing what happens when client and
-    # qeemono server connect.
+    # This is the first thing what happens when a client connects to the qeemono
+    # server.
     #
-    # Extracts the client_id (which must be persistently stored on client-side) from
-    # the given web socket and returns it as symbol. Additionally, the given web
-    # socket is associated with its contained client id so that the web socket can be
-    # accessed via the client_id.
+    # Extracts the client id (which must be persistently stored on client-side) from
+    # the given web socket and returns it as symbol. Additionally, the web socket is
+    # associated with this client id so that the web socket also can be identified
+    # by the client id.
     #
-    # Since web sockets are not session aware and therefore can change over time
-    # (e.g. when the refresh button of the browser was hit) the association has to be
-    # refreshed in order that the client_id always points to the current web socket
-    # for this resp. client.
+    # Since web sockets are not session aware and therefore can change over time (e.g.
+    # when the refresh button of the browser was hit) the web socket/client association
+    # has to be updated/refreshed in order that the client id always points to the
+    # current web socket for the resp. client.
     #
-    # If no client_id is contained in the web socket an error is sent back to the
-    # requesting client and false is returned. Further processing of the request is
-    # ignored.
+    # If no client id is given (contained in the web socket) a unique anonymous client
+    # id is generated and associated instead.
     #
-    # If another client is trying to steal another client's session (by passing the
-    # same client_id) an error is sent back to the requesting client and false is
-    # returned. Further processing of the request is ignored.
-    #
-    # Returns true if everything went well.
+    # If a client tries to steal another client's session (by passing the same client
+    # id) a unique anonymous client id is generated and associated instead.
     #
     def bind(web_socket)
       client_id = web_socket.request['Query']['client_id'] # Extract client_id from web socket
       new_client_id = nil
 
       if client_id.nil? || client_id.to_s.strip == ''
-        new_client_id = anonymous_client_id
+        new_client_id = anonymous_client_id(web_socket)
         notify(:type => :warn, :code => 7000, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
       else
         # Client id must be a symbol...
@@ -72,12 +69,12 @@ module Qeemono
       end
 
       if session_hijacking_attempt?(web_socket, client_id)
-        new_client_id = anonymous_client_id
+        new_client_id = anonymous_client_id(web_socket)
         notify(:type => :error, :code => 7010, :receivers => web_socket, :params => {:client_id => client_id, :new_client_id => new_client_id, :wss => web_socket.signature})
       end
 
       if client_id == Notificator::SERVER_CLIENT_ID
-        new_client_id = anonymous_client_id
+        new_client_id = anonymous_client_id(web_socket)
         notify(:type => :error, :code => 7020, :receivers => web_socket, :params => {:new_client_id => new_client_id, :wss => web_socket.signature})
       end
 
@@ -85,26 +82,30 @@ module Qeemono
 
       # Remember the web socket for this client (establish the client/web socket association)...
       @web_sockets[client_id] = web_socket
+      @clients[web_socket] = client_id
 
       return client_id
     end
 
     #
-    # This is the last thing what happens when client and
-    # qeemono server disconnect (e.g. caused by browser refresh).
+    # This is the last thing what happens when a client disconnects
+    # from the qeemono server (e.g. caused by browser refresh).
     #
-    # Forgets the association between the given web socket and its contained client.
-    # For more information read the documentation  of
-    # remember_client_web_socket_association
+    # Unbinds (forgets) the association between the given web socket
+    # and its client. For more information read the documentation of
+    # method bind.
     #
-    # Returns the client_id of the unlearned association.
+    # Returns the client id of the just unbound association or nil
+    # if there was no client associated to the given web socket.
     #
     def unbind(web_socket)
-      client_id_to_forget, _web_socket = @web_sockets.rassoc(web_socket)
-      if client_id_to_forget
-        @qsif[:channel_manager].unsubscribe(client_id_to_forget, :all)
-        @web_sockets.delete(client_id_to_forget)
-        return client_id_to_forget
+      # OBSOLETE ::: client_id_to_forget, _web_socket = @web_sockets.rassoc(web_socket)
+      client_id_to_unbind = @clients[web_socket]
+      if client_id_to_unbind
+        @qsif[:channel_manager].unsubscribe(client_id_to_unbind, :all)
+        @web_sockets.delete(client_id_to_unbind)
+        @clients.delete(web_socket)
+        return client_id_to_unbind
       end
     end
 
@@ -179,16 +180,22 @@ module Qeemono
     protected
 
     #
-    # Generates and returns a unique client id (as symbol).
-    # Used when a client does not submit its client id.
+    # Generates and returns a unique client id (symbol) for
+    # the given web socket object. This is used if a client
+    # does not submit its client id.
     #
-    def anonymous_client_id
-      "__anonymous-client-#{(@anonymous_client_id += 1)}".to_sym
+    # If an anonymous client id has already been generated
+    # for the given web socket object earlier, it is just
+    # returned; otherwise a new anonymous client id is
+    # generated (and returned).
+    #
+    def anonymous_client_id(web_socket)
+      @clients[web_socket] || "__anonymous-client-#{(@anonymous_client_id += 1)}".to_sym
     end
 
     #
-    # Returns true if there is already a different web socket for the same client_id;
-    # false otherwise.
+    # Returns true if there is already stored another web socket
+    # object for the same client id; false otherwise.
     #
     def session_hijacking_attempt?(web_socket, client_id)
       older_web_socket = @qsif[:client_manager].web_socket(:client_id => client_id)
