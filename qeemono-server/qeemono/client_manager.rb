@@ -11,7 +11,8 @@ module Qeemono
       @anonymous_client_id = 0
 
       @web_sockets = {} # key = client id; value = web socket object
-      @clients = {} # key = web socket object; value = client id (the reverse of @web_sockets for fast access)
+      @clients = {} # key = web socket signature; value = client id (the reverse of @web_sockets for fast access)
+
       @modules = {} # key = client id; value = array of module symbols
     end
 
@@ -82,7 +83,7 @@ module Qeemono
 
       # Remember the web socket for this client (establish the client/web socket association)...
       @web_sockets[client_id] = web_socket
-      @clients[web_socket] = client_id
+      @clients[web_socket.signature] = client_id
 
       return client_id
     end
@@ -100,11 +101,11 @@ module Qeemono
     #
     def unbind(web_socket)
       # OBSOLETE ::: client_id_to_forget, _web_socket = @web_sockets.rassoc(web_socket)
-      client_id_to_unbind = @clients[web_socket]
+      client_id_to_unbind = @clients[web_socket.signature]
       if client_id_to_unbind
         @qsif[:channel_manager].unsubscribe(client_id_to_unbind, :all)
         @web_sockets.delete(client_id_to_unbind)
-        @clients.delete(web_socket)
+        @clients.delete(web_socket.signature)
         return client_id_to_unbind
       end
     end
@@ -190,7 +191,7 @@ module Qeemono
     # generated (and returned).
     #
     def anonymous_client_id(web_socket)
-      @clients[web_socket] || "__anonymous-client-#{(@anonymous_client_id += 1)}".to_sym
+      @clients[web_socket.signature] || "__anonymous-client-#{(@anonymous_client_id += 1)}".to_sym
     end
 
     #
