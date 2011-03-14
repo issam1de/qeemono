@@ -42,7 +42,7 @@ module Qeemono
     # With the Qeemono::Notificator#relay method you send messages to clients
     # and/or channels. See Qeemono::Notificator#relay for more details.
     #
-    # Both notify and relay send qeemono-protocol conform messages.
+    # Both 'notify' and 'relay' send qeemono-protocol conform messages.
     #
     # Returned values from handle methods are ignored.
     #
