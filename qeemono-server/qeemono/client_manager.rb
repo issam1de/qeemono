@@ -2,6 +2,10 @@ module Qeemono
   #
   # The manager for all clients (web sockets).
   #
+  # Clients can be assigned to resp. unassigned
+  # from modules. See assign_to_modules method
+  # for detailed information.
+  #
   class ClientManager
 
     def initialize(server_interface)
@@ -29,14 +33,16 @@ module Qeemono
     #
     # Returns the modules the given client id is assigned to.
     #
-    # Only message handlers belonging to the :core module and
-    # belonging to modules also the client belongs to are
-    # available to (callable by) the client.
+    # Only message handlers belonging to the :core module or
+    # belonging to at least one module also the client belongs
+    # to are available to (callable by) the client.
     #
     def modules(client_id)
       @modules[client_id.to_sym] || []
     end
 
+    #
+    # This method is only used internally.
     #
     # This is the first thing what happens when a client connects to the qeemono
     # server.
@@ -89,6 +95,8 @@ module Qeemono
     end
 
     #
+    # This method is only used internally.
+    #
     # This is the last thing what happens when a client disconnects
     # from the qeemono server (e.g. caused by browser refresh).
     #
@@ -112,6 +120,19 @@ module Qeemono
 
     #
     # Assigns the given client id to the given modules.
+    #
+    # A resp. client can only access/call those message
+    # handlers which belong to at least one module the
+    # client also belongs to.
+    # In other words, as long as a certain client and a
+    # certain message handler share (are assigned to)
+    # the same module(s) (at least one), they are defined
+    # to be 'known' to each other. Thus, the client is
+    # able to access/call the resp. message handler.
+    # Core message handlers (they belong to the :core
+    # module) are always and automatically accessible/
+    # callable by any client (without requiring them to
+    # belong to the :core module).
     #
     def assign_to_modules(client_id, modules)
       receiver = @qsif[:client_manager].web_socket(:client_id => client_id)
@@ -146,6 +167,8 @@ module Qeemono
 
     #
     # Unassigns the given client id from the given modules.
+    #
+    # See assign_to_modules method for detailed information.
     #
     def unassign_from_modules(client_id, modules)
       receiver = @qsif[:client_manager].web_socket(:client_id => client_id)
