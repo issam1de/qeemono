@@ -19,12 +19,16 @@ module Qeemono
     # conditions:
     #   * :method - (symbol) - Filters the message handlers to only those
     #                          which are registered for the given method
-    #                          name (Must be given!)
+    #                          name. This condition is mandatory!
     #   * :modules - (array of symbols) - Filters the message handlers to
     #                                     only those which belong to *any* of
     #                                     the given modules or the :core module
+    #                                     See the Qeemono::ClientManager#assign_to_modules
+    #                                     method for detailed information.
     #
     def message_handlers(conditions = {})
+      raise "Condition :method is missing!" if conditions[:method].nil?
+
       message_handlers = @registered_message_handlers_for_method[conditions[:method].to_sym] || []
 
       modules = conditions[:modules] || []
@@ -42,11 +46,10 @@ module Qeemono
     end
 
     #
-    # Registers the given message handlers (of type Qeemono::MessageHandler::Base)
-    # for the given namespace.
+    # Registers the given message handlers (of type Qeemono::MessageHandler::Base).
     #
     # options:
-    #   * :context (symbol) - The context the to be registered message handler will run in
+    #   * :context (symbol) - The context the to be registered message handler will run in (TODO: not implemented yet)
     #
     def register(message_handlers, options={})
       message_handler_names = []
@@ -71,11 +74,10 @@ module Qeemono
     end
 
     #
-    # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base)
-    # for the given namespace.
+    # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base).
     #
     # options:
-    #   * :context (symbol) - The context the to be unregistered message handler runs in
+    #   * :context (symbol) - The context the to be unregistered message handler runs in (TODO: not implemented yet)
     #
     def unregister(message_handlers, options={})
       message_handler_names = []
