@@ -60,7 +60,7 @@ end
 class BasicTest < Test::Unit::TestCase
 
   def test_no_client_id_given_and_bad_message
-    messages = ["Hallo Mark!!!", "TOK"]
+    messages = ["Hallo Mark!!!", "Bla Bla Bla"]
     expected_responses = [
             {:type => 'warn',  :code => 7000, :param_keys => [:new_client_id, :wss]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
