@@ -12,7 +12,7 @@ module Qeemono
       class Communication < Qeemono::MessageHandler::Base
 
         def handled_methods
-          [:send, :subscribe, :unsubscribe]
+          [:send, :create, :destroy, :subscribe, :unsubscribe]
         end
 
         def name
@@ -91,11 +91,14 @@ module Qeemono
         #   - :bounce => If true the message will also be sent (bounce) to the sender (origin client) provided
         #                that the client is subscribed to the resp. channel. If false (the default) the sender
         #                will not receive the message although being subscribed to the channel.
+        #   - :create_lazy => If true, the channel(s) is/are automatically created if not existent yet. If
+        #                     false (the default), an error notification is sent back and nothing will be done.
         #
         def handle_subscribe(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
           options[:bounce] = (params[:bounce] == 'true')
+          options[:create_lazy] = (params[:create_lazy] == 'true')
           @qsif[:channel_manager].subscribe(origin_client_id, channel_symbols, options)
         end
 
@@ -112,7 +115,31 @@ module Qeemono
           @qsif[:channel_manager].unsubscribe(origin_client_id, channel_symbols, options)
         end
 
-        #TODO: add create/destroy_channels handle methods
+        #
+        # Creates new channels.
+        #
+        # * origin_client_id - The originator (sender) of the message
+        # * params:
+        #   - :channels => array of channels to create (e.g. [:my_new_channel, :foo_channel_1])
+        #
+        def handle_create(origin_client_id, params)
+          channel_symbols = params[:channels]
+          options = {}
+          @qsif[:channel_manager].create(origin_client_id, channel_symbols, options)
+        end
+
+        #
+        # Destroys channels.
+        #
+        # * origin_client_id - The originator (sender) of the message
+        # * params:
+        #   - :channels => array of channels to destroy (e.g. [:my_new_channel, :foo_channel_1])
+        #
+        def handle_destroy(origin_client_id, params)
+          channel_symbols = params[:channels]
+          options = {}
+          @qsif[:channel_manager].destroy(origin_client_id, channel_symbols, options)
+        end
       end
     end
   end

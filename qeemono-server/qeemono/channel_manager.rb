@@ -10,6 +10,7 @@ module Qeemono
 
       @channel_subscriptions = {} # key = client id; value = hash of channel symbols and channel subscriber ids {channel symbol => channel subscriber id}
       @channels = {} # key = channel symbol; value = channel object
+      @channel_subscribers = {} # key = channel symbol; value = array of client ids of channel subscribers
 
       @channels[:broadcast] = EM::Channel.new
       @channels[:broadcastwb] = EM::Channel.new
@@ -17,6 +18,48 @@ module Qeemono
 
     def channel(conditions = {})
       @channels[conditions[:channel]]
+    end
+
+    #
+    # Creates the given channels.
+    #
+    def create(client_id, channel_symbols, options = {})
+      channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
+      channel_symbols.each do |channel_symbol|
+        channel_symbol = channel_symbol.to_sym
+        @channels[channel_symbol] = EM::Channel.new if @channels[channel_symbol].nil?
+      end
+
+      notify(:type => :debug, :code => 2040, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect})
+    end
+
+    #
+    # Destroys the given channels and unsubscribes all
+    # subscribers beforehand.
+    #
+    def destroy(client_id, channel_symbols, options = {})
+      channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
+
+      client_ids_to_be_unsubscribed = []
+      channel_symbols.each do |channel_symbol|
+        channel_symbol = channel_symbol.to_sym
+        client_ids_to_be_unsubscribed << @channel_subscribers[channel_symbol]
+      end
+      client_ids_to_be_unsubscribed.flatten!.uniq!
+
+      client_ids_to_be_unsubscribed.each do |client_id|
+        unsubscribe(client_id, channel_symbols)
+      end
+
+      channel_symbols.each do |channel_symbol|
+        channel_symbol = channel_symbol.to_sym
+        raise "Channels #{channel_symbol} cannot be destroyed!" if channel_symbol == :broadcast || channel_symbol == :broadcastwb
+        @channel_subscriptions[@channel_subscribers[channel_symbol]].delete(channel_symbol)
+        @channels.delete(channel_symbol)
+        @channel_subscribers.delete(channel_symbol)
+      end
+
+      notify(:type => :debug, :code => 2050, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect})
     end
 
     #
@@ -32,6 +75,9 @@ module Qeemono
     #                      channels (channel_symbols) includes the given client (client_id)
     #                      because it is also subscribed to the channels.
     #                      If false (the default), the client is not included (although subscribed)
+    #   * :create_lazy (bool) - If true, the channel(s) is/are automatically created if not existent
+    #                           yet. If false (the default), an error notification is sent back and
+    #                           nothing will be done.
     #
     def subscribe(client_id, channel_symbols, options = {})
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
@@ -44,21 +90,31 @@ module Qeemono
         if subscriptions_hash[channel_symbol].nil?
           # Only if the client has not been subscribed already...
 
-          channel = (@channels[channel_symbol] ||= EM::Channel.new) # If the channel is not existent yet, create it
-
-          # Create a subscriber id for the client...
-          channel_subscriber_id = channel.subscribe do |message_hash|
-            # Here the actual relay to the receiver clients happens...
-            if client_id != message_hash[:client_id] || options[:bounce]
-              @qsif[:client_manager].web_socket(:client_id => client_id).relay(message_hash) # DO NOT MODIFY THIS LINE!
-            end
+          channel = @channels[channel_symbol]
+          if channel.nil? && options[:create_lazy]
+            # If the channel is not existent yet and :create_lazy is true, create the channel...
+            create(client_id, channel_symbol)
+            channel = @channels[channel_symbol]
           end
-          # ... and add the channel information (channel symbol and subscriber id) to
-          # the hash of channel subscriptions for the resp. client...
-          subscriptions_hash[channel_symbol] = channel_subscriber_id
-          channel_subscriber_ids << channel_subscriber_id
 
-          notify(:type => :debug, :code => 2000, :receivers => @channels[channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
+          if !channel.nil?
+            # Create a subscriber id for the client...
+            channel_subscriber_id = channel.subscribe do |message_hash|
+              # Here the actual relay to the receiver clients happens...
+              if client_id != message_hash[:client_id] || options[:bounce]
+                @qsif[:client_manager].web_socket(:client_id => client_id).relay(message_hash) # DO NOT MODIFY THIS LINE!
+              end
+            end
+            # ... and add the channel information (channel symbol and subscriber id) to
+            # the hash of channel subscriptions for the resp. client...
+            subscriptions_hash[channel_symbol] = channel_subscriber_id
+            (@channel_subscribers[channel_symbol] ||= []) << client_id
+            channel_subscriber_ids << channel_subscriber_id
+
+            notify(:type => :debug, :code => 2000, :receivers => @channels[channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
+          else
+            notify(:type => :error, :code => 2030, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
+          end
         else
           notify(:type => :debug, :code => 2001, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
         end
@@ -94,6 +150,7 @@ module Qeemono
           channel_subscriber_id = subscriptions_hash[channel_symbol]
           @channels[channel_symbol].unsubscribe(channel_subscriber_id)
           subscriptions_hash.delete(channel_symbol)
+          @channel_subscribers[channel_symbol].delete(client_id)
           channel_subscriber_ids << channel_subscriber_id
 
           notify(:type => :debug, :code => 2020, :receivers => @channels[channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => channel_subscriber_id})

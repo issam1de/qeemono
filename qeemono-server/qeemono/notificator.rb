@@ -40,6 +40,9 @@ module Qeemono
       2001 => "Client '${client_id}' has already been subscribed to channel '${channel_symbol}' (subscriber id is ${channel_subscriber_id}).",
       2020 => "Client '${client_id}' has been unsubscribed from channel '${channel_symbol}' (subscriber id was ${channel_subscriber_id}).",
       2021 => "Client '${client_id}' is not subscribed to channel '${channel_symbol}'.",
+      2030 => "Client '${client_id}' cannot be subscribed to channel '${channel_symbol}'! Not existing.",
+      2040 => "Client '${client_id}' has created channels ${channel_symbols}.",
+      2050 => "Client '${client_id}' has destroyed channels ${channel_symbols}.",
 
       3000 => "Client '${client_id}' has been assigned to module '${module_name}'.",
       3010 => "Client '${client_id}' has already been assigned to module '${module_name}'.",
