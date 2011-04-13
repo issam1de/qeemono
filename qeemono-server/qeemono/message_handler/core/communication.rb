@@ -11,12 +11,12 @@ module Qeemono
       #
       class Communication < Qeemono::MessageHandler::Base
 
-        def handled_methods
-          [:send, :create, :destroy, :subscribe, :unsubscribe]
-        end
-
         def name
           :__communication_handler
+        end
+
+        def handled_methods
+          [:send, :create, :destroy, :subscribe, :unsubscribe]
         end
 
         def modules

@@ -7,10 +7,10 @@ module Qeemono
     # Actual message handling must not be done here.
     #
     # Every message handler must implement the following methods:
-    #   * handled_methods
-    #   * name
-    #   * version (defaults to the current protocol version)
-    #   * modules (used to group related message handlers)
+    #   * name  [symbol]
+    #   * handled_methods  [symbol(s)]
+    #   * modules (used to group related message handlers)  [symbol(s)]
+    #   * version (defaults to the current protocol version)  [String]
     #
     # Each message handler can only be called (is available) if at least one
     # of its module names is contained in the list of the calling client's
@@ -59,20 +59,20 @@ module Qeemono
         @qsif = qsif if @qsif.nil? # Only if not already set
       end
 
-      def handled_methods
-        []
-      end
-
       def name
         nil
       end
 
-      def version
-        Qeemono::Notificator::PROTOCOL_VERSION
+      def handled_methods
+        []
       end
 
       def modules
         []
+      end
+
+      def version
+        Qeemono::Notificator::PROTOCOL_VERSION
       end
 
       protected

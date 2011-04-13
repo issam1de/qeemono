@@ -136,11 +136,6 @@ module Qeemono
         return false
       end
 
-      if !Qeemono::Util::CommonUtils.non_empty_string(message_handler.version)
-        notify(:type => :error, :code => 5160, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
-        return false
-      end
-
       if message_handler.modules.nil? || !message_handler.modules.is_a?(Array)
         notify(:type => :error, :code => 5170, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
         return false
@@ -156,6 +151,11 @@ module Qeemono
           notify(:type => :error, :code => 5190, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
           return false
         end
+      end
+
+      if !Qeemono::Util::CommonUtils.non_empty_string(message_handler.version)
+        notify(:type => :error, :code => 5160, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+        return false
       end
 
       return true

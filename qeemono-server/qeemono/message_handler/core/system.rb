@@ -6,12 +6,12 @@ module Qeemono
       #
       class System < Qeemono::MessageHandler::Base
 
-        def handled_methods
-          [:assign_to_modules, :unassign_from_modules]
-        end
-
         def name
           :__system_handler
+        end
+
+        def handled_methods
+          [:assign_to_modules, :unassign_from_modules]
         end
 
         def modules

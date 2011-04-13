@@ -6,12 +6,12 @@ module Qeemono
       #
       class CandidateCollection < Qeemono::MessageHandler::Base
 
-        def handled_methods
-          [:echo, :foo]
-        end
-
         def name
           :__candidate_collection_handler
+        end
+
+        def handled_methods
+          [:echo, :foo]
         end
 
         def modules
