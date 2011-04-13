@@ -86,7 +86,7 @@ module Qeemono
       9001 => "Error occured! (Sent from client '${client_id}') Error message: ${err_msg}",
       9002 => "Error occured! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
 
-      9500 => "Did not find any message handler of version '${version}' registered for method '${method_name}' for modules ${modules}! Ignoring. (Sent from client '${client_id}' with message ${message_hash})",
+      9500 => "Did not find any message handler of version '${version}' registered for method '${method_name}'! Requesting client '${client_id}' has modules ${modules}! Ignoring. (Sent from client '${client_id}' with message ${message_hash})",
       9510 => (CODE_9510="Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}"),
       9515 => CODE_9510,
       9520 => "Message handler '${message_handler_name}' of version '${version}' (${message_handler_class}) is registered to handle method '${method_name}' but does not respond to '${handle_method_name}'! (Sent from client '${client_id}' with message ${message_hash})",
