@@ -9,8 +9,8 @@ module Qeemono
       @qsif[:message_handler_manager] = self
       @qsif_public = public_server_interface
 
-      @registered_message_handlers_for_method = {} # key = method; value = message handler
-      @registered_message_handlers = [] # all registered message handlers
+      @registered_message_handlers_for_method = {} # key = method; value = message handler object (of type Qeemono::MessageHandler::Base)
+      @registered_message_handlers = [] # all registered message handlers (of type Qeemono::MessageHandler::Base)
     end
 
     #
