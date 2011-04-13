@@ -61,6 +61,7 @@ module Qeemono
 
       5100 => "${clazz} is not a message handler! Must subclass '${parent_class}'.",
       5110 => "Message handler ${clazz} has an invalid name! Must be a non-empty symbol!",
+      5111 => "Message handler ${clazz} has an invalid description! Must be a non-empty string!",
       5120 => "Message handler '${message_handler_name}' does not listen to any method! (Details: ${clazz})",
       5130 => "Message handler '${message_handler_name}' tries to listen to an invalid method! Method names must be non-empty symbols. (Details: ${clazz})",
       5140 => "Message handler '${message_handler_name}' is already registered! (Details: ${clazz})",

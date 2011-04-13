@@ -7,7 +7,11 @@ module Qeemono
       class System < Qeemono::MessageHandler::Base
 
         def name
-          :__system_handler
+          :'qeemono::sys'
+        end
+
+        def description
+          'system' # TODO: better description
         end
 
         def handled_methods

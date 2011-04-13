@@ -12,7 +12,11 @@ module Qeemono
       class Communication < Qeemono::MessageHandler::Base
 
         def name
-          :__communication_handler
+          :'qeemono::comm'
+        end
+
+        def description
+          'communication' # TODO: better description
         end
 
         def handled_methods

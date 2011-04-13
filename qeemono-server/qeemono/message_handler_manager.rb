@@ -111,6 +111,11 @@ module Qeemono
         return false
       end
 
+      if !Qeemono::Util::CommonUtils.non_empty_string(message_handler.description)
+        notify(:type => :error, :code => 5111, :params => {:clazz => message_handler.class})
+        return false
+      end
+
       handled_methods = message_handler.handled_methods || []
       handled_methods = [handled_methods] unless handled_methods.is_a? Array
       if handled_methods.empty?

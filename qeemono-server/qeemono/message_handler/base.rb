@@ -8,6 +8,7 @@ module Qeemono
     #
     # Every message handler must implement the following methods:
     #   * name  [symbol]
+    #   * description [String]
     #   * handled_methods  [symbol(s)]
     #   * modules (used to group related message handlers)  [symbol(s)]
     #   * version (defaults to the current protocol version)  [String]
@@ -60,6 +61,10 @@ module Qeemono
       end
 
       def name
+        nil
+      end
+
+      def description
         nil
       end
 

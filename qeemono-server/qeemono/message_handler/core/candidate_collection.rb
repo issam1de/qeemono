@@ -7,7 +7,11 @@ module Qeemono
       class CandidateCollection < Qeemono::MessageHandler::Base
 
         def name
-          :__candidate_collection_handler
+          :'qeemono::cand'
+        end
+
+        def description
+          'candidate collection' # TODO: better description
         end
 
         def handled_methods
