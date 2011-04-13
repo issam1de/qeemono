@@ -33,7 +33,8 @@
           debug("Connected...");
           example('Open your Javascript console and try the following examples:');
           example('<pre>ws.send(\'{"method":"send", "params":{"client_ids":["test-client-1"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}\');</pre>');
-          example('<pre>ws.send(\'{"method":"create", "params":{"channels":["My Channel", "test-channel"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"create_channels", "params":{"channels":["My Channel", "test-channel"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"destroy_channels", "params":{"channels":["My Channel", "test-channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"subscribe", "params":{"channels":["My Channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"unsubscribe", "params":{"channels":["My Channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"echo", "params":{"a":"123"}}\');</pre>');

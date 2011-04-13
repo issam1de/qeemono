@@ -41,8 +41,11 @@ module Qeemono
       2020 => "Client '${client_id}' has been unsubscribed from channel '${channel_symbol}' (subscriber id was ${channel_subscriber_id}).",
       2021 => "Client '${client_id}' is not subscribed to channel '${channel_symbol}'.",
       2030 => "Client '${client_id}' cannot be subscribed to channel '${channel_symbol}'! Not existing.",
-      2040 => "Client '${client_id}' has created channels ${channel_symbols}.",
-      2050 => "Client '${client_id}' has destroyed channels ${channel_symbols}.",
+      2040 => "Client '${client_id}' has created channel '${channel_symbol}'.",
+      2050 => "Client '${client_id}' has destroyed channel '${channel_symbol}'.",
+      2051 => "Client '${client_id}' tried to destroy channel '${channel_symbol}'! Not possible since it is a system channel.",
+      2052 => "Client '${client_id}' tried to destroy non-existing channel '${channel_symbol}'! Ignoring.",
+      2053 => "Client '${client_id}' tried to create already existing channel '${channel_symbol}'! Ignoring.",
 
       3000 => "Client '${client_id}' has been assigned to module '${module_name}'.",
       3010 => "Client '${client_id}' has already been assigned to module '${module_name}'.",

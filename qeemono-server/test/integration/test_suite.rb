@@ -37,9 +37,10 @@ class QeeveeTestClient
       end
 
       http.callback do
+        puts "\n\n----------"
         messages.each do |msg|
           http.send(msg)
-          puts "\n\ns: #{msg}"
+          puts "s: #{msg}"
         end
         self.class.stop_event_machine_after_sleep
       end
@@ -102,8 +103,43 @@ class BasicTest < Test::Unit::TestCase
     assert_equal({:method=>"Katze", :params=>"123", :client_id=>"test-client-981121", :version=>"1.0"}, actual_responses[-1])
   end
 
-  def test_subscribe_to_channel_and_send_to_it_without_bounce
+  def test_send_to_channel_without_being_subscribed
+    QeeveeTestClient.new("test-client-94572").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
+
     messages = [
+            %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
+    ]
+    expected_responses = [
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
+            {:type => 'error', :code => 9515, :param_keys => [:handle_method_name, :message_handler_name, :message_handler_class, :client_id, :message_hash, :err_msg]}
+    ]
+    actual_responses = QeeveeTestClient.new("test-client-94572").test_messages(messages)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_subscribe_to_channel_without_having_created_it
+    QeeveeTestClient.new("test-client-94572").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
+
+    messages = [
+            %q({"method":"subscribe", "params":{"channels":["My Channel 4711"]}})
+    ]
+    expected_responses = [
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
+            {:type => 'error', :code => 2030, :param_keys => [:client_id, :channel_symbol]}
+    ]
+    actual_responses = QeeveeTestClient.new("test-client-94572").test_messages(messages)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_subscribe_to_channel_and_send_to_it_without_bounce
+    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
+
+    messages = [
+            %q({"method":"create_channels", "params":{"channels":["My Channel 4711"]}}),
             %q({"method":"subscribe", "params":{"channels":["My Channel 4711"]}}),
             %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
     ]
@@ -111,6 +147,7 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
+            {:type => 'debug', :code => 2040, :param_keys => [:client_id, :channel_symbols]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}
     ]
     actual_responses = QeeveeTestClient.new("test-client-94572").test_messages(messages)
@@ -118,7 +155,10 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_subscribe_to_channel_and_send_to_it_with_bounce
+    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
+
     messages = [
+            %q({"method":"create_channels", "params":{"channels":["My Channel 4711"]}}),
             %q({"method":"subscribe", "params":{"channels":["My Channel 4711"], "bounce":"true"}}),
             %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
     ]
@@ -126,6 +166,7 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
+            {:type => 'debug', :code => 2040, :param_keys => [:client_id, :channel_symbols]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}
     ]
     actual_responses = QeeveeTestClient.new("test-client-8735").test_messages(messages)
@@ -134,7 +175,7 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_echo_without_being_registered_for_it
-    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}}),])
+    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}})])
 
     messages = [
             %q({"method":"echo", "params":{"a":"123"}})
@@ -150,7 +191,7 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_echo_with_being_registered_for_it
-    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}}),])
+    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}})])
 
     messages = [
             %q({"method":"assign_to_modules", "params":{"modules":["__candidate_collection"]}}),

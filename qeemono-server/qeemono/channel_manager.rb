@@ -4,6 +4,9 @@ module Qeemono
   #
   class ChannelManager
 
+    SYSTEM_CHANNELS = [:broadcast, :broadcastwb]
+
+
     def initialize(server_interface)
       @qsif = server_interface
       @qsif[:channel_manager] = self
@@ -12,8 +15,9 @@ module Qeemono
       @channels = {} # key = channel symbol; value = channel object
       @channel_subscribers = {} # key = channel symbol; value = array of client ids of channel subscribers
 
-      @channels[:broadcast] = EM::Channel.new
-      @channels[:broadcastwb] = EM::Channel.new
+      SYSTEM_CHANNELS.each do |system_channel|
+        @channels[system_channel.to_sym] = EM::Channel.new
+      end
     end
 
     def channel(conditions = {})
@@ -23,21 +27,25 @@ module Qeemono
     #
     # Creates the given channels.
     #
-    def create(client_id, channel_symbols, options = {})
+    def create_channels(client_id, channel_symbols, options = {})
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
-        @channels[channel_symbol] = EM::Channel.new if @channels[channel_symbol].nil?
+        if @channels[channel_symbol].nil?
+          @channels[channel_symbol] = EM::Channel.new
+          notify(:type => :debug, :code => 2040, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+        else
+          notify(:type => :error, :code => 2053, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+        end
       end
 
-      notify(:type => :debug, :code => 2040, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect})
     end
 
     #
     # Destroys the given channels and unsubscribes all
     # subscribers beforehand.
     #
-    def destroy(client_id, channel_symbols, options = {})
+    def destroy_channels(client_id, channel_symbols, options = {})
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
 
       client_ids_to_be_unsubscribed = []
@@ -45,7 +53,7 @@ module Qeemono
         channel_symbol = channel_symbol.to_sym
         client_ids_to_be_unsubscribed << @channel_subscribers[channel_symbol]
       end
-      client_ids_to_be_unsubscribed.flatten!.uniq!
+      client_ids_to_be_unsubscribed = client_ids_to_be_unsubscribed.flatten.uniq
 
       client_ids_to_be_unsubscribed.each do |client_id|
         unsubscribe(client_id, channel_symbols)
@@ -53,13 +61,22 @@ module Qeemono
 
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
-        raise "Channels #{channel_symbol} cannot be destroyed!" if channel_symbol == :broadcast || channel_symbol == :broadcastwb
-        @channel_subscriptions[@channel_subscribers[channel_symbol]].delete(channel_symbol)
-        @channels.delete(channel_symbol)
-        @channel_subscribers.delete(channel_symbol)
+        if SYSTEM_CHANNELS.include?(channel_symbol)
+          notify(:type => :error, :code => 2051, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+          next
+        end
+        if @channels[channel_symbol]
+          subscriber = @channel_subscribers[channel_symbol]
+          if subscriber
+            @channel_subscriptions[subscriber].delete(channel_symbol) if @channel_subscriptions[subscriber]
+            @channel_subscribers.delete(channel_symbol)
+          end
+          @channels.delete(channel_symbol)
+          notify(:type => :debug, :code => 2050, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+        else
+          notify(:type => :error, :code => 2052, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+        end
       end
-
-      notify(:type => :debug, :code => 2050, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbols => channel_symbols.inspect})
     end
 
     #

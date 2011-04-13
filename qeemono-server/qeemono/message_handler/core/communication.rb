@@ -20,7 +20,7 @@ module Qeemono
         end
 
         def handled_methods
-          [:send, :create, :destroy, :subscribe, :unsubscribe]
+          [:send, :create_channels, :destroy_channels, :subscribe, :unsubscribe]
         end
 
         def modules
@@ -30,35 +30,6 @@ module Qeemono
         # **************************************************************
         # **************************************************************
         # **************************************************************
-
-        #
-        # receivers = array of client ids or array of channels (depending on the receiver_type)
-        # receiver_type = :channels or :client_ids
-        # message = The message to send
-        #
-        def send_to_channels_or_clients(origin_client_id, receivers, receiver_type, message)
-          return false if receivers.nil?
-          receivers = [receivers] unless receivers.is_a? Array
-          receivers.each do |receiver|
-            receiver = receiver.to_sym
-
-            if receiver_type == :channels
-              receiver_type_name = 'channel'
-              relay_destination = @qsif[:channel_manager].channel(:channel => receiver)
-            elsif receiver_type == :client_ids
-              receiver_type_name = 'client'
-              relay_destination = @qsif[:client_manager].web_socket(:client_id => receiver)
-            else
-              raise Qeemono::UnknownReceiverTypeError.new("Unknown receiver type '#{receiver_type.to_s}'!")
-            end
-
-            if relay_destination.nil?
-              raise Qeemono::UnknownReceiverError.new("Failed to send to #{receiver_type_name} '#{receiver}'. Unknown.")
-            else
-              relay(origin_client_id, relay_destination, message)
-            end
-          end
-        end
 
         #
         # Sends a JSON message to one or more clients and/or one or more channels.
@@ -84,6 +55,32 @@ module Qeemono
             send_to_channels_or_clients(origin_client_id, channels, :channels, params[:message])
             send_to_channels_or_clients(origin_client_id, receiver_client_ids, :client_ids, params[:message])
           end
+        end
+
+        #
+        # Creates new channels.
+        #
+        # * origin_client_id - The originator (sender) of the message
+        # * params:
+        #   - :channels => array of channels to create (e.g. [:my_new_channel, :foo_channel_1])
+        #
+        def handle_create_channels(origin_client_id, params)
+          channel_symbols = params[:channels]
+          options = {}
+          @qsif[:channel_manager].create_channels(origin_client_id, channel_symbols, options)
+        end
+
+        #
+        # Destroys channels.
+        #
+        # * origin_client_id - The originator (sender) of the message
+        # * params:
+        #   - :channels => array of channels to destroy (e.g. [:my_new_channel, :foo_channel_1])
+        #
+        def handle_destroy_channels(origin_client_id, params)
+          channel_symbols = params[:channels]
+          options = {}
+          @qsif[:channel_manager].destroy_channels(origin_client_id, channel_symbols, options)
         end
 
         #
@@ -119,32 +116,38 @@ module Qeemono
           @qsif[:channel_manager].unsubscribe(origin_client_id, channel_symbols, options)
         end
 
-        #
-        # Creates new channels.
-        #
-        # * origin_client_id - The originator (sender) of the message
-        # * params:
-        #   - :channels => array of channels to create (e.g. [:my_new_channel, :foo_channel_1])
-        #
-        def handle_create(origin_client_id, params)
-          channel_symbols = params[:channels]
-          options = {}
-          @qsif[:channel_manager].create(origin_client_id, channel_symbols, options)
-        end
+        private
 
         #
-        # Destroys channels.
+        # receivers = array of client ids or array of channels (depending on the receiver_type)
+        # receiver_type = :channels or :client_ids
+        # message = The message to send
         #
-        # * origin_client_id - The originator (sender) of the message
-        # * params:
-        #   - :channels => array of channels to destroy (e.g. [:my_new_channel, :foo_channel_1])
-        #
-        def handle_destroy(origin_client_id, params)
-          channel_symbols = params[:channels]
-          options = {}
-          @qsif[:channel_manager].destroy(origin_client_id, channel_symbols, options)
+        def send_to_channels_or_clients(origin_client_id, receivers, receiver_type, message)
+          return false if receivers.nil?
+          receivers = [receivers] unless receivers.is_a? Array
+          receivers.each do |receiver|
+            receiver = receiver.to_sym
+
+            if receiver_type == :channels
+              receiver_type_name = 'channel'
+              relay_destination = @qsif[:channel_manager].channel(:channel => receiver)
+            elsif receiver_type == :client_ids
+              receiver_type_name = 'client'
+              relay_destination = @qsif[:client_manager].web_socket(:client_id => receiver)
+            else
+              raise Qeemono::UnknownReceiverTypeError.new("Unknown receiver type '#{receiver_type.to_s}'!")
+            end
+
+            if relay_destination.nil?
+              raise Qeemono::UnknownReceiverError.new("Failed to send to #{receiver_type_name} '#{receiver}'. Unknown.")
+            else
+              relay(origin_client_id, relay_destination, message)
+            end
+          end
         end
-      end
-    end
-  end
-end
+
+      end # end - class
+    end # end - module
+  end # end - module
+end # end - module
