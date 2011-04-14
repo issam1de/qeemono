@@ -19,16 +19,16 @@ module Qeemono
     # conditions:
     #   * :method - (symbol) - Filters the message handlers to only those
     #                          which are registered for the given method
-    #                          name. This condition is mandatory!
+    #                          name. (This condition is mandatory)
     #   * :name - (symbol) - Filters the message handlers to only those which
-    #                        match the given message handler name
+    #                        match the given message handler name. (Optional)
     #   * :modules - (array of symbols) - Filters the message handlers to
     #                                     only those which belong to *any* of
     #                                     the given modules or the :core module
     #                                     See the Qeemono::ClientManager#assign_to_modules
-    #                                     method for detailed information.
+    #                                     method for detailed information. (Optional)
     #   * version - (string) - Filters the message handlers to only those which
-    #                          match the given protocol version
+    #                          match the given protocol version. (Optional)
     #
     def message_handlers(conditions = {})
       method = conditions[:method]
@@ -46,12 +46,10 @@ module Qeemono
         message_handlers = message_handlers.select { |mh| mh.name == name }
       end
 
-      #TODO: make version optional!
-
       if modules.empty?
-        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) && mh.version == version }
+        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) && (mh.version == version || version.nil?) }
       else
-        message_handlers = message_handlers.select { |mh| ( (mh.modules & modules) != [] || mh.modules.include?(:core) ) && mh.version == version }
+        message_handlers = message_handlers.select { |mh| ( (mh.modules & modules) != [] || mh.modules.include?(:core) ) && (mh.version == version || version.nil?) }
       end
 
       message_handlers
