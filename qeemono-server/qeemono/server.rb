@@ -216,6 +216,20 @@ module Qeemono
 
     #
     # Dispatches the received message to the responsible message handler.
+    # Either no message handler is given at all then the message is sent
+    # to all matching message handlers responsible for the given method.
+    # Otherwise, if a message handler is given prefixing the method the
+    # respective message handler is addressed.
+    #
+    # Example:
+    #
+    # {"method":"qeemono::cand.echo", "params":{"a":"123"}}
+    #
+    #      sends methods 'echo' to message handler 'qeemono::cand' while
+    #
+    # {"method":"echo", "params":{"a":"123"}}
+    #
+    #      sends methods 'echo' to *all* suitable message handlers.
     #
     def dispatch_message(message_hash)
       client_id = message_hash[:client_id]
