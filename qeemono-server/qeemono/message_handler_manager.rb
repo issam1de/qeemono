@@ -58,9 +58,6 @@ module Qeemono
     #
     # Registers the given message handlers (of type Qeemono::MessageHandler::Base).
     #
-    # options:
-    #   * :context (symbol) - The context the to be registered message handler will run in (TODO: not implemented yet)
-    #
     def register(message_handlers, options={})
       message_handler_names = []
       message_handlers = [message_handlers] unless message_handlers.is_a? Array
@@ -85,9 +82,6 @@ module Qeemono
 
     #
     # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base).
-    #
-    # options:
-    #   * :context (symbol) - The context the to be unregistered message handler runs in (TODO: not implemented yet)
     #
     def unregister(message_handlers, options={})
       message_handler_names = []
