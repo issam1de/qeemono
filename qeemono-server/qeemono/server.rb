@@ -75,6 +75,7 @@ require_relative 'message_handler/base'
 require_relative 'message_handler/core/system'
 require_relative 'message_handler/core/communication'
 require_relative 'message_handler/core/candidate_collection'
+require_relative 'message_handler/core/candidate_collection2'
 
 
 class EM::Channel
@@ -218,10 +219,12 @@ module Qeemono
     #
     def dispatch_message(message_hash)
       client_id = message_hash[:client_id]
-      method_name = message_hash[:method].to_sym
-      message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :modules => @qsif[:client_manager].modules(client_id), :version => message_hash[:version])
+      fq_method_name = message_hash[:method].to_sym
+      message_handler_name, method_name = extract_message_handler_name_from_method_name(fq_method_name)
+      message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :name => message_handler_name, :modules => @qsif[:client_manager].modules(client_id), :version => message_hash[:version])
       if message_handlers.empty?
-        notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :client_id => client_id, :version => message_hash[:version], :modules => @qsif[:client_manager].modules(client_id).inspect, :message_hash => message_hash.inspect})
+        message_handler_names_for_notification = message_handler_name ? [message_handler_name] : 'all'
+        notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :message_handler_names => message_handler_names_for_notification, :client_id => client_id, :version => message_hash[:version], :modules => @qsif[:client_manager].modules(client_id).inspect, :message_hash => message_hash.inspect})
       else
         message_handlers.each do |message_handler|
           handle_method_sym = "handle_#{method_name}".to_sym
@@ -247,6 +250,29 @@ module Qeemono
       file_outputter = FileOutputter.new('file_outputter', :filename => log_file)
       @logger.outputters << Outputter.stdout
       @logger.outputters << file_outputter
+    end
+
+    #
+    # Extracts the message handler name from the given (full qualified) method name.
+    #
+    # Each method name can be prefixed with a message handler name. If so the
+    # message handler name must be separated with a dot ('.') from the method name.
+    #
+    # Example: my_message_handler.my_method_name
+    #
+    # Returns an two-element array containing the message handler name (or nil
+    # if not given) as first element and the method name as second element.
+    #
+    def extract_message_handler_name_from_method_name(fq_method_name)
+      fq_method_name = fq_method_name.to_s
+      if index=fq_method_name.index('.')
+        message_handler_name = fq_method_name[0...index].strip.to_sym
+        method_name = fq_method_name[index+1..-1]
+      else
+        message_handler_name = nil
+        method_name = fq_method_name
+      end
+      [message_handler_name, method_name.strip.to_sym]
     end
 
     private
