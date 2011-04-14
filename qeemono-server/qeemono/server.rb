@@ -5,7 +5,6 @@
 # (c) 2011, Mark von Zeschau
 #
 #
-#
 # Core features:
 # --------------
 #
