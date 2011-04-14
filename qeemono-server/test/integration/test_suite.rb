@@ -184,7 +184,7 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
-            {:type => 'error', :code => 9500, :param_keys => [:method_name, :client_id, :version, :modules, :message_hash]}
+            {:type => 'error', :code => 9500, :param_keys => [:method_name, :message_handler_names, :client_id, :version, :modules, :message_hash]}
     ]
     actual_responses = QeeveeTestClient.new("test-client-873345").test_messages(messages)
     assert_server_notifications(expected_responses, actual_responses)
@@ -204,8 +204,27 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}
     ]
     actual_responses = QeeveeTestClient.new("test-client-8733245").test_messages(messages)
-    assert_server_notifications(expected_responses, actual_responses[0...-1])
+    assert_server_notifications(expected_responses, actual_responses[0...-2])
     assert_equal({:method=>"echo", :params=>{:a => "123"}, :client_id=>"test-client-8733245", :version=>"1.0"}, actual_responses[-1])
+    assert_equal({:method=>"echo", :params=>{:a => "123"}, :client_id=>"test-client-8733245", :version=>"1.0"}, actual_responses[-1])
+  end
+
+  def test_echo_with_being_registered_for_it_and_addressing_concrete_message_handler
+    QeeveeTestClient.new("test-client-87332451").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}})])
+
+    messages = [
+            %q({"method":"assign_to_modules", "params":{"modules":["__candidate_collection"]}}),
+            %q({"method":"qeemono::cand.echo", "params":{"a":"123"}})
+    ]
+    expected_responses = [
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
+            {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}
+    ]
+    actual_responses = QeeveeTestClient.new("test-client-87332451").test_messages(messages)
+    assert_server_notifications(expected_responses, actual_responses[0...-1])
+    assert_equal({:method=>"echo", :params=>{:a => "123"}, :client_id=>"test-client-87332451", :version=>"1.0"}, actual_responses[-1])
   end
 
   private
