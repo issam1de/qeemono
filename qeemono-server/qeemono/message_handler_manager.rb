@@ -20,21 +20,33 @@ module Qeemono
     #   * :method - (symbol) - Filters the message handlers to only those
     #                          which are registered for the given method
     #                          name. This condition is mandatory!
+    #   * :name - (symbol) - Filters the message handlers to only those which
+    #                        match the given message handler name
     #   * :modules - (array of symbols) - Filters the message handlers to
     #                                     only those which belong to *any* of
     #                                     the given modules or the :core module
     #                                     See the Qeemono::ClientManager#assign_to_modules
     #                                     method for detailed information.
+    #   * version - (string) - Filters the message handlers to only those which
+    #                          match the given protocol version
     #
     def message_handlers(conditions = {})
-      raise "Condition :method is missing!" if conditions[:method].nil?
+      method = conditions[:method]
 
-      message_handlers = @registered_message_handlers_for_method[conditions[:method].to_sym] || []
+      raise "Condition :method is missing!" if method.nil?
 
+      message_handlers = @registered_message_handlers_for_method[method.to_sym] || []
+
+      name = conditions[:name]
       modules = conditions[:modules] || []
       modules = [modules] unless modules.is_a? Array
-
       version = conditions[:version]
+
+      if name
+        message_handlers = message_handlers.select { |mh| mh.name == name }
+      end
+
+      #TODO: make version optional!
 
       if modules.empty?
         message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) && mh.version == version }
