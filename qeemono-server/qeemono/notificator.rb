@@ -174,7 +174,7 @@ module Qeemono
     protected
 
     #
-    # See relay
+    # See relay method
     #
     def relay_internal(origin_client_id, receiver, message, send_from_server=false)
       parse_message_internal(origin_client_id, message, send_from_server) do |message_hash|
@@ -183,7 +183,7 @@ module Qeemono
     end
 
     #
-    # See parse_message
+    # See parse_message method
     #
     def parse_message_internal(origin_client_id, message, send_from_server=false)
       if message.is_a? Hash
