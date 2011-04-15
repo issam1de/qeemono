@@ -7,7 +7,7 @@ module Qeemono
   module MessageHandler
     module Core
       #
-      # All message handlers dealing with core communication.
+      # This message handler deals with core communication.
       #
       class Communication < Qeemono::MessageHandler::Base
 

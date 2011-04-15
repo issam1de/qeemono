@@ -2,7 +2,7 @@ module Qeemono
   module MessageHandler
     module Core
       #
-      # All candidates message handlers.
+      # This message handler defines candidate and test methods.
       #
       class CandidateCollection < Qeemono::MessageHandler::Base
 
