@@ -54,7 +54,9 @@ module Qeemono
     class Base
 
       attr_reader :qsif # The qeemono server interface
-      VENDOR_MESSAGE_HANDLER_PREFIX = "Qeemono::MessageHandler::Vendor::"
+
+      VENDOR_MESSAGE_HANDLER_MODULE_PREFIX = "Qeemono::MessageHandler::Vendor::"
+      VENDOR_MESSAGE_HANDLER_PATH_PREFIX = "qeemono/message_handler/vendor/"
 
 
       def qsif=(qsif)
