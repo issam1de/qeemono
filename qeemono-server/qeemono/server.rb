@@ -66,6 +66,7 @@ require 'json'
 require 'log4r'
 
 require_relative 'lib/util/common_utils'
+require_relative 'lib/util/string_utils'
 require_relative 'lib/extensions/string_extensions'
 require_relative 'lib/exception/qeemono_standard_error'
 require_relative 'notificator'
