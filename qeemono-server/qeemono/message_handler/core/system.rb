@@ -93,7 +93,7 @@ module Qeemono
         #               unregistered
         #
         def handle_unregister_message_handler(origin_client_id, params)
-          raise "NOT IMPLEMENTED YET!"
+          #raise "NOT IMPLEMENTED YET!"
         end
 
         private
