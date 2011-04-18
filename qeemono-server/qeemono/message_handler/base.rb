@@ -18,6 +18,10 @@ module Qeemono
     # module names. Core message handlers belong to the reserved module :core
     # and are always and automatically available for all clients.
     #
+    # The fq_name method returns the unique full-qualified name (a symbol)
+    # of the message handler object. It is assembled from the first module
+    # name in the modules array and the message handler name.
+    #
     # Additionally, the message handler must implement exactly one handle_<*m*>
     # method per handled qeemono method *m*. qeemono methods function like protocol
     # actions. Each handle method looks like this:
@@ -81,6 +85,14 @@ module Qeemono
 
       def version
         Qeemono::Notificator::PROTOCOL_VERSION
+      end
+
+      # Do not override this method!
+      def fq_name
+        # It's ok to just take the first module since all
+        # module/name pairs are always unique and there is
+        # always at least one module in the array...
+        "#{modules.first}##{name}".to_sym
       end
 
       protected
