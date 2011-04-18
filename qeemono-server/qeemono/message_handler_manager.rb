@@ -11,6 +11,7 @@ module Qeemono
 
       @registered_message_handlers_for_method = {} # key = method; value = array of message handler objects (of type Qeemono::MessageHandler::Base)
       @registered_message_handlers = [] # all registered message handlers (of type Qeemono::MessageHandler::Base)
+      @registered_message_handlers_by_fq_name = {} # key = full-qualified message handler name (fq_name) as symbol; value = message handler object (of type Qeemono::MessageHandler::Base)
     end
 
     #
@@ -56,8 +57,9 @@ module Qeemono
     end
 
     #
-    # Registers the given message handlers (of type Qeemono::MessageHandler::Base)
-    # on behalf of client_id (can be nil if performed directly on server-side).
+    # Registers the given message handler objects (of type Qeemono::MessageHandler::Base)
+    # on behalf of the client given via client_id (can be nil if performed directly on
+    # server-side).
     #
     def register(client_id, message_handlers, options={})
       receiver = receiver(client_id)
@@ -74,30 +76,43 @@ module Qeemono
           end
           message_handler_name = message_handler.name.to_s
           @registered_message_handlers << message_handler
+          @registered_message_handlers_by_fq_name[message_handler.fq_name] = message_handler
           message_handler.qsif = @qsif_public # Set the public service interface so that it is available in the message handler
           message_handler_names << message_handler_name
-          notify(:type => :debug, :code => 5000, :receivers => receiver, :params => {:message_handler_name => message_handler_name, :handled_methods => handled_methods_as_strings.inspect})
+          notify(:type => :debug, :code => 5000, :receivers => receiver, :params => {:message_handler_name => message_handler_name, :handled_methods => handled_methods_as_strings.inspect, :modules => message_handler.modules.inspect})
         end
       end
       notify(:type => :debug, :code => 5010, :receivers => receiver, :params => {:amount => @registered_message_handlers.size})
     end
 
     #
-    # Unregisters the given message handlers (of type Qeemono::MessageHandler::Base)
-    # on behalf of client_id (can be nil if performed directly on server-side).
+    # Unregisters the given message handlers (either objects of type Qeemono::MessageHandler::Base
+    # or full-qualified message handler names according to the fq_name method) on behalf of the
+    # client given via client_id (can be nil if performed directly on server-side).
     #
     def unregister(client_id, message_handlers, options={})
       receiver = receiver(client_id)
       message_handler_names = []
       message_handlers = [message_handlers] unless message_handlers.is_a? Array
       message_handlers.each do |message_handler|
-        handled_methods = message_handler.handled_methods || []
-        handled_methods = [handled_methods] unless handled_methods.is_a? Array
-        handled_methods.each do |method|
-          @registered_message_handlers_for_method[method.to_sym].delete(message_handler) if @registered_message_handlers_for_method[method.to_sym]
-          @registered_message_handlers.delete(message_handler)
+        if !message_handler.is_a?(Qeemono::MessageHandler::Base)
+          # If it's not a message handler object it's probably
+          # a full-qualified message handler name (see fq_name)...
+          message_handler = @registered_message_handlers_by_fq_name[message_handler.to_sym]
         end
-        message_handler_names << message_handler.name.to_s
+        if !message_handler.is_a?(Qeemono::MessageHandler::Base)
+          # Still not a message handler object...? => Error
+          notify(:type => :error, :code => 5040, :receivers => receiver, :params => {:message_handler => message_handler.inspect})
+        else
+          handled_methods = message_handler.handled_methods || []
+          handled_methods = [handled_methods] unless handled_methods.is_a? Array
+          handled_methods.each do |method|
+            @registered_message_handlers_for_method[method.to_sym].delete(message_handler) if @registered_message_handlers_for_method[method.to_sym]
+            @registered_message_handlers.delete(message_handler)
+            @registered_message_handlers_by_fq_name.delete(message_handler.fq_name)
+          end
+          message_handler_names << message_handler.name.to_s
+        end
       end
       notify(:type => :debug, :code => 5020, :receivers => receiver, :params => {:amount => message_handler_names.size, :message_handler_names => message_handler_names.inspect})
       notify(:type => :debug, :code => 5030, :receivers => receiver, :params => {:amount => @registered_message_handlers.size})

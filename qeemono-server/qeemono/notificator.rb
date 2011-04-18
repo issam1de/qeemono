@@ -57,10 +57,11 @@ module Qeemono
       3120 => "Client '${client_id}' cannot be unassigned from modules! No modules given.",
       3130 => "Client '${client_id}' cannot be unassigned from module! Invalid module name given. Must be a non-empty symbol.",
 
-      5000 => "Message handler '${message_handler_name}' has been registered for methods ${handled_methods}.",
-      5010 => "Total amount of registered message handlers: ${amount}",
+      5000 => "Message handler '${message_handler_name}' has been registered for methods ${handled_methods} and modules ${modules}.",
+      5010 => "Total amount of registered message handlers: ${amount}", # For the register method
       5020 => "Unregistered ${amount} message handlers. (Details: ${message_handler_names})",
-      5030 => "Total amount of registered message handlers: ${amount}",
+      5030 => "Total amount of registered message handlers: ${amount}", # For the unregister method
+      5040 => "Not a message handler object '${message_handler}'! Ignoring.",
 
       5100 => "${clazz} is not a message handler! Must subclass '${parent_class}'.",
       5110 => "Message handler ${clazz} has an invalid name! Must be a non-empty symbol!",

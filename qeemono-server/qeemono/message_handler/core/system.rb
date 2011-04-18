@@ -89,11 +89,16 @@ module Qeemono
         #
         # * origin_client_id - The originator (sender) of the message
         # * params:
-        #   - :names => array of the message handler names to be
-        #               unregistered
+        #   - :fq_names => array of full-qualified message handler
+        #                  names (according to the fq_name method)
+        #                  to be unregistered
         #
         def handle_unregister_message_handler(origin_client_id, params)
-          #raise "NOT IMPLEMENTED YET!"
+          fq_names = params[:fq_names]
+
+          options = {}
+
+          @qsif[:message_handler_manager].unregister(origin_client_id, fq_names, options)
         end
 
         private
