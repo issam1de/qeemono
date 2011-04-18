@@ -67,13 +67,21 @@ module Qeemono
           message_handlers = []
 
           fq_filenames.each do |fq_filename|
-            require(fq_filename)
-            fq_class_name = fq_class_name(fq_filename)
-            message_handler_object = instance_eval(fq_class_name).new
-            message_handlers << message_handler_object
+            fq_class_name = fq_class_name(origin_client_id, fq_filename)
+            if fq_class_name
+              begin
+                require(fq_filename)
+                message_handler_object = instance_eval(fq_class_name).new
+                message_handlers << message_handler_object
+              rescue LoadError => e
+                notify(:type => :error, :code => 5220, :receivers => @qsif[:client_manager].web_socket(:client_id => origin_client_id), :params => {:filename => fq_filename})
+              end
+            end
           end
 
-          @qsif[:message_handler_manager].register(message_handlers, options)
+          if message_handlers.size > 0
+            @qsif[:message_handler_manager].register(origin_client_id, message_handlers, options)
+          end
         end
 
         #
@@ -90,18 +98,24 @@ module Qeemono
 
         private
 
-        def fq_class_name(fq_filename)
+        def fq_class_name(client_id, fq_filename)
           file_fragments = fq_filename.split(Qeemono::MessageHandler::Base::VENDOR_MESSAGE_HANDLER_PATH_PREFIX)
-          raise "Error in filename!" if file_fragments.size != 2
-          filename = file_fragments[1]
-          if filename.ends_with?('.rb')
-            filename = filename[0..-4]
+          if file_fragments.size != 2
+            notify(:type => :error, :code => 5200, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:filename => fq_filename})
+            return nil
           else
-            raise raise "Error in filename! '.rb' suffix is missing."
+            filename = file_fragments[1]
+            if filename.ends_with?('.rb')
+              filename = filename[0..-4]
+              fq_class_name = Qeemono::MessageHandler::Base::VENDOR_MESSAGE_HANDLER_MODULE_PREFIX + StringUtils.classify(filename)
+              return fq_class_name
+            else
+              notify(:type => :error, :code => 5210, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:filename => fq_filename})
+              return nil
+            end
           end
-          fq_class_name = Qeemono::MessageHandler::Base::VENDOR_MESSAGE_HANDLER_MODULE_PREFIX + StringUtils.classify(filename)
-          return fq_class_name
         end
+
       end
     end
   end

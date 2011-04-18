@@ -73,6 +73,9 @@ module Qeemono
       5170 => "Message handler '${message_handler_name}' must have a modules array! (Details: ${clazz})",
       5180 => "Message handler '${message_handler_name}' must have at least one non-empty module name! (Details: ${clazz})",
       5190 => "Message handler '${message_handler_name}' has an invalid module! Module names must be non-empty symbols! (Details: ${clazz})",
+      5200 => "Filename '${filename}' does not point to a valid message handler location! Ignoring.",
+      5210 => "Error in filename '${filename}'! '.rb' suffix is missing. Ignoring.",
+      5220 => "Could not find message handler for filename '${filename}'! Ignoring.",
 
       6000 => "Client '${client_id}' has been connected. (Web socket signature: ${wss})",
       6010 => "Received valid message from client '${client_id}'. Going to dispatch. (Message: ${message_hash})",
