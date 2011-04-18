@@ -228,8 +228,8 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_register_message_handler
-    QeeveeTestClient.new("test-client-8733245144").test_messages([%q({"method":"unregister_message_handler", "params":{"names":["mark::super_mh"]}})])
-    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
+    QeeveeTestClient.new("test-client-8733245144").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::super_mh"]}})])
+    QeeveeTestClient.new("test-client-8733245144").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
 
     messages = [
             %q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/marks_super_message_handler.rb"]}}),
@@ -240,7 +240,7 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
-            {:type => 'debug', :code => 5000, :param_keys => [:message_handler_name, :handled_methods]},
+            {:type => 'debug', :code => 5000, :param_keys => [:message_handler_name, :handled_methods, :modules]},
             {:type => 'debug', :code => 5010, :param_keys => [:amount]},
             {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}
     ]
