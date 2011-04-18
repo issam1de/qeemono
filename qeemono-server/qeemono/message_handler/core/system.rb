@@ -79,7 +79,7 @@ module Qeemono
             end
           end
 
-          if message_handlers.size > 0
+          if !message_handlers.empty?
             @qsif[:message_handler_manager].register(origin_client_id, message_handlers, options)
           end
         end
