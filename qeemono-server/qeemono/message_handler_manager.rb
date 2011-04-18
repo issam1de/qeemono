@@ -28,8 +28,8 @@ module Qeemono
     #                                     the given modules or the :core module
     #                                     See the Qeemono::ClientManager#assign_to_modules
     #                                     method for detailed information. (Optional)
-    #   * version - (string) - Filters the message handlers to only those which
-    #                          match the given protocol version. (Optional)
+    #   * :version - (string) - Filters the message handlers to only those which
+    #                           match the given protocol version. (Optional)
     #
     def message_handlers(conditions = {})
       method = conditions[:method]
