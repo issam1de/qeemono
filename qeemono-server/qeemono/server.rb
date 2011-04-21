@@ -293,7 +293,7 @@ module Qeemono
     # Returns an two-element array containing the message handler name (or nil
     # if not given) as first element and the method name as second element.
     #
-    # TODO: allow for addressing multiple message handlers
+    # TODO: allow for addressing multiple message handlers at once
     #
     def extract_message_handler_name_from_method_name(fq_method_name)
       fq_method_name = fq_method_name.to_s
