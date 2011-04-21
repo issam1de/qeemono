@@ -69,7 +69,7 @@ module Qeemono
       5120 => "Message handler '${message_handler_name}' does not listen to any method! (Details: ${clazz})",
       5130 => "Message handler '${message_handler_name}' tries to listen to an invalid method! Method names must be non-empty symbols. (Details: ${clazz})",
       5140 => "Message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') is already registered!",
-      5150 => "A message handler with name '${message_handler_name}' already exists for modules ${matching_modules} and version '${version}'! Names must be unique per module and version. (Details: ${clazz})",
+      5150 => "A message handler with name '${message_handler_name}' (${message_handler_class}) already exists for modules ${matching_modules} and version '${version}'! Names must be unique per module and version.",
       5160 => "Message handler '${message_handler_name}' must have a non-empty version string! (Details: ${clazz})",
       5170 => "Message handler '${message_handler_name}' must have a modules array! (Details: ${clazz})",
       5180 => "Message handler '${message_handler_name}' must have at least one non-empty module name! (Details: ${clazz})",

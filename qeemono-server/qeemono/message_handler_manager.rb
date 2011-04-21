@@ -169,7 +169,7 @@ module Qeemono
       matching_modules = nil
       if !@registered_message_handlers.select { |mh| mh.name == message_handler.name && (matching_modules=(mh.modules & message_handler.modules)) != [] && mh.version == message_handler.version }.empty?
         # Check if name is unique per module and version...
-        notify(:type => :error, :code => 5150, :receivers => receiver, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class, :matching_modules => matching_modules.inspect, :version => message_handler.version})
+        notify(:type => :error, :code => 5150, :receivers => receiver, :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :matching_modules => matching_modules.inspect, :version => message_handler.version})
         return false
       end
 
