@@ -40,8 +40,8 @@
           example('<pre>ws.send(\'{"method":"echo", "params":{"a":"123"}}\');</pre>');
           example('<pre>ws.send(\'{"method":"assign_to_modules", "params":{"modules":["__candidate_collection"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}}\');</pre>');
-          example('<pre>ws.send(\'{"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/marks_super_message_handler.rb"]}}\');</pre>');
-          example('<pre>ws.send(\'{"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::super_mh"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}}\');</pre>');
         }
 
         ws.onmessage = function(evt) {

@@ -212,6 +212,8 @@ module Qeemono
         notify(:type => :info, :code => 1000, :params => {:host => @qsif[:host], :port => @qsif[:port], :current_time => Time.now, :app_version => APPLICATION_VERSION})
       end # end - EventMachine.run
 
+      # TODO: In case of Ctrl-C, kill the process nicely...
+
     end # end - start
 
     protected
