@@ -48,9 +48,13 @@ module Qeemono
       end
 
       if modules.empty?
-        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) && (mh.version == version || version.nil?) }
+        message_handlers = message_handlers.select { |mh| mh.modules.include?(:core) }
       else
-        message_handlers = message_handlers.select { |mh| ( (mh.modules & modules) != [] || mh.modules.include?(:core) ) && (mh.version == version || version.nil?) }
+        message_handlers = message_handlers.select { |mh| (mh.modules & modules) != [] || mh.modules.include?(:core) }
+      end
+
+      if version
+        message_handlers = message_handlers.select { |mh| mh.version == version }
       end
 
       message_handlers
@@ -163,8 +167,9 @@ module Qeemono
       end
 
       matching_modules = nil
-      if !@registered_message_handlers.select { |mh| mh.name == message_handler.name && (matching_modules=(mh.modules & message_handler.modules)) != []  }.empty?
-        notify(:type => :error, :code => 5150, :receivers => receiver, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class, :matching_modules => matching_modules.inspect})
+      if !@registered_message_handlers.select { |mh| mh.name == message_handler.name && (matching_modules=(mh.modules & message_handler.modules)) != [] && mh.version == message_handler.version }.empty?
+        # Check if name is unique per module and version...
+        notify(:type => :error, :code => 5150, :receivers => receiver, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class, :matching_modules => matching_modules.inspect, :version => message_handler.version})
         return false
       end
 
