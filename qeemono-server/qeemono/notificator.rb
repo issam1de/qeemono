@@ -57,7 +57,7 @@ module Qeemono
       3120 => "Client '${client_id}' cannot be unassigned from modules! No modules given.",
       3130 => "Client '${client_id}' cannot be unassigned from module! Invalid module name given. Must be a non-empty symbol.",
 
-      5000 => "Message handler '${message_handler_name}' has been registered for methods ${handled_methods} and modules ${modules}.",
+      5000 => "Message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') has been registered for methods ${handled_methods} and modules ${modules}.",
       5010 => "Total amount of registered message handlers: ${amount}", # For the register method
       5020 => "Unregistered ${amount} message handlers. (Details: ${message_handler_names})",
       5030 => "Total amount of registered message handlers: ${amount}", # For the unregister method
@@ -68,8 +68,8 @@ module Qeemono
       5111 => "Message handler ${clazz} has an invalid description! Must be a non-empty string!",
       5120 => "Message handler '${message_handler_name}' does not listen to any method! (Details: ${clazz})",
       5130 => "Message handler '${message_handler_name}' tries to listen to an invalid method! Method names must be non-empty symbols. (Details: ${clazz})",
-      5140 => "Message handler '${message_handler_name}' is already registered! (Details: ${clazz})",
-      5150 => "A message handler with name '${message_handler_name}' already exists for modules ${matching_modules}! Names must be unique per module. (Details: ${clazz})",
+      5140 => "Message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') is already registered!",
+      5150 => "A message handler with name '${message_handler_name}' already exists for modules ${matching_modules} and version '${version}'! Names must be unique per module and version. (Details: ${clazz})",
       5160 => "Message handler '${message_handler_name}' must have a non-empty version string! (Details: ${clazz})",
       5170 => "Message handler '${message_handler_name}' must have a modules array! (Details: ${clazz})",
       5180 => "Message handler '${message_handler_name}' must have at least one non-empty module name! (Details: ${clazz})",
@@ -87,13 +87,14 @@ module Qeemono
       7020 => "Attempt to use client id '#{SERVER_CLIENT_ID}'! Not allowed. Is reserved for the server only. Instead allocating unique anonymous client id '${new_client_id}'. (Web socket signature: ${wss})",
 
       9000 => "${err_msg}",
-      9001 => "Error occured! (Sent from client '${client_id}') Error message: ${err_msg}",
-      9002 => "Error occured! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
+      9001 => "Error occured! (Origin was client '${client_id}') Error message: ${err_msg}",
+      9002 => "Error occured! (Origin was client '${client_id}' with message ${message_hash}) Error message: ${err_msg}",
 
-      9500 => "Did not find any message handler of version '${version}' registered for method '${method_name}'! Requesting client '${client_id}' is assigned to modules ${modules}. Addressed message handlers: ${message_handler_names}. Ignoring. (Sent from client '${client_id}' with message ${message_hash})",
-      9510 => (CODE_9510="Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}) failed! (Sent from client '${client_id}' with message ${message_hash}) Error message: ${err_msg}"),
+      9500 => "Did not find any message handler of version '${version}' registered for method '${method_name}'! Requesting client '${client_id}' is assigned to modules ${modules}. Addressed message handlers: ${message_handler_names}. Ignoring. (Origin was client '${client_id}' with message ${message_hash})",
+      9510 => (CODE_9510="Method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') failed! (Origin was client '${client_id}' with message ${message_hash}) Error message: ${err_msg}"),
       9515 => CODE_9510,
-      9520 => "Message handler '${message_handler_name}' of version '${version}' (${message_handler_class}) is registered to handle method '${method_name}' but does not respond to '${handle_method_name}'! (Sent from client '${client_id}' with message ${message_hash})",
+      9520 => "Message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') is registered to handle method '${method_name}' but does not respond to '${handle_method_name}'! (Origin was client '${client_id}' with message ${message_hash})",
+      9530 => "Execution of method '${handle_method_name}' of message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') has been aborted because the time limit of ${thread_timeout} seconds has been reached. (Origin was client '${client_id}' with message ${message_hash})"
     }
 
 

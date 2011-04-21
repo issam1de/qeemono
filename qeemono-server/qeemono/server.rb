@@ -234,6 +234,7 @@ module Qeemono
     #      sends methods 'echo' to *all* suitable message handlers.
     #
     def dispatch_message(message_hash)
+      thread_timeout_in_seconds = 3
       client_id = message_hash[:client_id]
       fq_method_name = message_hash[:method].to_sym
       message_handler_name, method_name = extract_message_handler_name_from_method_name(fq_method_name)
@@ -248,11 +249,21 @@ module Qeemono
             begin
               # Here, the actual dispatch to the message handler happens!
               # The origin client id (the sender) is passed as first argument, the actual message as second...
-              message_handler.send(handle_method_sym, client_id, message_hash[:params])
+              message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params]) do |tl_handle_method_sym, tl_client_id, tl_params|
+                message_handler.send(tl_handle_method_sym, tl_client_id, tl_params)
+              end
+              thread_join_result = message_handler_thread.join(thread_timeout_in_seconds) # The execution of the message handler method must not last longer than 3 seconds
+              if thread_join_result.nil?
+                # Thread has been aborted (because timeout has been exceeded)...
+                notify(:type => :fatal, :code => 9530, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :thread_timeout => thread_timeout_in_seconds})
+              else
+                # Thread has terminated normally (execution happened within the timeout)...
+                # ... nothing to be done here... :-)
+              end
             rescue Qeemono::QeemonoStandardError => e
-              notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
+              notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
             rescue => e
-              notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
+              notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
           else
             notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :version => message_hash[:version], :message_hash => message_hash.inspect})

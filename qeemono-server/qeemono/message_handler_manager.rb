@@ -83,7 +83,7 @@ module Qeemono
           @registered_message_handlers_by_fq_name[message_handler.fq_name] = message_handler
           message_handler.qsif = @qsif_public # Set the public service interface so that it is available in the message handler
           message_handler_names << message_handler_name
-          notify(:type => :debug, :code => 5000, :receivers => receiver, :params => {:message_handler_name => message_handler_name, :handled_methods => handled_methods_as_strings.inspect, :modules => message_handler.modules.inspect})
+          notify(:type => :debug, :code => 5000, :receivers => receiver, :params => {:message_handler_name => message_handler_name, :handled_methods => handled_methods_as_strings.inspect, :modules => message_handler.modules.inspect, :message_handler_class => message_handler.class, :version => message_handler.version })
         end
       end
       notify(:type => :debug, :code => 5010, :receivers => receiver, :params => {:amount => @registered_message_handlers.size})
@@ -162,7 +162,7 @@ module Qeemono
       end
 
       if @registered_message_handlers.include?(message_handler)
-        notify(:type => :error, :code => 5140, :receivers => receiver, :params => {:message_handler_name => message_handler.name, :clazz => message_handler.class})
+        notify(:type => :error, :code => 5140, :receivers => receiver, :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version})
         return false
       end
 

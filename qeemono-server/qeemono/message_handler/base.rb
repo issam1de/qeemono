@@ -62,29 +62,19 @@ module Qeemono
       VENDOR_MESSAGE_HANDLER_MODULE_PREFIX = "Qeemono::MessageHandler::Vendor::"
       VENDOR_MESSAGE_HANDLER_PATH_PREFIX = "qeemono/message_handler/vendor/"
 
+      attr_accessor :name, :description, :handled_methods, :modules, :version
+
+
+      def initialize(attrs = {})
+        @name = attrs[:name] || nil
+        @description = attrs[:description] || nil
+        @handled_methods = attrs[:handled_methods] || []
+        @modules = attrs[:modules] || []
+        @version = attrs[:version] || Qeemono::Notificator::PROTOCOL_VERSION
+      end
 
       def qsif=(qsif)
         @qsif = qsif if @qsif.nil? # Only if not already set
-      end
-
-      def name
-        nil
-      end
-
-      def description
-        nil
-      end
-
-      def handled_methods
-        []
-      end
-
-      def modules
-        []
-      end
-
-      def version
-        Qeemono::Notificator::PROTOCOL_VERSION
       end
 
       # Do not override this method!

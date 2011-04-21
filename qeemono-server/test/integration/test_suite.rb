@@ -113,7 +113,7 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
-            {:type => 'error', :code => 9515, :param_keys => [:handle_method_name, :message_handler_name, :message_handler_class, :client_id, :message_hash, :err_msg]}
+            {:type => 'error', :code => 9515, :param_keys => [:handle_method_name, :message_handler_name, :message_handler_class, :version, :client_id, :message_hash, :err_msg]}
     ]
     actual_responses = QeeveeTestClient.new("test-client-94572").test_messages(messages)
     assert_server_notifications(expected_responses, actual_responses)
@@ -240,7 +240,7 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
-            {:type => 'debug', :code => 5000, :param_keys => [:message_handler_name, :handled_methods, :modules]},
+            {:type => 'debug', :code => 5000, :param_keys => [:message_handler_name, :handled_methods, :modules, :message_handler_class, :version]},
             {:type => 'debug', :code => 5010, :param_keys => [:amount]},
             {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}
     ]

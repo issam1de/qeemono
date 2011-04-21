@@ -12,6 +12,7 @@ server.message_handler_manager.register(nil, [mh_cc, mh_cc2])
 server.message_handler_manager.register(nil, mh_system)
 server.message_handler_manager.register(nil, mh_communication)
 server.message_handler_manager.register(nil, Qeemono::MessageHandler::Core::Communication.new)
+server.message_handler_manager.register(nil, Qeemono::MessageHandler::Core::Communication.new(:version => '1.1'))
 server.message_handler_manager.unregister(nil, [mh_system, mh_communication])
 server.message_handler_manager.register(nil, [mh_system, mh_communication])
 
