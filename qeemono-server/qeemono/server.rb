@@ -21,6 +21,7 @@
 #   - communication can be 1-to-1, 1-to-many, 1-to-channel(s), 1-to-broadcast, and 1-to-server
 #       (broadcast and channel communication is possible with 'bounce' flag)
 #   - message handlers use observer pattern to register
+#   - starvation-save (message handlers which run infinitely)
 #
 # Requirements on server-side:
 # ----------------------------
