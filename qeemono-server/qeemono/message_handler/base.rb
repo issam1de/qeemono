@@ -6,7 +6,12 @@ module Qeemono
     #
     # Actual message handling must not be done here.
     #
-    # Every message handler must implement the following methods:
+    # Every message handler defines a set of configuration options which
+    # are represented via the following methods. They can either be
+    # overridden (in order to statically set the configuration) or be set
+    # via the respective setters (in order to dynamically set the
+    # configuration). The configuration options are:
+    #
     #   * name  [symbol]
     #   * description [String]
     #   * handled_methods  [symbol(s)]
@@ -20,7 +25,8 @@ module Qeemono
     #
     # The fq_name method returns the unique full-qualified name (a symbol)
     # of the message handler object. It is assembled from the first module
-    # name in the modules array and the message handler name.
+    # name in the modules array and the message handler name. This method
+    # may not be overridden.
     #
     # Additionally, the message handler must implement exactly one handle_<*m*>
     # method per handled qeemono method *m*. qeemono methods function like protocol
