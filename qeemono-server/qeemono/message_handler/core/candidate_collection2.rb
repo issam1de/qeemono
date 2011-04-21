@@ -33,7 +33,7 @@ module Qeemono
           relay(
                   origin_client_id,
                   @qsif[:client_manager].web_socket(:client_id => origin_client_id),
-                  {:method => :echo, :params => params}
+                  {:method => :echo2, :params => params}
           )
         end
       end
