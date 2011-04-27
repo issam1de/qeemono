@@ -41,10 +41,13 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message for
         #                      whom the data is to be stored.
         # * params:
-        #   - :data => Hash of data which is to be stored for the client.
+        #   - :key => The key (symbol) of the data which is to be stored for
+        #             the client.
+        #   - :value => The value (String) of the data which is to be stored
+        #               for the client.
         #   - :public => If true the data can be read by anyone; if false
-        #                only the client (origin_client_id) can read the
-        #                data. Defaults to false.
+        #                only the owning client (origin_client_id) can read
+        #                the data. Defaults to false.
         #   - :vcontext => TODO: vcontext is not implemented yet!
         #                  The visibility context. An Array of client ids
         #                  and/or channel symbols. The data is readable by
@@ -66,12 +69,20 @@ module Qeemono
                             public: public)
         end
 
+        #
+        # Loads data from some client and returns the data value back to
+        # the origin client (origin_client_id).
+        #
+        # * origin_client_id - The originator (sender) of the message.
+        # * params:
+        #   - :owner => The client id of the client from whom the data is taken.
+        #   - :key => The key (symbol) of the data which is to be loaded.
+        #
         def handle_load_client_data(origin_client_id, params)
           client_id = params[:owner].to_sym
           key = params[:key].to_sym
           value = ClientData.where(owner_client_id: client_id).where(key: key).first.value
-          relay(origin_client_id, origin_client_id, {:value => value})
-          puts "*********** #{value}"
+          relay(Qeemono::Notificator::SERVER_CLIENT_ID, @qsif[:client_manager].web_socket(:client_id => origin_client_id), {:method => :load_client_data_result, :params => {:value => value}})
         end
 
         private
