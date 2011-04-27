@@ -131,8 +131,12 @@ module Qeemono
     #
     #   * :ws_debug (boolean) - If true the server logs web socket debug information. Defaults to false.
     #   * :log_file_fq_path - The full qualified log file path - Defaults to ./log/qeemono_server.log
+    #   * :enable_persistence - If true the persistence message handler is required (and activated). Defaults to false.
     #
     def initialize(host, port, options = {})
+      if options[:enable_persistence]
+        require_relative 'message_handler/core/persistence'
+      end
       options[:log_file_fq_path] ||= 'log/qeemono_server.log'
 
       init_logger("#{host}:#{port}", options[:log_file_fq_path])
