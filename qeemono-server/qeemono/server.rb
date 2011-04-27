@@ -29,10 +29,12 @@
 #   Needed Ruby Gems:
 #     - eventmachine (https://rubygems.org/gems/eventmachine)
 #     - em-websocket (https://rubygems.org/gems/em-websocket) [depends on eventmachine]
-#     - iconv (https://rubygems.org/gems/iconv - see also http://rvm.beginrescueend.com/packages/iconv/)
+#     - iconv (https://rubygems.org/gems/iconv - see also http://rvm.beginrescueend.com/packages/iconv)
 #     - json (https://rubygems.org/gems/json [depends on iconv]
 #     - log4r (https://rubygems.org/gems/log4r)
 #     - [needed for testing] em-http-request (https://rubygems.org/gems/em-http-request)
+#     - mongoid (https://rubygems.org/gems/mongoid)
+#     - bson_ext (https://rubygems.org/gems/bson_ext) - to make mongoid faster
 #
 #   To install them all just execute the following in a terminal window:
 #   gem install em-websocket json log4r em-http-request
@@ -213,7 +215,7 @@ module Qeemono
         notify(:type => :info, :code => 1000, :params => {:host => @qsif[:host], :port => @qsif[:port], :current_time => Time.now, :app_version => APPLICATION_VERSION})
       end # end - EventMachine.run
 
-      # TODO: In case of Ctrl-C, kill the process nicely...
+      # TODO: important: In case of Ctrl-C, kill the process nicely...
 
     end # end - start
 
@@ -293,7 +295,7 @@ module Qeemono
     # Returns an two-element array containing the message handler name (or nil
     # if not given) as first element and the method name as second element.
     #
-    # TODO: allow for addressing multiple message handlers at once
+    # TODO: postponed: allow for addressing multiple message handlers at once
     #
     def extract_message_handler_name_from_method_name(fq_method_name)
       fq_method_name = fq_method_name.to_s
