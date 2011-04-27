@@ -24,7 +24,7 @@ module Qeemono
         end
 
         def handled_methods
-          [:store_data, :load_data]
+          [:store_client_data, :load_client_data]
         end
 
         def modules
@@ -55,14 +55,23 @@ module Qeemono
         #                  one except the client owning the data can read
         #                  the data.
         #
-        def handle_store_data(origin_client_id, params)
-          data = params[:data]
-          public = params[:public] || false
+        def handle_store_client_data(origin_client_id, params)
+          key = params[:key].to_sym
+          value = params[:value].to_s
+          public = params[:public] == 'true' || false
 
-          ClientData.create(owner_client_id: origin_client_id.to_sym, data: data, public: public)
+          ClientData.create(owner_client_id: origin_client_id.to_sym,
+                            key: key,
+                            value: value,
+                            public: public)
         end
 
-        def handle_load_data(origin_client_id, params)
+        def handle_load_client_data(origin_client_id, params)
+          client_id = params[:owner].to_sym
+          key = params[:key].to_sym
+          value = ClientData.where(owner_client_id: client_id).where(key: key).first.value
+          relay(origin_client_id, origin_client_id, {:value => value})
+          puts "*********** #{value}"
         end
 
         private

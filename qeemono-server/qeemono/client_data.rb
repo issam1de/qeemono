@@ -7,6 +7,7 @@ class ClientData
   include Mongoid::Document
 
   field :owner_client_id, type: Symbol
-  field :data, type: Hash
+  field :key, type: Symbol
+  field :value, type: String
   field :public, type: Boolean
 end
