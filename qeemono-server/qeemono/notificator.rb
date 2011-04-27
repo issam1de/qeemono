@@ -12,21 +12,21 @@ module Qeemono
   class Notificator
 
     #
-    # The default (latest) protocol version used by the qeemono server
+    # The default (latest) protocol version used for qeemono JSON messages
     #
     PROTOCOL_VERSION = '1.0'
 
     #
-    # Every message send to or from the server must be a JSON message
-    # containing the following keys:
+    # Every qeemono message send to or received from the server must
+    # be a JSON message and contains the following keys:
     #
-    MANDATORY_KEYS = [
+    QEEMONO_PROTOCOL_KEYS = [
       :client_id, # * The originator (some client or the server) which initially has sent the message
                   #     - Can be passed implicitly and/or explicitly
-                  #     - If not passed, an anonymous client id is creates and allocated
+                  #     - If not passed, an anonymous client id is created and allocated
       :method,    # * The method to call (respective message handler(s) have to subscribe in the first place)
       :params,    # * The parameters to pass to the method
-      :version    # * The protocol version to use (if not given the default (latest) version is assumed)
+      :version    # * The protocol version to use (if not passed the default (latest) version is assumed)
     ]
 
     SERVER_CLIENT_ID = :__server
@@ -151,7 +151,7 @@ module Qeemono
 
     #
     # Relays (send or broadcast) the JSON message hash to the receiver (web socket or channel).
-    # origin_client_id is the client id of the sender of the message.
+    # origin_client_id is the client id of the sender of the qeemono JSON message (message).
     #
     # In this method the message is actually sent to the receiver. The receiver can be
     # a web socket (aka client) or a channel. If sent to a channel the actual sending
@@ -163,11 +163,12 @@ module Qeemono
     end
 
     #
-    # Returns true if all mandatory keys are existent in the JSON message
+    # Returns true if all mandatory keys are existent in the qeemono JSON message
     # (message) and no error during parsing occurred; otherwise false is returned.
     #
     # Additionally, optional keys like the originator (sender) client id (:client_id)
-    # and the protocol version (:version) are added to the JSON message if not existent.
+    # and the protocol version (:version) are added to the qeemono JSON message if
+    # not existent.
     #
     # If some error occurs an exception is raised.
     # If no error occurs the given block is executed.
@@ -224,11 +225,11 @@ module Qeemono
       message_hash[:version] ||= PROTOCOL_VERSION
 
       # Check for all mandatory keys...
-      MANDATORY_KEYS.each do |key|
+      QEEMONO_PROTOCOL_KEYS.each do |key|
         self.class.check_message_for_mandatory_key(key, message_hash)
       end
 
-      keys = message_hash.keys - MANDATORY_KEYS
+      keys = message_hash.keys - QEEMONO_PROTOCOL_KEYS
       if keys.size > 0
         raise Qeemono::InvalidKeyError.new("JSON message contains not allowed keys ${keys}! Ignoring.")
       end
