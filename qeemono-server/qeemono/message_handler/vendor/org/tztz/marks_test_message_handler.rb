@@ -40,7 +40,8 @@ module Qeemono
                       {:method => :hello, :params => {:greeting => "Hello Mark! Your input is: \"#{input}\""}}
               )
             end
-          end
+
+          end # end - class
         end
       end
     end
