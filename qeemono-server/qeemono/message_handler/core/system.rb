@@ -30,9 +30,9 @@ module Qeemono
         # Assigns the given client id to modules.
         #
         # * origin_client_id - The originator (sender) of the message who
-        #                      gets assigned to modules
+        #                      gets assigned to modules.
         # * params:
-        #   - :modules => array of modules the client is to be assigned to
+        #   - :modules => Array of modules the client is to be assigned to.
         #
         def handle_assign_to_modules(origin_client_id, params)
           modules = params[:modules]
@@ -43,9 +43,9 @@ module Qeemono
         # Unassigns the given client id from modules.
         #
         # * origin_client_id - The originator (sender) of the message who
-        #                      gets unassigned from modules
+        #                      gets unassigned from modules.
         # * params:
-        #   - :modules => array of modules the client is to be unassigned from
+        #   - :modules => Array of modules the client is to be unassigned from.
         #
         def handle_unassign_from_modules(origin_client_id, params)
           modules = params[:modules]
@@ -55,10 +55,10 @@ module Qeemono
         #
         # Registers message handlers.
         #
-        # * origin_client_id - The originator (sender) of the message
+        # * origin_client_id - The originator (sender) of the message.
         # * params:
-        #   - :filenames => array of full-qualified file names of
-        #                   the message handlers to be registered
+        #   - :filenames => Array of full-qualified file names of
+        #                   the message handlers to be registered.
         #
         def handle_register_message_handler(origin_client_id, params)
           fq_filenames = params[:filenames]
@@ -87,11 +87,11 @@ module Qeemono
         #
         # Registers message handlers.
         #
-        # * origin_client_id - The originator (sender) of the message
+        # * origin_client_id - The originator (sender) of the message.
         # * params:
-        #   - :fq_names => array of full-qualified message handler
+        #   - :fq_names => Array of full-qualified message handler
         #                  names (according to the fq_name method)
-        #                  to be unregistered
+        #                  to be unregistered.
         #
         def handle_unregister_message_handler(origin_client_id, params)
           fq_names = params[:fq_names]
@@ -103,6 +103,11 @@ module Qeemono
 
         private
 
+        #
+        # Returns the full-qualified class name of the given full-qualified
+        # filename (fq_filename). In case of an error nil is returned and
+        # the originator is informed about the error.
+        #
         def fq_class_name(client_id, fq_filename)
           file_fragments = fq_filename.split(Qeemono::MessageHandler::Base::VENDOR_MESSAGE_HANDLER_PATH_PREFIX)
           if file_fragments.size != 2

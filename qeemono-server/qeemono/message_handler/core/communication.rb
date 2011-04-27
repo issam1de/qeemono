@@ -38,11 +38,11 @@ module Qeemono
         # clients of the server. The :broadcastwb channel (wb = with bounce) does
         # the same but also sends (bounces) the message to the origin client.
         #
-        # * origin_client_id - The originator (sender) of the message
+        # * origin_client_id - The originator (sender) of the message.
         # * params:
-        #   - :channels => array of channels to broadcast to (e.g. [:broadcast, :detectives])
-        #   - :client_ids => array of client ids to send to (e.g. [:client_4711, :mark])
-        #   - :message => the JSON message (following the qeemono protocol) to be sent
+        #   - :channels => Array of channels to broadcast to (e.g. [:broadcast, :detectives]).
+        #   - :client_ids => Array of client ids to send to (e.g. [:client_4711, :mark]).
+        #   - :message => The JSON message (following the qeemono protocol) to be sent.
         #
         def handle_send(origin_client_id, params)
           channels = params[:channels]
@@ -60,9 +60,9 @@ module Qeemono
         #
         # Creates new channels.
         #
-        # * origin_client_id - The originator (sender) of the message
+        # * origin_client_id - The originator (sender) of the message.
         # * params:
-        #   - :channels => array of channels to create (e.g. [:my_new_channel, :foo_channel_1])
+        #   - :channels => Array of channels to create (e.g. [:my_new_channel, :foo_channel_1]).
         #
         def handle_create_channels(origin_client_id, params)
           channel_symbols = params[:channels]
@@ -73,9 +73,9 @@ module Qeemono
         #
         # Destroys channels.
         #
-        # * origin_client_id - The originator (sender) of the message
+        # * origin_client_id - The originator (sender) of the message.
         # * params:
-        #   - :channels => array of channels to destroy (e.g. [:my_new_channel, :foo_channel_1])
+        #   - :channels => Array of channels to destroy (e.g. [:my_new_channel, :foo_channel_1]).
         #
         def handle_destroy_channels(origin_client_id, params)
           channel_symbols = params[:channels]
@@ -86,9 +86,9 @@ module Qeemono
         #
         # Subscribes the client (origin_client_id) to channels.
         #
-        # * origin_client_id - The originator (sender) of the message (who has to be subscribed)
+        # * origin_client_id - The originator (sender) of the message (who has to be subscribed).
         # * params:
-        #   - :channels => array of channels to subscribe to (e.g. [:broadcast, :detectives])
+        #   - :channels => Array of channels to subscribe to (e.g. [:broadcast, :detectives]).
         #   - :bounce => If true the message will also be sent (bounce) to the sender (origin client) provided
         #                that the client is subscribed to the resp. channel. If false (the default) the sender
         #                will not receive the message although being subscribed to the channel.
@@ -106,9 +106,9 @@ module Qeemono
         #
         # Unsubscribes the client (origin_client_id) from channels.
         #
-        # * origin_client_id - The originator (sender) of the message (who has to be unsubscribed)
+        # * origin_client_id - The originator (sender) of the message (who has to be unsubscribed).
         # * params:
-        #   - :channels => array of channels to unsubscribe from (e.g. [:broadcast, :detectives])
+        #   - :channels => Array of channels to unsubscribe from (e.g. [:broadcast, :detectives]).
         #
         def handle_unsubscribe_from_channels(origin_client_id, params)
           channel_symbols = params[:channels]
@@ -119,9 +119,9 @@ module Qeemono
         private
 
         #
-        # receivers = array of client ids or array of channels (depending on the receiver_type)
-        # receiver_type = :channels or :client_ids
-        # message = The message to send
+        # receivers - Array of client ids or array of channels (depending on the receiver_type).
+        # receiver_type - Either :channels or :client_ids
+        # message - The message to send.
         #
         def send_to_channels_or_clients(origin_client_id, receivers, receiver_type, message)
           return false if receivers.nil?
