@@ -126,7 +126,7 @@ module Qeemono
           end
         end
 
-      end
+      end # end - class
     end
   end
 end
