@@ -123,7 +123,7 @@ class BasicTest < Test::Unit::TestCase
     QeeveeTestClient.new("test-client-94572").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
 
     messages = [
-            %q({"method":"subscribe", "params":{"channels":["My Channel 4711"]}})
+            %q({"method":"subscribe_to_channels", "params":{"channels":["My Channel 4711"]}})
     ]
     expected_responses = [
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
@@ -140,7 +140,7 @@ class BasicTest < Test::Unit::TestCase
 
     messages = [
             %q({"method":"create_channels", "params":{"channels":["My Channel 4711"]}}),
-            %q({"method":"subscribe", "params":{"channels":["My Channel 4711"]}}),
+            %q({"method":"subscribe_to_channels", "params":{"channels":["My Channel 4711"]}}),
             %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
     ]
     expected_responses = [
@@ -159,7 +159,7 @@ class BasicTest < Test::Unit::TestCase
 
     messages = [
             %q({"method":"create_channels", "params":{"channels":["My Channel 4711"]}}),
-            %q({"method":"subscribe", "params":{"channels":["My Channel 4711"], "bounce":"true"}}),
+            %q({"method":"subscribe_to_channels", "params":{"channels":["My Channel 4711"], "bounce":"true"}}),
             %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
     ]
     expected_responses = [

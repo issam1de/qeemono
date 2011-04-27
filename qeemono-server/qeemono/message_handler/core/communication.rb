@@ -20,7 +20,7 @@ module Qeemono
         end
 
         def handled_methods
-          [:send, :create_channels, :destroy_channels, :subscribe, :unsubscribe]
+          [:send, :create_channels, :destroy_channels, :subscribe_to_channels, :unsubscribe_from_channels]
         end
 
         def modules
@@ -95,7 +95,7 @@ module Qeemono
         #   - :create_lazy => If true, the channel(s) is/are automatically created if not existent yet. If
         #                     false (the default), an error notification is sent back and nothing will be done.
         #
-        def handle_subscribe(origin_client_id, params)
+        def handle_subscribe_to_channels(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
           options[:bounce] = (params[:bounce] == 'true')
@@ -110,7 +110,7 @@ module Qeemono
         # * params:
         #   - :channels => array of channels to unsubscribe from (e.g. [:broadcast, :detectives])
         #
-        def handle_unsubscribe(origin_client_id, params)
+        def handle_unsubscribe_from_channels(origin_client_id, params)
           channel_symbols = params[:channels]
           options = {}
           @qsif[:channel_manager].unsubscribe(origin_client_id, channel_symbols, options)
