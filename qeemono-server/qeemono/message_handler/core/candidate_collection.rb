@@ -43,7 +43,8 @@ module Qeemono
         def handle_foo(origin_client_id, params)
           notify :type => :info, :code => 0, :params => {:msg => 'FOO!!!'}
         end
-      end
+
+      end # end - class
     end
   end
 end

@@ -36,7 +36,8 @@ module Qeemono
                   {:method => :echo2, :params => params}
           )
         end
-      end
+
+      end # end - class
     end
   end
 end
