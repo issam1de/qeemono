@@ -1,0 +1,3 @@
+host: localhost
+database: qeemono
+allow_dynamic_fields: false
