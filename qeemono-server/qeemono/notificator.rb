@@ -57,6 +57,8 @@ module Qeemono
       3120 => "Client '${client_id}' cannot be unassigned from modules! No modules given.",
       3130 => "Client '${client_id}' cannot be unassigned from module! Invalid module name given. Must be a non-empty symbol.",
 
+      4000 => "Client data has been successfully stored.",
+
       5000 => "Message handler '${message_handler_name}' (${message_handler_class}, Version: '${version}') has been registered for methods ${handled_methods} and modules ${modules}.",
       5010 => "Total amount of registered message handlers: ${amount}", # For the register method
       5020 => "Unregistered ${amount} message handlers. (Details: ${message_handler_names})",
