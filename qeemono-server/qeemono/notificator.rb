@@ -3,6 +3,7 @@ require_relative 'lib/exception/ambiguous_client_id_error'
 require_relative 'lib/exception/invalid_client_id_error'
 require_relative 'lib/exception/invalid_key_error'
 require_relative 'lib/exception/no_message_given_error'
+require_relative 'lib/exception/invalid_format_error'
 
 module Qeemono
   #
@@ -26,6 +27,8 @@ module Qeemono
                   #     - If not passed, an anonymous client id is created and allocated
       :method,    # * The method to call (respective message handler(s) have to subscribe in the first place)
       :params,    # * The parameters to pass to the method
+      :seq_id,    # * The sequencer id. Used to uniquely identify and associate responses to their related requests
+                  #     - Optional. If not passed, seq_id is :none
       :version    # * The protocol version to use (if not passed the default (latest) version is assumed)
     ]
 
@@ -168,9 +171,9 @@ module Qeemono
     # Returns true if all mandatory keys are existent in the qeemono JSON message
     # (message) and no error during parsing occurred; otherwise false is returned.
     #
-    # Additionally, optional keys like the originator (sender) client id (:client_id)
-    # and the protocol version (:version) are added to the qeemono JSON message if
-    # not existent.
+    # Additionally, optional keys like the originator (sender) client id (:client_id),
+    # the protocol version (:version), and the sequencer id (:seq_id) are added to
+    # the qeemono JSON message if not existent.
     #
     # If some error occurs an exception is raised.
     # If no error occurs the given block is executed.
@@ -186,6 +189,8 @@ module Qeemono
     #
     def relay_internal(origin_client_id, receiver, message, send_from_server=false)
       parse_message_internal(origin_client_id, message, send_from_server) do |message_hash|
+        # The receiver is either a web socket object (EventMachine::WebSocket::Connection)
+        # or a channel object (EM::Channel)...
         receiver.relay(message_hash)
       end
     end
@@ -225,6 +230,13 @@ module Qeemono
 
       # If no protocol version is given, the latest/current version is assumed and added...
       message_hash[:version] ||= PROTOCOL_VERSION
+
+      # If no seq_id is given, it is set to :none...
+      message_hash[:seq_id] ||= Qeemono::Util::SeqIdPool::EMPTY_SEQ_ID
+
+      if message_hash[:seq_id] != Qeemono::Util::SeqIdPool::EMPTY_SEQ_ID && !message_hash[:seq_id].is_a?(Integer)
+        raise Qeemono::InvalidFormatError.new("The sequencer id (:seq_id) must be of type Integer or :none! Ignoring.")
+      end
 
       # Check for all mandatory keys...
       QEEMONO_PROTOCOL_KEYS.each do |key|
