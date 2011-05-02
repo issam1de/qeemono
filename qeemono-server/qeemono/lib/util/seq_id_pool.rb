@@ -12,7 +12,9 @@ module Qeemono
 
 
       def self.store(seq_id)
-        SEQ_ID_POOL[Thread.current.__id__] = seq_id.to_i
+        if seq_id.is_a?(Integer)
+          SEQ_ID_POOL[Thread.current.__id__] = seq_id.to_i
+        end
       end
 
       def self.load
