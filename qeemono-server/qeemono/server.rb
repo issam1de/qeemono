@@ -250,8 +250,8 @@ module Qeemono
     #      sends methods 'echo' to *all* suitable message handlers.
     #
     def dispatch_message(message_hash)
-      message_dispatch_thread = Thread.new(message_hash[:seq_id]) do |tl_seq_id|
-        Qeemono::Util::SeqIdPool.store(tl_seq_id)
+      ###message_dispatch_thread = Thread.new(message_hash[:seq_id]) do |tl_seq_id|
+        ###Qeemono::Util::SeqIdPool.store(tl_seq_id)
 
         # The following is executed withing the 'message dispatch' thread...
 
@@ -288,14 +288,14 @@ module Qeemono
                 notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
               end
             else
-              notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :version => message_hash[:version], :message_hash => message_hash.inspect})
+              notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_hash[:version], :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
             end
           end
         end
 
-        Qeemono::Util::SeqIdPool.delete # Note: must be the last thing to be done before this thread block ends!
-      end # end - Thread
-      message_dispatch_thread.join # Wait for the thread to come to an end
+        ###Qeemono::Util::SeqIdPool.delete # Note: must be the last thing to be done before this thread block ends!
+      ###end # end - Thread
+      ###message_dispatch_thread.join # Wait for the thread to come to an end
     end
 
     def init_logger(logger_name, log_file)

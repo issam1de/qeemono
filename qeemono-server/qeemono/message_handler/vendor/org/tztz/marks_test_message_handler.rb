@@ -18,7 +18,7 @@ module Qeemono
             end
 
             def handled_methods
-              [:say_hello]
+              [:say_hello, :'just_fail!', :this_method_does_not_exist, :i_need_long_time]
             end
 
             def modules
@@ -39,6 +39,23 @@ module Qeemono
                       @qsif[:client_manager].web_socket(:client_id => origin_client_id),
                       {:method => :hello, :params => {:greeting => "Hello Mark! Your input is: \"#{input}\""}}
               )
+            end
+
+            #
+            # Just for testing...
+            # This method will always fail with an exception!
+            #
+            def handle_just_fail!(origin_client_id, params)
+              raise "I am failing..... I am failing..... I am failing to the see..."
+            end
+
+            #
+            # Just for testing...
+            #
+            def handle_i_need_long_time(origin_client_id, params)
+              # Just sleep for 10 seconds.
+              # The execution will be aborted by the qeemono dispatcher...
+              sleep(10)
             end
 
           end # end - class
