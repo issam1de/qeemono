@@ -26,7 +26,7 @@ class QeeveeTestClient
     end
   end
 
-  def test_messages(messages = [], duration=0.3)
+  def test_messages(messages = [], duration=0.4)
     received_message = []
 
     EventMachine.run do
