@@ -15,6 +15,7 @@ module Qeemono
         end
 
         def handled_methods
+          # TODO: pluralize :register_message_handler and :unregister_message_handler
           [:assign_to_modules, :unassign_from_modules, :register_message_handler, :unregister_message_handler]
         end
 
