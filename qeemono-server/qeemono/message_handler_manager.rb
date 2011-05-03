@@ -93,6 +93,7 @@ module Qeemono
     # Unregisters the given message handlers (either objects of type Qeemono::MessageHandler::Base
     # or full-qualified message handler names according to the fq_name method) on behalf of the
     # client given via client_id (can be nil if performed directly on server-side).
+    # TODO: unassign from modules beforehand
     #
     def unregister(client_id, message_handlers, options={})
       receiver = receiver(client_id)
