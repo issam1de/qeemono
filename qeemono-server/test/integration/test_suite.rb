@@ -19,21 +19,21 @@ class QeeveeTestClient
     @client_id = client_id
   end
 
-  def self.stop_event_machine_after_sleep(duration=1)
+  def self.stop_event_machine_after_sleep(duration)
     Thread.new do
       sleep(duration)
       EventMachine.stop
     end
   end
 
-  def test_messages(messages = [], duration=1)
+  def test_messages(messages = [], duration=0.3)
     received_message = []
 
     EventMachine.run do
       http = EventMachine::HttpRequest.new("ws://#{@url}").get(:timeout => 0, :query => {:client_id => @client_id})
 
       http.errback do
-        puts "******* ERROR OCCURRED!!! Server started?"
+        raise "******* ERROR OCCURRED!!! Server started?"
       end
 
       http.callback do
@@ -356,6 +356,40 @@ class BasicTest < Test::Unit::TestCase
     ]
     actual_responses = QeeveeTestClient.new("test-client-8732324514431").test_messages(messages, 5)
     assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_parallel_clients_processing
+
+    client_amount = 10
+
+    for client_no in (1..client_amount) do
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})])
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}})])
+    end
+
+    actual_responses = {}
+    threads = []
+    for client_no in (1..client_amount) do
+      threads << Thread.new(client_no) do |tl_client_no|
+        messages=[]
+        for i in (1..100) do
+          messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{tl_client_no}-#{i}"}, "seq_id":4711000#{tl_client_no}000#{i}})
+        end
+        actual_responses[tl_client_no] = QeeveeTestClient.new("test-client-ppp-#{tl_client_no}").test_messages(messages, 5)
+      end
+    end
+    threads.each { |t| t.join }
+    for client_no in (1..client_amount) do
+      for i in (100..1) do
+        assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, actual_responses[client_no][-i])
+      end
+    end
+
+    for client_no in (1..client_amount) do
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    end
   end
 
   private
