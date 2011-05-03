@@ -26,7 +26,7 @@ class QeeveeTestClient
     end
   end
 
-  def test_messages(messages = [], duration=0.4)
+  def test_messages(messages = [], duration=0.5)
     received_message = []
 
     EventMachine.run do
@@ -377,7 +377,7 @@ class BasicTest < Test::Unit::TestCase
         for i in (1..100) do
           messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{tl_client_no}-#{i}"}, "seq_id":4711000#{tl_client_no}000#{i}})
         end
-        actual_responses[tl_client_no] = QeeveeTestClient.new("test-client-ppp-#{tl_client_no}").test_messages(messages, 5)
+        actual_responses[tl_client_no] = QeeveeTestClient.new("test-client-ppp-#{tl_client_no}").test_messages(messages, 10)
       end
     end
     threads.each { |t| t.join }
