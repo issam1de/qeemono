@@ -250,52 +250,48 @@ module Qeemono
     #      sends methods 'echo' to *all* suitable message handlers.
     #
     def dispatch_message(message_hash)
-      ###message_dispatch_thread = Thread.new(message_hash[:seq_id]) do |tl_seq_id|
-        ###Qeemono::Util::SeqIdPool.store(tl_seq_id)
+      Qeemono::Util::SeqIdPool.store(message_hash[:seq_id])
 
-        # The following is executed withing the 'message dispatch' thread...
-
-        thread_timeout_in_seconds = 3
-        client_id = message_hash[:client_id]
-        fq_method_name = message_hash[:method].to_sym
-        message_handler_name, method_name = extract_message_handler_name_from_method_name(fq_method_name)
-        message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :name => message_handler_name, :modules => @qsif[:client_manager].modules(client_id), :version => message_hash[:version])
-        if message_handlers.empty?
-          message_handler_names_for_notification = message_handler_name ? [message_handler_name] : 'all'
-          notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :message_handler_names => message_handler_names_for_notification, :client_id => client_id, :version => message_hash[:version], :modules => @qsif[:client_manager].modules(client_id).inspect, :message_hash => message_hash.inspect})
-        else
-          message_handlers.each do |message_handler|
-            handle_method_sym = "handle_#{method_name}".to_sym
-            if message_handler.respond_to?(handle_method_sym)
-              begin
-                # Here, the actual dispatch to the message handler happens!
-                # The origin client id (the sender) is passed as first argument, the actual message as second...
-                message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params], message_hash[:seq_id]) do |tl_handle_method_sym, tl_client_id, tl_params, tl_seq_id2|
-                  Qeemono::Util::SeqIdPool.store(tl_seq_id2)
-                  message_handler.send(tl_handle_method_sym, tl_client_id, tl_params)
-                end
-                thread_join_result = message_handler_thread.join(thread_timeout_in_seconds) # The execution of the message handler method must not last longer than 3 seconds
-                if thread_join_result.nil?
-                  # Thread has been aborted (because timeout has been exceeded)...
-                  notify(:type => :fatal, :code => 9530, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :thread_timeout => thread_timeout_in_seconds})
-                else
-                  # Thread has terminated normally (execution happened within the timeout)...
-                  # ... nothing to be done here... :-)
-                end
-              rescue Qeemono::QeemonoStandardError => e
-                notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
-              rescue => e
-                notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
+      thread_timeout_in_seconds = 3
+      client_id = message_hash[:client_id]
+      fq_method_name = message_hash[:method].to_sym
+      message_handler_name, method_name = extract_message_handler_name_from_method_name(fq_method_name)
+      message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :name => message_handler_name, :modules => @qsif[:client_manager].modules(client_id), :version => message_hash[:version])
+      if message_handlers.empty?
+        message_handler_names_for_notification = message_handler_name ? [message_handler_name] : 'all'
+        notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :message_handler_names => message_handler_names_for_notification, :client_id => client_id, :version => message_hash[:version], :modules => @qsif[:client_manager].modules(client_id).inspect, :message_hash => message_hash.inspect})
+      else
+        message_handlers.each do |message_handler|
+          handle_method_sym = "handle_#{method_name}".to_sym
+          if message_handler.respond_to?(handle_method_sym)
+            begin
+              # Here, the actual dispatch to the message handler happens!
+              # The origin client id (the sender) is passed as first argument, the actual message as second...
+              message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params], message_hash[:seq_id]) do |tl_handle_method_sym, tl_client_id, tl_params, tl_seq_id2|
+                Qeemono::Util::SeqIdPool.store(tl_seq_id2)
+                message_handler.send(tl_handle_method_sym, tl_client_id, tl_params)
+                Qeemono::Util::SeqIdPool.delete
               end
-            else
-              notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_hash[:version], :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
+              thread_join_result = message_handler_thread.join(thread_timeout_in_seconds) # The execution of the message handler method must not last longer than 3 seconds
+              if thread_join_result.nil?
+                # Thread has been aborted (because timeout has been exceeded)...
+                notify(:type => :fatal, :code => 9530, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :thread_timeout => thread_timeout_in_seconds})
+              else
+                # Thread has terminated normally (execution happened within the timeout)...
+                # ... nothing to be done here... :-)
+              end
+            rescue Qeemono::QeemonoStandardError => e
+              notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
+            rescue => e
+              notify(:type => :fatal, :code => 9510, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e)
             end
+          else
+            notify(:type => :fatal, :code => 9520, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_hash[:version], :method_name => method_name, :handle_method_name => handle_method_sym.to_s, :client_id => client_id, :message_hash => message_hash.inspect})
           end
         end
+      end
 
-        ###Qeemono::Util::SeqIdPool.delete # Note: must be the last thing to be done before this thread block ends!
-      ###end # end - Thread
-      ###message_dispatch_thread.join # Wait for the thread to come to an end
+      Qeemono::Util::SeqIdPool.delete
     end
 
     def init_logger(logger_name, log_file)
