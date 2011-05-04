@@ -249,11 +249,11 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_register_message_handler
-    QeeveeTestClient.new("test-client-8733245144").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    QeeveeTestClient.new("test-client-8733245144").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     QeeveeTestClient.new("test-client-8733245144").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
 
     messages = [
-            %q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
+            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
             %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
             %q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar"}})
     ]
@@ -271,11 +271,11 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_seq_id
-    QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
 
     messages = [
-            %q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
+            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
             %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
             %q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar"}, "seq_id":54629781})
     ]
@@ -293,11 +293,11 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_message_handler_with_method_that_fails_hard
-    QeeveeTestClient.new("test-client-873324514431").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    QeeveeTestClient.new("test-client-873324514431").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     QeeveeTestClient.new("test-client-873324514431").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
 
     messages = [
-            %q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
+            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
             %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
             %q({"method":"mark::test_mh.just_fail!", "params":{"input":"Foobar"}, "seq_id":54629721})
     ]
@@ -315,11 +315,11 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_message_handler_with_non_existing_method_although_listed_in_handled_methods_array
-    QeeveeTestClient.new("test-client-8733324514431").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    QeeveeTestClient.new("test-client-8733324514431").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     QeeveeTestClient.new("test-client-8733324514431").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
 
     messages = [
-            %q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
+            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
             %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
             %q({"method":"mark::test_mh.this_method_does_not_exist", "params":{"input":"Foobar"}, "seq_id":5462129721})
     ]
@@ -337,11 +337,11 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_long_running_method
-    QeeveeTestClient.new("test-client-8732324514431").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    QeeveeTestClient.new("test-client-8732324514431").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     QeeveeTestClient.new("test-client-8732324514431").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
 
     messages = [
-            %q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
+            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
             %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
             %q({"method":"mark::test_mh.i_need_long_time", "params":{"input":"Foobar"}, "seq_id":5412129721})
     ]
@@ -363,9 +363,9 @@ class BasicTest < Test::Unit::TestCase
     client_amount = 10
 
     for client_no in (1..client_amount) do
-      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
       QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
-      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"register_message_handler", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})])
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})])
       QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}})])
     end
 
@@ -388,7 +388,7 @@ class BasicTest < Test::Unit::TestCase
     end
 
     for client_no in (1..client_amount) do
-      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handler", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     end
   end
 

@@ -15,8 +15,7 @@ module Qeemono
         end
 
         def handled_methods
-          # TODO: pluralize :register_message_handler and :unregister_message_handler
-          [:assign_to_modules, :unassign_from_modules, :register_message_handler, :unregister_message_handler]
+          [:assign_to_modules, :unassign_from_modules, :register_message_handlers, :unregister_message_handlers]
         end
 
         def modules
@@ -61,7 +60,7 @@ module Qeemono
         #   - :filenames => Array of full-qualified file names of
         #                   the message handlers to be registered.
         #
-        def handle_register_message_handler(origin_client_id, params)
+        def handle_register_message_handlers(origin_client_id, params)
           fq_filenames = params[:filenames]
 
           options = {}
@@ -94,7 +93,7 @@ module Qeemono
         #                  names (according to the fq_name method)
         #                  to be unregistered.
         #
-        def handle_unregister_message_handler(origin_client_id, params)
+        def handle_unregister_message_handlers(origin_client_id, params)
           fq_names = params[:fq_names]
 
           options = {}
