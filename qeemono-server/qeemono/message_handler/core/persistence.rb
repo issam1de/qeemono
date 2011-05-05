@@ -80,10 +80,9 @@ module Qeemono
         #   - :key => The key (symbol) of the data which is to be loaded.
         #
         def handle_load_client_data(origin_client_id, params)
-          # TODO: implement security
           client_id = params[:owner].to_sym
           key = params[:key].to_sym
-          value = ClientData.where(owner_client_id: client_id).where(key: key).first.value
+          value = ClientData.where(owner_client_id: client_id).where(key: key).any_of({public: true}, {owner_client_id: origin_client_id}).first.value
           relay(Qeemono::Notificator::SERVER_CLIENT_ID, @qsif[:client_manager].web_socket(:client_id => origin_client_id), {:method => :load_client_data_result, :params => {:value => value}})
         end
 
