@@ -1,0 +1,16 @@
+.button {
+  display: inline-block;
+  margin:10px;
+  padding:10px;
+  border:1px solid #888;
+  background:#6af;
+  font-size:2em;
+}
+
+.console {
+  margin:10px;
+  padding:10px;
+  border:1px solid #888;
+  background:#eee;
+  font-size:0.8em;
+}
