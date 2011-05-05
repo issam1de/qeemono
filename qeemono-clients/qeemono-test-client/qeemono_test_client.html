@@ -33,7 +33,8 @@
         ws.onopen = function() {
           debug("Connected...");
           example('Open your Javascript console and try the following examples:');
-          example('<pre>ws.send(\'{"method":"send", "params":{"client_ids":["test-client-1"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}\');</pre>');
+          example('<pre>ws.send(\'{"method":"send", "params":{"client_ids":["4711"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}, "seq_id":123555}\');</pre>');
+          example('<pre>ws.send(\'{"method":"send", "params":{"channels":["broadcastwb"], "message":{"method":"Katze", "params":"123"}}, "seq_id":123000321}\');</pre>');
           example('<pre>ws.send(\'{"method":"create_channels", "params":{"channels":["My Channel", "test-channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"destroy_channels", "params":{"channels":["My Channel", "test-channel"]}}\');</pre>');
           example('<pre>ws.send(\'{"method":"subscribe_to_channels", "params":{"channels":["My Channel"]}}\');</pre>');
