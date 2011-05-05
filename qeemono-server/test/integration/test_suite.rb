@@ -412,8 +412,15 @@ class BasicTest < Test::Unit::TestCase
 
   def test_parallel_clients_processing_forked
     client_amount = 10
+
     client_amount.times do |client_no|
       fork do
+
+        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
+        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})])
+        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}})])
+
         # This block is executed in a sub process...
         messages = []
         responses = []
@@ -424,8 +431,13 @@ class BasicTest < Test::Unit::TestCase
         for i in 100..1 do
           assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, responses[-i])
         end
-      end
+
+        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+
+      end # end - fork
     end
+
+    Process.waitall
   end
 
   # TODO: test (un-)subscribe to/from channels and create/destroy channels
