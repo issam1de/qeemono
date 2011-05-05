@@ -20,7 +20,7 @@ module Qeemono
         end
 
         def description
-          'persistence' # TODO: better description
+          'This message handler defines relevant methods for persistence.'
         end
 
         def handled_methods

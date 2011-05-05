@@ -11,7 +11,7 @@ module Qeemono
         end
 
         def description
-          'candidate collection 2' # TODO: better description
+          'This is another message handler defining candidate and test methods.'
         end
 
         def handled_methods

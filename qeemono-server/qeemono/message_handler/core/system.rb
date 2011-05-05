@@ -11,7 +11,7 @@ module Qeemono
         end
 
         def description
-          'system' # TODO: better description
+          'This message handler defines system relevant methods.'
         end
 
         def handled_methods

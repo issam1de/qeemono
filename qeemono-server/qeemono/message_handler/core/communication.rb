@@ -16,7 +16,7 @@ module Qeemono
         end
 
         def description
-          'communication' # TODO: better description
+          'This message handler deals with core communication.'
         end
 
         def handled_methods
