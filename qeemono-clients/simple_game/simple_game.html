@@ -11,6 +11,8 @@
 
     <script type="text/javascript">
 
+      var seqId = 1;
+
       var clientId = getRequestParam('client_id');
       if( !clientId ) {
         alert("Please set client id via client_id request parameter!");
@@ -51,7 +53,8 @@
         // ****
 
         $('#button1').click(function() {
-          ws.send('{"method":"send", "params":{"channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}}');
+          ws.send('{"method":"send", "params":{"channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}, "seq_id":' + seqId + '}');
+          seqId += 1;
         });
 
       });
