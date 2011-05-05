@@ -132,7 +132,7 @@ module Qeemono
 
     include Log4r
 
-    APPLICATION_VERSION = '0.1.15'
+    APPLICATION_VERSION = '0.1.16'
 
     attr_reader :message_handler_manager
 
