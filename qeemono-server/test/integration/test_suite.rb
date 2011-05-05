@@ -377,8 +377,8 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_parallel_clients_processing
-
     client_amount = 10
+    msg_count = 500
 
     for client_no in (1..client_amount) do
       QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
@@ -392,7 +392,7 @@ class BasicTest < Test::Unit::TestCase
     for client_no in (1..client_amount) do
       threads << Thread.new(client_no) do |tl_client_no|
         messages=[]
-        for i in (1..100) do
+        for i in (1..msg_count) do
           messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{tl_client_no}-#{i}"}, "seq_id":4711000#{tl_client_no}000#{i}})
         end
         actual_responses[tl_client_no] = QeeveeTestClient.new("test-client-ppp-#{tl_client_no}").test_messages(messages, 10)
@@ -400,7 +400,7 @@ class BasicTest < Test::Unit::TestCase
     end
     threads.each { |t| t.join }
     for client_no in (1..client_amount) do
-      for i in (100..1) do
+      for i in (msg_count..1) do
         assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, actual_responses[client_no][-i])
       end
     end
@@ -412,27 +412,28 @@ class BasicTest < Test::Unit::TestCase
 
   def test_parallel_clients_processing_forked
     client_amount = 10
+    msg_count = 500
 
     client_amount.times do |client_no|
       fork do
 
-        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
-        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
-        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})])
-        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}})])
+        QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+        QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
+        QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages([%q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})])
+        QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages([%q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}})])
 
         # This block is executed in a sub process...
         messages = []
         responses = []
-        for i in 1..100 do
-          messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{client_no}-#{i}"}, "seq_id":4711000#{client_no}000#{i}})
+        for i in 1..msg_count do
+          messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar333-#{client_no}-#{i}"}, "seq_id":5711000#{client_no}000#{i}})
         end
-        responses = QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages(messages, 10)
-        for i in 100..1 do
-          assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, responses[-i])
+        responses = QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages(messages, 10)
+        for i in msg_count..1 do
+          assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar333-#{client_no}-#{i}")}, :client_id=>"test-client-qppp-#{client_no}", :version=>"1.0", :seq_id => "5711000#{client_no}000#{i}".to_i}, responses[-i])
         end
 
-        QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+        QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
 
       end # end - fork
     end
