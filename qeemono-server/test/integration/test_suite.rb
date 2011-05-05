@@ -378,7 +378,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_parallel_clients_processing
     client_amount = 10
-    msg_count = 500
+    msg_count = 100
 
     for client_no in (1..client_amount) do
       QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
@@ -412,7 +412,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_parallel_clients_processing_forked
     client_amount = 10
-    msg_count = 500
+    msg_count = 100
 
     client_amount.times do |client_no|
       fork do
