@@ -121,9 +121,9 @@ module Qeemono
     #
     # Assigns the given client id to the given modules.
     #
-    # A resp. client can only access/call those message
+    # Each client can only access/call those message
     # handlers which belong to at least one module the
-    # client also belongs to.
+    # respective client also belongs to.
     # In other words, as long as a certain client and a
     # certain message handler share (are assigned to)
     # the same module(s) (at least one), they are defined
