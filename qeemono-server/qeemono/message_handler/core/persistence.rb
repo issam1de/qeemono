@@ -67,7 +67,7 @@ module Qeemono
                             key: key,
                             value: value,
                             public: public)
-          notify(:type => :info, :code => 4000, :receivers => @qsif[:client_manager].web_socket(:client_id => origin_client_id), :params => {})
+          notify(:type => :info, :code => 4000, :receivers => @qsif[:client_manager].web_socket(:client_id => origin_client_id), :params => {:client_id => origin_client_id})
         end
 
         #
