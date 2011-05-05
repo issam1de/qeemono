@@ -411,24 +411,21 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_parallel_clients_processing_forked
-    #fail "omg omg omg"
     client_amount = 10
-    client_amount.times { |client_no|
-       fork do
-        #this block is executed in a subprocess
-          messages = []
-          response = []
-          for i in 1..100 do
-            messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{client_no}-#{i}"}, "seq_id":4711000#{client_no}000#{i}})
-          end
-          response = QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages(messages, 10)
-          for i in 100..1 do
-            assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, response[-i])
-          end
-       end
-
-    }
-
+    client_amount.times do |client_no|
+      fork do
+        # This block is executed in a sub process...
+        messages = []
+        responses = []
+        for i in 1..100 do
+          messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{client_no}-#{i}"}, "seq_id":4711000#{client_no}000#{i}})
+        end
+        responses = QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages(messages, 10)
+        for i in 100..1 do
+          assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Mark! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, responses[-i])
+        end
+      end
+    end
   end
 
   # TODO: test (un-)subscribe to/from channels and create/destroy channels
