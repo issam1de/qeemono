@@ -191,6 +191,7 @@ module Qeemono
       parse_message_internal(origin_client_id, message, send_from_server) do |message_hash|
         # The receiver is either a web socket object (EventMachine::WebSocket::Connection)
         # or a channel object (EM::Channel)...
+        message_hash.merge!(:seq_id => Qeemono::Util::SeqIdPool.load)
         receiver.relay(message_hash)
       end
     end

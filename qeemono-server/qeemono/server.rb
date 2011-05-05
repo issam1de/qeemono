@@ -88,10 +88,15 @@ class EM::Channel
   #
   # For convenience: introduce relay method which delegates to push.
   #
+  # Note for developers: This method is called only from within the
+  # Qeemono::Notificator#relay_internal method.
+  #
   def relay(*args)
-    # Broadcast to all subscribers of the channel. Actual sending to
-    # the clients is done in the Ruby block passed to the EM::Channel#subscribe
-    # method which is called in Qeemono::ChannelManager#subscribe.
+    # Broadcasts to all subscribers of this channel (EM::Channel object).
+    #
+    # The actual sending to the clients is done in the Ruby block passed
+    # to the EM::Channel#subscribe method which is called from within the
+    # Qeemono::ChannelManager#subscribe method.
     push(*args)
   end
 end
@@ -102,13 +107,13 @@ module EventMachine
       #
       # For convenience: introduces a relay method which delegates to send.
       #
-      # This method is called from the Notificator#relay_internal method
-      # and from within the 'channel.subscribe' block in
-      # Qeemono::ChannelManager#subscribe
+      # Note for developers: This method is called only from within the
+      # Qeemono::Notificator#relay_internal method and from within the
+      # 'channel.subscribe' block in the Qeemono::ChannelManager#subscribe
+      # method.
       #
-      def relay(data)
-        data.merge!(:seq_id => Qeemono::Util::SeqIdPool.load)
-        send(data.to_json)
+      def relay(message_hash)
+        send(message_hash.to_json)
       end
     end
   end

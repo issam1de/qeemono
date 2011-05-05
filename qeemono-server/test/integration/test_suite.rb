@@ -26,7 +26,7 @@ class QeeveeTestClient
     end
   end
 
-  def test_messages(messages = [], duration=0.6)
+  def test_messages(messages = [], duration=0.7)
     received_message = []
 
     EventMachine.run do
@@ -78,7 +78,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_broadcast
     messages = [
-            %q({"method":"send", "params":{"channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}})
+            %q({"method":"send", "params":{"channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}, "seq_id":56987820045801})
     ]
     expected_responses = [
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
@@ -91,7 +91,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_send_to_self_and_broadcast
     messages = [
-            %q({"method":"send", "params":{"client_ids":["test-client-981121"], "channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}})
+            %q({"method":"send", "params":{"client_ids":["test-client-981121"], "channels":["broadcastwb"], "message":{"method":"Katze", "params":"123"}}, "seq_id":56987820045801})
     ]
     expected_responses = [
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
@@ -99,15 +99,54 @@ class BasicTest < Test::Unit::TestCase
             {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}
     ]
     actual_responses = QeeveeTestClient.new("test-client-981121").test_messages(messages)
+    assert_server_notifications(expected_responses, actual_responses[0...-2])
+    assert_equal({:method=>"Katze", :params=>"123", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}, actual_responses[-2])
+    assert_equal({:method=>"Katze", :params=>"123", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}, actual_responses[-1])
+  end
+
+  def test_seq_id_coming_from_server_and_going_to_self
+    QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
+    QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
+
+    messages = [
+            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
+            %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
+            %q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar"}, "seq_id":54629781}),
+            %q({"method":"send", "params":{"client_ids":["test-client-87332451441"], "message":{"method":"Hund", "params":"878"}}, "seq_id":2352355788201})
+    ]
+    expected_responses = [
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
+            {:type => 'debug', :code => 5000, :param_keys => [:message_handler_name, :handled_methods, :modules, :message_handler_class, :version]},
+            {:type => 'debug', :code => 5010, :param_keys => [:amount]},
+            {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}
+    ]
+    actual_responses = QeeveeTestClient.new("test-client-87332451441").test_messages(messages)
+    assert_server_notifications(expected_responses, actual_responses[0...-2])
+    assert_equal({:method=>"hello", :params=>{:greeting => 'Hello Mark! Your input is: "Foobar"'}, :client_id=>"test-client-87332451441", :version=>"1.0", :seq_id => 54629781}, actual_responses[-2])
+    assert_equal({:method=>"Hund", :params=>"878", :client_id=>"test-client-87332451441", :version=>"1.0", :seq_id=>2352355788201}, actual_responses[-1])
+  end
+
+  def test_seq_id_via_broadcastwb
+    messages = [
+            %q({"method":"send", "params":{"channels":["broadcastwb"], "message":{"method":"Katze", "params":"123"}}, "seq_id":235845475201})
+    ]
+    expected_responses = [
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
+            {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}
+    ]
+    actual_responses = QeeveeTestClient.new("test-client-98144121").test_messages(messages)
     assert_server_notifications(expected_responses, actual_responses[0...-1])
-    assert_equal({:method=>"Katze", :params=>"123", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>"none"}, actual_responses[-1])
+    assert_equal({:method=>"Katze", :params=>"123", :client_id=>"test-client-98144121", :version=>"1.0", :seq_id=>235845475201}, actual_responses[-1])
   end
 
   def test_send_to_channel_without_being_subscribed
     QeeveeTestClient.new("test-client-94572").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
 
     messages = [
-            %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
+            %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-7653"}}})
     ]
     expected_responses = [
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
@@ -155,12 +194,13 @@ class BasicTest < Test::Unit::TestCase
   end
 
   def test_subscribe_to_channel_and_send_to_it_with_bounce
+    QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"unsubscribe_from_channels", "params":{"channels":["My Channel 4711"]}}),])
     QeeveeTestClient.new("test-client-8733245").test_messages([%q({"method":"destroy_channels", "params":{"channels":["My Channel 4711"]}})])
 
     messages = [
             %q({"method":"create_channels", "params":{"channels":["My Channel 4711"]}}),
             %q({"method":"subscribe_to_channels", "params":{"channels":["My Channel 4711"], "bounce":"true"}}),
-            %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-765"}}})
+            %q({"method":"send", "params":{"channels":["My Channel 4711"], "message":{"method":"Foobar", "params":"Hummel-7651"}}})
     ]
     expected_responses = [
             {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
@@ -171,7 +211,7 @@ class BasicTest < Test::Unit::TestCase
     ]
     actual_responses = QeeveeTestClient.new("test-client-8735").test_messages(messages)
     assert_server_notifications(expected_responses, actual_responses[0...-1])
-    assert_equal({:method=>"Foobar", :params=>"Hummel-765", :client_id=>"test-client-8735", :version=>"1.0", :seq_id=>"none"}, actual_responses[-1])
+    assert_equal({:method=>"Foobar", :params=>"Hummel-7651", :client_id=>"test-client-8735", :version=>"1.0", :seq_id=>"none"}, actual_responses[-1])
   end
 
   def test_echo_without_being_registered_for_it
@@ -268,28 +308,6 @@ class BasicTest < Test::Unit::TestCase
     actual_responses = QeeveeTestClient.new("test-client-8733245144").test_messages(messages)
     assert_server_notifications(expected_responses, actual_responses[0...-1])
     assert_equal({:method=>"hello", :params=>{:greeting => 'Hello Mark! Your input is: "Foobar"'}, :client_id=>"test-client-8733245144", :version=>"1.0", :seq_id=>"none"}, actual_responses[-1])
-  end
-
-  def test_seq_id
-    QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
-    QeeveeTestClient.new("test-client-87332451441").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})])
-
-    messages = [
-            %q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}}),
-            %q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}),
-            %q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar"}, "seq_id":54629781})
-    ]
-    expected_responses = [
-            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
-            {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]},
-            {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]},
-            {:type => 'debug', :code => 5000, :param_keys => [:message_handler_name, :handled_methods, :modules, :message_handler_class, :version]},
-            {:type => 'debug', :code => 5010, :param_keys => [:amount]},
-            {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}
-    ]
-    actual_responses = QeeveeTestClient.new("test-client-87332451441").test_messages(messages)
-    assert_server_notifications(expected_responses, actual_responses[0...-1])
-    assert_equal({:method=>"hello", :params=>{:greeting => 'Hello Mark! Your input is: "Foobar"'}, :client_id=>"test-client-87332451441", :version=>"1.0", :seq_id => 54629781}, actual_responses[-1])
   end
 
   def test_message_handler_with_method_that_fails_hard
@@ -391,6 +409,8 @@ class BasicTest < Test::Unit::TestCase
       QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})])
     end
   end
+
+  # TODO: test (un-)subscribe to/from channels and create/destroy channels
 
   private
 
