@@ -43,8 +43,15 @@
         }
 
         ws.onmessage = function(event) {
-          str = event.data;
-          msg_to("#console1", str)
+          var jsonStr = event.data;
+          var jsonObj = JSON.parse(jsonStr);
+          if( jsonObj.client_id == '__server' ) {
+            msg_to("#server_console", jsonStr)
+          } else if ( jsonObj.method == 'show_others_location' ) {
+            msg_to("#game_console", jsonStr)
+          } else {
+            msg_to("#msg_console", jsonStr)
+          }
         }
 
         ws.onclose = function() {
@@ -63,6 +70,10 @@
   </head>
   <body>
     <div id="button1" class="button">Push me!</div>
-    <div id="console1" class="console"></div>
+    <div>
+      <div id="game_console" class="console"></div>
+      <div id="msg_console" class="console"></div>
+      <div id="server_console" class="console"></div>
+    </div>
   </body>
 </html>
