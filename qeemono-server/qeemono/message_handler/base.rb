@@ -4,6 +4,14 @@ module Qeemono
     # This is the base class of all message handlers.
     # All message handlers have to subclass it.
     #
+    # Message handlers are called either externally by clients via the
+    # JSON-based qeemono protocol (in this case the requests are dispatched
+    # in the Qeemono::Server#dispatch_message method) or internally via the
+    # Qeemono::??? (TODO: method name?)
+    # method. Calling internally means that message handler
+    # methods call methods in other message handlers of the same qeemono
+    # server.
+    #
     # Actual message handling must not be done here.
     #
     # Every message handler defines a set of configuration options which
