@@ -303,8 +303,8 @@ module Qeemono
               if enable_timeout_thread
                 # Here, the actual dispatch to the message handler happens!
                 # The origin client id (the sender) is passed as first argument, the actual message as second...
-                message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params], message_hash[:seq_id]) do |tl_handle_method_sym, tl_client_id, tl_params, tl_seq_id2|
-                  Qeemono::Util::ThreadLocalPool.store_seq_id(tl_seq_id2)
+                message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params], message_hash[:seq_id]) do |tl_handle_method_sym, tl_client_id, tl_params, tl_seq_id|
+                  Qeemono::Util::ThreadLocalPool.store_seq_id(tl_seq_id)
                   Qeemono::Util::ThreadLocalPool.store_client_id(tl_client_id)
                   message_handler.send(tl_handle_method_sym, tl_client_id, tl_params)
                   Qeemono::Util::ThreadLocalPool.delete_seq_id
