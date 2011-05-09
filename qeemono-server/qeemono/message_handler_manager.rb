@@ -142,7 +142,7 @@ module Qeemono
         return false
       end
 
-      if !Qeemono::Util::CommonUtils.non_empty_symbol(message_handler.name)
+      if !Qeemono::Util::CommonUtils.non_empty_symbol(message_handler.name, :dots_allowed => false)
         notify(:type => :error, :code => 5110, :receivers => receiver, :params => {:clazz => message_handler.class})
         return false
       end
