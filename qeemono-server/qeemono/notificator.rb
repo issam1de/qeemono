@@ -191,7 +191,7 @@ module Qeemono
       parse_message_internal(origin_client_id, message, send_from_server) do |message_hash|
         # The receiver is either a web socket object (EventMachine::WebSocket::Connection)
         # or a channel object (EM::Channel)...
-        message_hash.merge!(:seq_id => Qeemono::Util::SeqIdPool.load)
+        message_hash.merge!(:seq_id => Qeemono::Util::ThreadLocalPool.load_seq_id)
         receiver.relay(message_hash)
       end
     end
@@ -233,9 +233,9 @@ module Qeemono
       message_hash[:version] ||= PROTOCOL_VERSION
 
       # If no seq_id is given, it is set to :none...
-      message_hash[:seq_id] ||= Qeemono::Util::SeqIdPool::EMPTY_SEQ_ID
+      message_hash[:seq_id] ||= Qeemono::Util::ThreadLocalPool::EMPTY_SEQ_ID
 
-      if message_hash[:seq_id] != Qeemono::Util::SeqIdPool::EMPTY_SEQ_ID && !message_hash[:seq_id].is_a?(Integer)
+      if message_hash[:seq_id] != Qeemono::Util::ThreadLocalPool::EMPTY_SEQ_ID && !message_hash[:seq_id].is_a?(Integer)
         raise Qeemono::InvalidFormatError.new("The sequencer id (:seq_id) must be of type Integer or :none! Ignoring.")
       end
 

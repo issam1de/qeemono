@@ -101,6 +101,10 @@ module Qeemono
 
       protected
 
+      def dispatch_message(message_hash)
+        @qsif[:server].dispatch_message(message_hash)
+      end
+
       def notify(*args)
         @qsif[:notificator].notify(*args)
       end

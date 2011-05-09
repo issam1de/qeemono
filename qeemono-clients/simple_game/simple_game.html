@@ -40,6 +40,8 @@
         ws = new WebSocket("ws://localhost:8080?client_id=" + clientId);
 
         ws.onopen = function() {
+          ws.send('{"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/simple_game_message_handler.rb"]}}');
+          ws.send('{"method":"assign_to_modules", "params":{"modules":["__marks_module"]}}');
         }
 
         ws.onmessage = function(event) {
@@ -61,6 +63,8 @@
 
         $('#button1').click(function() {
           ws.send('{"method":"send", "params":{"channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}, "seq_id":' + seqId + '}');
+          seqId += 1;
+          ws.send('{"method":"store_location", "params":{"lat":12.34, "lng":56.78}, "seq_id":' + seqId + '}');
           seqId += 1;
         });
 

@@ -70,7 +70,7 @@ require 'log4r'
 
 require_relative 'lib/util/common_utils'
 require_relative 'lib/util/string_utils'
-require_relative 'lib/util/seq_id_pool'
+require_relative 'lib/util/thread_local_pool'
 require_relative 'lib/extensions/string_extensions'
 require_relative 'lib/exception/qeemono_standard_error'
 require_relative 'notificator'
@@ -133,6 +133,8 @@ module Qeemono
     include Log4r
 
     APPLICATION_VERSION = '0.1.17'
+    MESSAGE_DISPATCH_THREAD_TIMEOUT_IN_SECONDS = 3
+
 
     attr_reader :message_handler_manager
 
@@ -162,7 +164,8 @@ module Qeemono
         :notificator => nil, # Is set by the Notificator itself
         :message_handler_manager => nil, # Is set by the MessageHandlerManager itself
         :channel_manager => nil,  # Is set by the ChannelManager itself
-        :client_manager => nil # Is set by the ClientManager itself
+        :client_manager => nil, # Is set by the ClientManager itself
+        :server => self
       }
 
       @qsif_public = @qsif # Set the public server interface used by all message handlers
@@ -197,19 +200,12 @@ module Qeemono
           end
 
           ws.onmessage do |message|
-            begin
-              client_id = @qsif[:client_manager].bind(ws)
-              begin
-                @qsif[:notificator].parse_message(client_id, message) do |message_hash|
-                  notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
-                  dispatch_message(message_hash)
-                end
-              rescue => e
-                notify(:type => :fatal, :code => 9002, :receivers => ws, :params => {:client_id => client_id, :message_hash => message.inspect, :err_msg => e.to_s}, :exception => e)
-              end
-            rescue => e
-              notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
+            bind_parse_and_dispatch(ws, message) do |message_hash|
+              dispatch_message_externally_triggered(message_hash)
             end
+            # JUST FOR TESTING
+#            @qsif[:notificator].relay(:'__test_server', ws, {:method => :end_of_messages, :params => {}})
+            # end - JUST FOR TESTING
           end # end - ws.onmessage
 
           ws.onclose do
@@ -234,7 +230,35 @@ module Qeemono
 
     end # end - start
 
+    #
+    # Used for internal message handler execution. That is, if
+    # some message handler method is called from withing a
+    # method of another message handler of the same qeemono
+    # server.
+    #
+    # For more details see __dispatch_message__ method.
+    #
+    def dispatch_message(message)
+      client_id = Qeemono::Util::ThreadLocalPool.load_client_id
+      ws = @qsif[:client_manager].web_socket(:client_id => client_id)
+      bind_parse_and_dispatch(ws, message) do |message_hash|
+        __dispatch_message__(message_hash, false)
+      end
+    end
+
     protected
+
+    #
+    # Used for external message handler execution. That is, if
+    # some message handler method is called by an external
+    # client (e.g. Javascript client) via the JSON-based
+    # qeemono protocol.
+    #
+    # For more details see __dispatch_message__ method.
+    #
+    def dispatch_message_externally_triggered(message_hash)
+      __dispatch_message__(message_hash, true)
+    end
 
     #
     # Dispatches the received message (which has already been parsed and
@@ -243,6 +267,13 @@ module Qeemono
     # is sent to all matching message handlers responsible for the given
     # method. Otherwise, if a message handler is given prefixing the method,
     # the respective message handler is addressed.
+    #
+    # If (and only if) called externally, that is from e.g. a Javascript
+    # client via the qeemono JSON protocol, execution is timed out after
+    # MESSAGE_DISPATCH_THREAD_TIMEOUT_IN_SECONDS seconds. This is to
+    # prevent infinite loops and methods taking too long to execute.
+    # If called internally, the timeout is disabled since it has already
+    # been activated by the initial external request which came beforehand.
     #
     # Example:
     #
@@ -254,10 +285,9 @@ module Qeemono
     #
     #      sends methods 'echo' to *all* suitable message handlers.
     #
-    def dispatch_message(message_hash)
-      Qeemono::Util::SeqIdPool.store(message_hash[:seq_id])
+    def __dispatch_message__(message_hash, enable_timeout_thread)
+      Qeemono::Util::ThreadLocalPool.store_seq_id(message_hash[:seq_id])
 
-      thread_timeout_in_seconds = 3
       client_id = message_hash[:client_id]
       fq_method_name = message_hash[:method].to_sym
       message_handler_name, method_name = extract_message_handler_name_from_method_name(fq_method_name)
@@ -270,20 +300,23 @@ module Qeemono
           handle_method_sym = "handle_#{method_name}".to_sym
           if message_handler.respond_to?(handle_method_sym)
             begin
-              # Here, the actual dispatch to the message handler happens!
-              # The origin client id (the sender) is passed as first argument, the actual message as second...
-              message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params], message_hash[:seq_id]) do |tl_handle_method_sym, tl_client_id, tl_params, tl_seq_id2|
-                Qeemono::Util::SeqIdPool.store(tl_seq_id2)
-                message_handler.send(tl_handle_method_sym, tl_client_id, tl_params)
-                Qeemono::Util::SeqIdPool.delete
-              end
-              thread_join_result = message_handler_thread.join(thread_timeout_in_seconds) # The execution of the message handler method must not last longer than 3 seconds
-              if thread_join_result.nil?
-                # Thread has been aborted (because timeout has been exceeded)...
-                notify(:type => :fatal, :code => 9530, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :thread_timeout => thread_timeout_in_seconds})
+              if enable_timeout_thread
+                # Here, the actual dispatch to the message handler happens!
+                # The origin client id (the sender) is passed as first argument, the actual message as second...
+                message_handler_thread = Thread.new(handle_method_sym, client_id, message_hash[:params], message_hash[:seq_id]) do |tl_handle_method_sym, tl_client_id, tl_params, tl_seq_id2|
+                  Qeemono::Util::ThreadLocalPool.store_seq_id(tl_seq_id2)
+                  Qeemono::Util::ThreadLocalPool.store_client_id(tl_client_id)
+                  message_handler.send(tl_handle_method_sym, tl_client_id, tl_params)
+                  Qeemono::Util::ThreadLocalPool.delete_seq_id
+                  Qeemono::Util::ThreadLocalPool.delete_client_id
+                end
+                thread_join_result = message_handler_thread.join(MESSAGE_DISPATCH_THREAD_TIMEOUT_IN_SECONDS) # The execution of the message handler method must not last longer than 3 seconds
+                if thread_join_result.nil?
+                  # Thread has been aborted (because timeout has been exceeded)...
+                  notify(:type => :fatal, :code => 9530, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :thread_timeout => MESSAGE_DISPATCH_THREAD_TIMEOUT_IN_SECONDS})
+                end
               else
-                # Thread has terminated normally (execution happened within the timeout)...
-                # ... nothing to be done here... :-)
+                message_handler.send(handle_method_sym, client_id, message_hash[:params])
               end
             rescue Qeemono::QeemonoStandardError => e
               notify(:type => :error, :code => 9515, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:handle_method_name => handle_method_sym.to_s, :message_handler_name => message_handler.name, :message_handler_class => message_handler.class, :version => message_handler.version, :client_id => client_id, :message_hash => message_hash.inspect, :err_msg => e.to_s}, :exception => e, :no_log => true)
@@ -296,7 +329,7 @@ module Qeemono
         end
       end
 
-      Qeemono::Util::SeqIdPool.delete
+      Qeemono::Util::ThreadLocalPool.delete_seq_id
     end
 
     def init_logger(logger_name, log_file)
@@ -332,6 +365,22 @@ module Qeemono
     end
 
     private
+
+    def bind_parse_and_dispatch(ws, message)
+      begin
+        client_id = @qsif[:client_manager].bind(ws)
+        begin
+          @qsif[:notificator].parse_message(client_id, message) do |message_hash|
+            notify(:type => :debug, :code => 6010, :params => {:client_id => client_id, :message_hash => message_hash.inspect})
+            yield(message_hash)
+          end
+        rescue => e
+          notify(:type => :fatal, :code => 9002, :receivers => ws, :params => {:client_id => client_id, :message_hash => message.inspect, :err_msg => e.to_s}, :exception => e)
+        end
+      rescue => e
+        notify(:type => :fatal, :code => 9000, :receivers => ws, :params => {:err_msg => e.to_s}, :exception => e)
+      end
+    end
 
     def logger
       @logger
