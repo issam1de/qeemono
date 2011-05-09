@@ -203,9 +203,6 @@ module Qeemono
             bind_parse_and_dispatch(ws, message) do |message_hash|
               dispatch_message_externally_triggered(message_hash)
             end
-            # JUST FOR TESTING
-#            @qsif[:notificator].relay(:'__test_server', ws, {:method => :end_of_messages, :params => {}})
-            # end - JUST FOR TESTING
           end # end - ws.onmessage
 
           ws.onclose do

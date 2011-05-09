@@ -26,7 +26,7 @@ class QeeveeTestClient
     end
   end
 
-  def test_messages(messages = [], duration=0.7)
+  def test_messages(messages = [], duration=0.8)
     received_messages = []
     requests_counter = messages.size
     responses_counter = 0
@@ -49,16 +49,8 @@ class QeeveeTestClient
 
       http.stream do |msg|
         parsed_msg = JSON.parse(msg, :symbolize_names => true)
+        received_messages << parsed_msg
         puts "r: #{parsed_msg}"
-
-#        if parsed_msg[:client_id] == "__test_server" && parsed_msg[:method] == 'end_of_messages'
-#          responses_counter += 1
-#          if requests_counter == responses_counter
-#            EventMachine.stop
-#          end
-#        else
-          received_messages << parsed_msg
-#        end
       end
     end
 
