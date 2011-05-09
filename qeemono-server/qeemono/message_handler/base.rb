@@ -6,8 +6,8 @@ module Qeemono
     #
     # Message handlers are called either externally by clients via the
     # JSON-based qeemono protocol (in this case the requests are dispatched
-    # in the Qeemono::Server#dispatch_message method) or internally via the
-    # Qeemono::??? (TODO: method name?)
+    # in the Qeemono::Server#__dispatch_message__ method) or internally via the
+    # Qeemono::MessageHandler::Base#dispatch_message method.
     # method. Calling internally means that message handler
     # methods call methods in other message handlers of the same qeemono
     # server.
