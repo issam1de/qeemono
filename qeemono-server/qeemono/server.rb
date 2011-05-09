@@ -132,7 +132,7 @@ module Qeemono
 
     include Log4r
 
-    APPLICATION_VERSION = '0.1.17'
+    APPLICATION_VERSION = '0.1.18'
     MESSAGE_DISPATCH_THREAD_TIMEOUT_IN_SECONDS = 3
 
 
