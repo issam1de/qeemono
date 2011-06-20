@@ -15,7 +15,13 @@ module Qeemono
         end
 
         def handled_methods
-          [:assign_to_modules, :unassign_from_modules, :register_message_handlers, :unregister_message_handlers]
+          [
+                  :assign_to_modules,
+                  :unassign_from_modules,
+                  :register_message_handlers,
+                  :unregister_message_handlers,
+                  :no_operation
+          ]
         end
 
         def modules
@@ -99,6 +105,13 @@ module Qeemono
           options = {}
 
           @qsif[:message_handler_manager].unregister(origin_client_id, fq_names, options)
+        end
+
+        #
+        # Does nothing.
+        #
+        def handle_no_operation(origin_client_id, params)
+          # Nothing...
         end
 
         private
