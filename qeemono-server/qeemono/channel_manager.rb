@@ -51,7 +51,7 @@ module Qeemono
       client_ids_to_be_unsubscribed = []
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
-        client_ids_to_be_unsubscribed << @channel_subscribers[channel_symbol]
+        client_ids_to_be_unsubscribed << @channel_subscribers[channel_symbol] unless @channel_subscribers[channel_symbol].nil?
       end
       client_ids_to_be_unsubscribed = client_ids_to_be_unsubscribed.flatten.uniq
 
