@@ -170,7 +170,8 @@ module Qeemono
           @channel_subscribers[channel_symbol].delete(client_id)
           channel_subscriber_ids << channel_subscriber_id
 
-          notify(:type => :debug, :code => 2020, :receivers => @channels[channel_symbol], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => channel_subscriber_id})
+          # Must also be sent to the web socket in order that the client receives the notification (since it is now unsubscribed)...
+          notify(:type => :debug, :code => 2020, :receivers => [@qsif[:client_manager].web_socket(:client_id => client_id), @channels[channel_symbol]], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => channel_subscriber_id})
         else
           notify(:type => :debug, :code => 2021, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
         end
