@@ -36,7 +36,7 @@ module Qeemono
         # A channel consists of many subscribers (clients) who the message is
         # broadcasted to. The :broadcast channel is used to broadcast to all
         # clients of the server. The :broadcastwb channel (wb = with bounce) does
-        # the same but also sends (bounces) the message to the origin client.
+        # the same but also sends (bounces) the message to the origin client (sender).
         #
         # * origin_client_id - The originator (sender) of the message.
         # * params:
@@ -89,9 +89,9 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message (who has to be subscribed).
         # * params:
         #   - :channels => Array of channels to subscribe to (e.g. [:broadcast, :detectives]).
-        #   - :bounce => If true the message will also be sent (bounce) to the sender (origin client) provided
-        #                that the client is subscribed to the resp. channel. If false (the default) the sender
-        #                will not receive the message although being subscribed to the channel.
+        #   - :bounce => If true the message will also be sent (bounced) to the origin client (sender)
+        #                provided that the client is subscribed to the resp. channel. If false (the default)
+        #                the sender will not receive the message although being subscribed to the channel.
         #   - :create_lazy => If true, the channel(s) is/are automatically created if not existent yet. If
         #                     false (the default), an error notification is sent back and nothing will be done.
         #
