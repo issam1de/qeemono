@@ -1,3 +1,6 @@
+#
+# For testing...
+#
 class ServerResponse
   include Mongoid::Document
 
