@@ -37,7 +37,7 @@ module Qeemono
               relay(
                       origin_client_id,
                       @qsif[:client_manager].web_socket(:client_id => origin_client_id),
-                      {:method => :hello, :params => {:greeting => "Hello Mark! Your input is: \"#{input}\""}}
+                      {:method => :hello, :params => {:greeting => "Hello Markimo! Your input is: \"#{input}\""}}
               )
             end
 
