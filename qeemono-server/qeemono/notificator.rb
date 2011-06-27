@@ -28,7 +28,7 @@ module Qeemono
       :method,    # * The method to call (respective message handler(s) have to subscribe in the first place)
       :params,    # * The parameters to pass to the method
       :seq_id,    # * The sequencer id. Used to uniquely identify and associate responses to their related requests
-                  #     - Optional. If not passed, seq_id is :none
+                  #     - Optional. If not passed, seq_id is :none (see also Qeemono::Util::ThreadLocalPool::EMPTY_SEQ_ID)
       :version    # * The protocol version to use (if not passed the default (latest) version is assumed)
     ]
 
@@ -236,7 +236,7 @@ module Qeemono
       message_hash[:seq_id] ||= Qeemono::Util::ThreadLocalPool::EMPTY_SEQ_ID
 
       if message_hash[:seq_id] != Qeemono::Util::ThreadLocalPool::EMPTY_SEQ_ID && !message_hash[:seq_id].is_a?(Integer)
-        raise Qeemono::InvalidFormatError.new("The sequencer id (:seq_id) must be of type Integer or :none! Ignoring.")
+        raise Qeemono::InvalidFormatError.new("The sequencer id (:seq_id) must be of type Integer or :#{Qeemono::Util::ThreadLocalPool::EMPTY_SEQ_ID.to_s}! Ignoring.")
       end
 
       # Check for all mandatory keys...
