@@ -22,6 +22,7 @@
 #       (broadcast and channel communication is possible with 'bounce' flag)
 #   - message handlers use observer pattern to register
 #   - starvation-save (message handlers which run infinitely)
+#   - message acknowledgement
 #
 # Requirements on server-side:
 # ----------------------------
@@ -132,7 +133,7 @@ module Qeemono
 
     include Log4r
 
-    APPLICATION_VERSION = '0.2'
+    APPLICATION_VERSION = '0.2.1'
     MESSAGE_DISPATCH_THREAD_TIMEOUT_IN_SECONDS = 3
 
 
