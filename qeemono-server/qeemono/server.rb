@@ -33,12 +33,12 @@
 #     - iconv (https://rubygems.org/gems/iconv - see also http://rvm.beginrescueend.com/packages/iconv)
 #     - json (https://rubygems.org/gems/json [depends on iconv]
 #     - log4r (https://rubygems.org/gems/log4r)
-#     - [needed for testing] em-http-request (https://rubygems.org/gems/em-http-request)
 #     - mongoid (https://rubygems.org/gems/mongoid)
 #     - bson_ext (https://rubygems.org/gems/bson_ext) - to make mongoid faster
+#     - [needed for testing] em-http-request (https://rubygems.org/gems/em-http-request)
 #
 #   To install them all just execute the following in a terminal window:
-#   gem install em-websocket json log4r em-http-request
+#   gem install <gem-name> <gem-name> <etc.>
 #
 # Requirements on client-side:
 # ----------------------------
