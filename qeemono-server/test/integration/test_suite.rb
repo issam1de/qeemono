@@ -22,6 +22,7 @@ class QeeveeTestClient
     @client_id = client_id
     connect_to_test_mongodb
     ServerResponse.delete_all
+    raise "Mongo DB not empty!" unless ServerResponse.first.nil?
   end
 
   def self.stop_event_machine_after_sleep(duration)
