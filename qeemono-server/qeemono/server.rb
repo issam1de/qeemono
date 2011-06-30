@@ -289,8 +289,12 @@ module Qeemono
       client_id = message_hash[:client_id]
       fq_method_name = message_hash[:method].to_sym
       message_handler_name, method_name = extract_message_handler_name_from_method_name(fq_method_name)
+
+      # Get all registered message handlers filtered by the given conditions hash...
       message_handlers = @qsif[:message_handler_manager].message_handlers(:method => method_name, :name => message_handler_name, :modules => @qsif[:client_manager].modules(client_id), :version => message_hash[:version])
+
       if message_handlers.empty?
+        # If no message handler matches the above condition send an error notification and abort processing...
         message_handler_names_for_notification = message_handler_name ? [message_handler_name] : 'all'
         notify(:type => :error, :code => 9500, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:method_name => method_name, :message_handler_names => message_handler_names_for_notification, :client_id => client_id, :version => message_hash[:version], :modules => @qsif[:client_manager].modules(client_id).inspect, :message_hash => message_hash.inspect})
       else

@@ -111,7 +111,7 @@ module Qeemono
       # OBSOLETE ::: client_id_to_forget, _web_socket = @web_sockets.rassoc(web_socket)
       client_id_to_unbind = @clients[web_socket.signature]
       if client_id_to_unbind
-        @qsif[:channel_manager].unsubscribe(client_id_to_unbind, :all)
+        @qsif[:channel_manager].unsubscribe(client_id_to_unbind, ChannelManager::ALL_CHANNELS_SHORTCUT)
         @web_sockets.delete(client_id_to_unbind)
         @clients.delete(web_socket.signature)
         return client_id_to_unbind
@@ -150,7 +150,7 @@ module Qeemono
         params = {:client_id => client_id, :module_name => the_module}
 
         if !Qeemono::Util::CommonUtils.non_empty_symbol(the_module.to_sym)
-          notify(:type => :error, :code => 3110, :receivers => receiver, :params => params)
+          notify(:type => :error, :code => 3110, :receivers => receiver, :params => {:client_id => client_id})
         else
           module_symbol = the_module.to_sym
           if @modules[client_id].include?(module_symbol)
@@ -186,7 +186,7 @@ module Qeemono
         params = {:client_id => client_id, :module_name => the_module}
 
         if !Qeemono::Util::CommonUtils.non_empty_symbol(the_module.to_sym)
-          notify(:type => :error, :code => 3130, :receivers => receiver, :params => params)
+          notify(:type => :error, :code => 3130, :receivers => receiver, :params => {:client_id => client_id})
         else
           module_symbol = the_module.to_sym
           if !@modules[client_id].include?(module_symbol)

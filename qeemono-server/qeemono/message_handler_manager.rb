@@ -15,7 +15,7 @@ module Qeemono
     end
 
     #
-    # Returns message handlers filtered by the given conditions hash.
+    # Returns all registered message handlers filtered by the given conditions hash.
     #
     # conditions:
     #   * :method - (symbol) - Filters the message handlers to only those

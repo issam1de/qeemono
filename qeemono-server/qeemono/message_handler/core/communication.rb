@@ -41,12 +41,15 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message.
         # * params:
         #   - :channels => Array of channels to broadcast to (e.g. [:broadcast, :detectives]).
+        #                  Can be strings or symbols.
         #   - :client_ids => Array of client ids to send to (e.g. [:client_4711, :mark]).
+        #                    Can be strings or symbols.
         #   - :message => The JSON message (following the qeemono protocol) to be sent.
         #
         def handle_send(origin_client_id, params)
           channels = params[:channels]
           receiver_client_ids = params[:client_ids]
+          # TODO: move raise into actual send method and send a notification instead of raising an exception
           if channels.nil? && receiver_client_ids.nil?
             raise Qeemono::NoReceiverGivenError.new("Neither parameter 'channels' nor 'client_ids' is set! At least one target (channels and/or client_ids) must be specified.")
           elsif params[:message].nil?
@@ -63,6 +66,7 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message.
         # * params:
         #   - :channels => Array of channels to create (e.g. [:my_new_channel, :foo_channel_1]).
+        #                  Can be strings or symbols.
         #
         def handle_create_channels(origin_client_id, params)
           channel_symbols = params[:channels]
@@ -76,6 +80,7 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message.
         # * params:
         #   - :channels => Array of channels to destroy (e.g. [:my_new_channel, :foo_channel_1]).
+        #                  Can be strings or symbols.
         #
         def handle_destroy_channels(origin_client_id, params)
           channel_symbols = params[:channels]
@@ -89,6 +94,7 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message (who has to be subscribed).
         # * params:
         #   - :channels => Array of channels to subscribe to (e.g. [:broadcast, :detectives]).
+        #                  Can be strings or symbols.
         #   - :bounce => If true the message will also be sent (bounced) to the origin client (sender)
         #                provided that the client is subscribed to the resp. channel. If false (the default)
         #                the sender will not receive the message although being subscribed to the channel.
@@ -109,6 +115,8 @@ module Qeemono
         # * origin_client_id - The originator (sender) of the message (who has to be unsubscribed).
         # * params:
         #   - :channels => Array of channels to unsubscribe from (e.g. [:broadcast, :detectives]).
+        #                  Can be strings or symbols. If :_all_ or '_all_' is passed the client is
+        #                  unsubscribed from all channels it is subscribed to.
         #
         def handle_unsubscribe_from_channels(origin_client_id, params)
           channel_symbols = params[:channels]
@@ -120,7 +128,8 @@ module Qeemono
 
         #
         # receivers - Array of client ids or array of channels (depending on the receiver_type).
-        # receiver_type - Either :channels or :client_ids
+        #             An array of strings or symbols.
+        # receiver_type - A symbol. Either :channels or :client_ids
         # message - The message to send.
         #
         def send_to_channels_or_clients(origin_client_id, receivers, receiver_type, message)

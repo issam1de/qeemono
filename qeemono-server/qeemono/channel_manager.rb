@@ -5,6 +5,9 @@ module Qeemono
   class ChannelManager
 
     SYSTEM_CHANNELS = [:broadcast, :broadcastwb]
+    ALL_CHANNELS_SHORTCUT = :_all_
+    INVALID_CHANNEL_NAMES_FOR_SUBSCRIPTION = [ALL_CHANNELS_SHORTCUT]
+    INVALID_CHANNEL_NAMES_FOR_CREATION_AND_DESTRUCTION = SYSTEM_CHANNELS + INVALID_CHANNEL_NAMES_FOR_SUBSCRIPTION
 
 
     def initialize(server_interface)
@@ -31,6 +34,10 @@ module Qeemono
       channel_symbols = [channel_symbols] unless channel_symbols.is_a? Array
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
+        if INVALID_CHANNEL_NAMES_FOR_CREATION_AND_DESTRUCTION.include?(channel_symbol)
+          notify(:type => :error, :code => 2054, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+          next
+        end
         if @channels[channel_symbol].nil?
           @channels[channel_symbol] = EM::Channel.new
           notify(:type => :debug, :code => 2040, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
@@ -38,7 +45,6 @@ module Qeemono
           notify(:type => :error, :code => 2053, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
         end
       end
-
     end
 
     #
@@ -61,7 +67,7 @@ module Qeemono
 
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
-        if SYSTEM_CHANNELS.include?(channel_symbol)
+        if INVALID_CHANNEL_NAMES_FOR_CREATION_AND_DESTRUCTION.include?(channel_symbol)
           notify(:type => :error, :code => 2051, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
           next
         end
@@ -104,6 +110,10 @@ module Qeemono
 
       channel_symbols.each do |channel_symbol|
         channel_symbol = channel_symbol.to_sym
+        if INVALID_CHANNEL_NAMES_FOR_SUBSCRIPTION.include?(channel_symbol)
+          notify(:type => :error, :code => 2031, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol})
+          next
+        end
         if subscriptions_hash[channel_symbol].nil?
           # Only if the client has not been subscribed already...
 
@@ -133,7 +143,7 @@ module Qeemono
             notify(:type => :error, :code => 2030, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
           end
         else
-          notify(:type => :debug, :code => 2001, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
+          notify(:type => :error, :code => 2001, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => subscriptions_hash[channel_symbol]})
         end
       end
 
@@ -143,7 +153,8 @@ module Qeemono
     #
     # Unsubscribes the client represented by client_id from the channels represented by
     # the channel_symbols array (instead of an array also a single channel symbol can
-    # be passed). If :all is passed as channel symbol the client is unsubscribed from
+    # be passed).
+    # If :_all_ or '_all_' is passed as channel_symbols the client is unsubscribed from
     # all channels it is subscribed to.
     #
     # Returns the channel subscriber ids (array) of all channels which just have
@@ -155,7 +166,8 @@ module Qeemono
       channel_subscriber_ids = []
       subscriptions_hash = @channel_subscriptions[client_id] ||= {}
 
-      if channel_symbols == [:all]
+      unless (channel_symbols & [ALL_CHANNELS_SHORTCUT.to_s]).empty? && (channel_symbols & [ALL_CHANNELS_SHORTCUT.to_sym]).empty?
+        # If :_all_ (symbol) or '_all_' (string) is given as channel_symbols...
         channel_symbols = subscriptions_hash.keys
       end
 
@@ -173,7 +185,7 @@ module Qeemono
           # Must also be sent to the client directly (via web socket) in order that it receives the unsubscribe notification...
           notify(:type => :debug, :code => 2020, :receivers => [@qsif[:client_manager].web_socket(:client_id => client_id), @channels[channel_symbol]], :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s, :channel_subscriber_id => channel_subscriber_id})
         else
-          notify(:type => :debug, :code => 2021, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
+          notify(:type => :error, :code => 2021, :receivers => @qsif[:client_manager].web_socket(:client_id => client_id), :params => {:client_id => client_id, :channel_symbol => channel_symbol.to_s})
         end
       end
 

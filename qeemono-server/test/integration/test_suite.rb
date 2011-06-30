@@ -260,6 +260,93 @@ class BasicTest < Test::Unit::TestCase
     assert_server_notifications(expected_responses, actual_responses)
   end
 
+  def test_create_system_channels
+    messages = [
+            %q({"method":"create_channels", "params":{"channels":["broadcast", "broadcastwb"]}})
+    ]
+    expected_responses = [
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+            {:client_id=>"__server", :method=>"notify", :params=>{:arguments=>{:type=>"error", :code=>2054, :params=>{:client_id=>"test-client-8736", :channel_symbol=>"broadcast"}}, :msg=>"error : Client 'test-client-8736' tried to create channel 'broadcast'! Not possible since it is a system channel."}, :version=>"1.0", :seq_id=>"none"},
+            {:client_id=>"__server", :method=>"notify", :params=>{:arguments=>{:type=>"error", :code=>2054, :params=>{:client_id=>"test-client-8736", :channel_symbol=>"broadcastwb"}}, :msg=>"error : Client 'test-client-8736' tried to create channel 'broadcastwb'! Not possible since it is a system channel."}, :version=>"1.0", :seq_id=>"none"}
+    ]
+    actual_responses = QeeveeTestClient.instance.do("test-client-8736").test_messages(messages, expected_responses.size)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_destroy_system_channels
+    messages = [
+            %q({"method":"destroy_channels", "params":{"channels":["broadcast", "broadcastwb"]}})
+    ]
+    expected_responses = [
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2020, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2020, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:client_id=>"__server", :method=>"notify", :params=>{:arguments=>{:type=>"error", :code=>2051, :params=>{:client_id=>"test-client-87326", :channel_symbol=>"broadcast"}}, :msg=>"error : Client 'test-client-87326' tried to destroy channel 'broadcast'! Not possible since it is a system channel."}, :version=>"1.0", :seq_id=>"none"},
+            {:client_id=>"__server", :method=>"notify", :params=>{:arguments=>{:type=>"error", :code=>2051, :params=>{:client_id=>"test-client-87326", :channel_symbol=>"broadcastwb"}}, :msg=>"error : Client 'test-client-87326' tried to destroy channel 'broadcastwb'! Not possible since it is a system channel."}, :version=>"1.0", :seq_id=>"none"}
+    ]
+    actual_responses = QeeveeTestClient.instance.do("test-client-87326").test_messages(messages, expected_responses.size)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_subscribe_to_invalid_channel
+    messages = [
+            %q({"method":"subscribe_to_channels", "params":{"channels":["_all_"]}}),
+    ]
+    expected_responses = [
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+            {:params => {:arguments => {:type => 'error', :code => 2031, :param_keys => [:client_id, :channel_symbol]}}}
+    ]
+    actual_responses = QeeveeTestClient.instance.do("test-client-87337").test_messages(messages, expected_responses.size)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_create_channel_subscribe_to_it_destroy_channel
+    messages = [
+            %q({"method":"unsubscribe_from_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515001}),
+            %q({"method":"destroy_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515002}),
+            %q({"method":"create_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515003}),
+            %q({"method":"create_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515009}),
+            %q({"method":"subscribe_to_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515004}),
+            %q({"method":"subscribe_to_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515008}),
+            %q({"method":"destroy_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515005}),
+            %q({"method":"destroy_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515006}),
+            %q({"method":"subscribe_to_channels", "params":{"channels":["panno_kram_suppi_5555-4444", "panno_kram_suppi_5555-3333"]}, "seq_id":100881515007}),
+    ]
+    expected_responses = [
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+            {:params => {:arguments => {:type => 'error', :code => 2021, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515001},
+            {:params => {:arguments => {:type => 'error', :code => 2021, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515001},
+            {:params => {:arguments => {:type => 'error', :code => 2052, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515002},
+            {:params => {:arguments => {:type => 'error', :code => 2052, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515002},
+            {:params => {:arguments => {:type => 'debug', :code => 2040, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515003},
+            {:params => {:arguments => {:type => 'debug', :code => 2040, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515003},
+            {:params => {:arguments => {:type => 'error', :code => 2053, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515009},
+            {:params => {:arguments => {:type => 'error', :code => 2053, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515009},
+            {:params => {:arguments => {:type => 'error', :code => 2001, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 100881515008},
+            {:params => {:arguments => {:type => 'error', :code => 2001, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 100881515008},
+            {:params => {:arguments => {:type => 'debug', :code => 2020, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 100881515005},
+            {:params => {:arguments => {:type => 'debug', :code => 2020, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 100881515005},
+            {:params => {:arguments => {:type => 'debug', :code => 2050, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515005},
+            {:params => {:arguments => {:type => 'debug', :code => 2050, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515005},
+            {:params => {:arguments => {:type => 'error', :code => 2052, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515006},
+            {:params => {:arguments => {:type => 'error', :code => 2052, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515006},
+            {:params => {:arguments => {:type => 'error', :code => 2030, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515007},
+            {:params => {:arguments => {:type => 'error', :code => 2030, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 100881515007},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 100881515004},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 100881515004}
+    ]
+    actual_responses = QeeveeTestClient.instance.do("test-client-873387").test_messages(messages, expected_responses.size)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
   def test_echo_without_being_registered_for_it
     messages = [
             %q({"method":"echo", "params":{"a":"123"}})
@@ -290,6 +377,34 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 3020, :param_keys => [:client_id, :module_name]}}}
     ]
     actual_responses = QeeveeTestClient.instance.do("test-client-811733245").test_messages(messages, expected_responses.size)
+    assert_server_notifications(expected_responses, actual_responses)
+  end
+
+  def test_module_assignment
+    messages = [
+            %q({"method":"assign_to_modules", "params":{"modules":["__candidate_collection"]}}),
+            %q({"method":"assign_to_modules", "params":{"modules":["__candidate_collection"]}}),
+            %q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}}),
+            %q({"method":"unassign_from_modules", "params":{"modules":["__candidate_collection"]}}),
+            %q({"method":"assign_to_modules", "params":{"modules":[]}}),
+            %q({"method":"assign_to_modules", "params":{"modules":""}}),
+            %q({"method":"unassign_from_modules", "params":{"modules":[]}}),
+            %q({"method":"unassign_from_modules", "params":{"modules":""}}),
+    ]
+    expected_responses = [
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 3000, :param_keys => [:client_id, :module_name]}}},
+            {:params => {:arguments => {:type => 'error', :code => 3010, :param_keys => [:client_id, :module_name]}}},
+            {:params => {:arguments => {:type => 'debug', :code => 3020, :param_keys => [:client_id, :module_name]}}},
+            {:params => {:arguments => {:type => 'error', :code => 3030, :param_keys => [:client_id, :module_name]}}},
+            {:params => {:arguments => {:type => 'error', :code => 3100, :param_keys => [:client_id]}}},
+            {:params => {:arguments => {:type => 'error', :code => 3110, :param_keys => [:client_id]}}},
+            {:params => {:arguments => {:type => 'error', :code => 3120, :param_keys => [:client_id]}}},
+            {:params => {:arguments => {:type => 'error', :code => 3130, :param_keys => [:client_id]}}},
+    ]
+    actual_responses = QeeveeTestClient.instance.do("test-client-18121733245").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -463,7 +578,11 @@ class BasicTest < Test::Unit::TestCase
     end
   end
 
-  # TODO: test (un-)subscribe to/from channels and create/destroy channels
+  def test_zzz_the_last_test
+    untested_codes = Qeemono::Notificator::NOTIFICATION_MESSAGES.keys - @@tested_codes.keys
+    puts "Untested codes: #{untested_codes.size}"
+    puts "Untested codes: #{untested_codes.inspect}"
+  end
 
   private
 
@@ -509,6 +628,12 @@ class BasicTest < Test::Unit::TestCase
       assert_equal seq_id, actual_response[:seq_id]
     else
       assert_equal(expected_response, actual_response)
+    end
+
+    begin
+      (@@tested_codes ||= {})[expected_response[:params][:arguments][:code].to_i] = 1
+    rescue => e
+      # Nix
     end
   end
 
