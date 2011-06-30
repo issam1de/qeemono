@@ -13,16 +13,21 @@ require_relative 'server_response'
 class QeeveeTestClient
 
   include EventMachine
+  include Singleton
 
   DEFAULT_SERVER_URL = "127.0.0.1:8080"
 
-
-  def initialize(client_id = nil, url = nil)
-    @url = url || DEFAULT_SERVER_URL
-    @client_id = client_id
-    connect_to_test_mongodb
+  def initialize
+    connect_to_test_mongo_db
     ServerResponse.delete_all
     raise "Mongo DB not empty!" unless ServerResponse.first.nil?
+  end
+
+  def do(client_id = nil, url = nil)
+    @url = url || DEFAULT_SERVER_URL
+    @client_id = client_id
+    connect_to_test_mongo_db
+    self
   end
 
   def self.stop_event_machine_after_sleep(duration)
@@ -32,7 +37,7 @@ class QeeveeTestClient
     end
   end
 
-  def test_messages(messages = [], expected_responses_amount=0, duration=0.8)
+  def test_messages(messages = [], expected_responses_amount=0)
     received_messages = []
     responses_counter = 0
 
@@ -66,7 +71,7 @@ class QeeveeTestClient
     received_messages
   end # end - send_msg
 
-  def connect_to_test_mongodb
+  def connect_to_test_mongo_db
     mongoid_conf = YAML::load_file('../../qeemono/config/mongoid_test.yml')
     Mongoid.configure do |config|
       config.master = Mongo::Connection.new(mongoid_conf['host'], mongoid_conf['port']).db(mongoid_conf['database'])
@@ -93,7 +98,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'warn',  :code => 7000, :param_keys => [:new_client_id, :wss]}}},
             {:params => {:arguments => {:type => 'fatal', :code => 9002, :param_keys => [:client_id, :message_hash, :err_msg]}}}
     ]
-    actual_responses = QeeveeTestClient.new().test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do().test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -106,7 +111,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
             {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-1").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-1").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -119,7 +124,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
             {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-981121").test_messages(messages, expected_responses.size+2)
+    actual_responses = QeeveeTestClient.instance.do("test-client-981121").test_messages(messages, expected_responses.size+2)
     assert_server_notifications(expected_responses, actual_responses[0...-2])
     assert_equal({:method=>"Katzensalat", :params=>"12345", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}, actual_responses[-2])
     assert_equal({:method=>"Katzensalat", :params=>"12345", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}, actual_responses[-1])
@@ -147,7 +152,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 5020, :param_keys => [:amount, :message_handler_names]}}},
             {:params => {:arguments => {:type => 'debug', :code => 5030, :param_keys => [:amount]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-87332451441").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-87332451441").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -161,7 +166,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
             {:method=>"Katze", :params=>"123", :client_id=>"test-client-98144121", :version=>"1.0", :seq_id=>235845475201}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-98144121").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-98144121").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -179,7 +184,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 2040, :param_keys => [:client_id, :channel_symbol]}}},
             {:params => {:arguments => {:type => 'debug', :code => 2050, :param_keys => [:client_id, :channel_symbol]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-94571").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-94571").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -193,7 +198,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
             {:params => {:arguments => {:type => 'error', :code => 9515, :param_keys => [:handle_method_name, :message_handler_name, :message_handler_class, :version, :client_id, :message_hash, :err_msg]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-924571").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-924571").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -207,7 +212,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
             {:params => {:arguments => {:type => 'error', :code => 2030, :param_keys => [:client_id, :channel_symbol]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-94572").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-94572").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -228,7 +233,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 2050, :param_keys => [:client_id, :channel_symbol]}}, :seq_id => 1230005},
             {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}, :seq_id => 1230002}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-94573").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-94573").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -251,7 +256,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
             {:method=>"Foobar", :params=>"Biene-72651", :client_id=>"test-client-8735", :version=>"1.0", :seq_id=>"none"}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-8735").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-8735").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -265,7 +270,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
             {:params => {:arguments => {:type => 'error', :code => 9500, :param_keys => [:method_name, :message_handler_names, :client_id, :version, :modules, :message_hash]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-873345").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-873345").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -284,7 +289,7 @@ class BasicTest < Test::Unit::TestCase
             {:method=>"echo2", :params=>{:a => "123"}, :client_id=>"test-client-811733245", :version=>"1.0", :seq_id=>"none"},
             {:params => {:arguments => {:type => 'debug', :code => 3020, :param_keys => [:client_id, :module_name]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-811733245").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-811733245").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -302,7 +307,7 @@ class BasicTest < Test::Unit::TestCase
             {:method=>"echo", :params=>{:a => "123555"}, :client_id=>"test-client-872332451", :version=>"1.0", :seq_id=>"none"},
             {:params => {:arguments => {:type => 'debug', :code => 3020, :param_keys => [:client_id, :module_name]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-872332451").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-872332451").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -323,7 +328,7 @@ class BasicTest < Test::Unit::TestCase
             {:method=>"echo", :params=>{:a => "456"}, :client_id=>"test-client-8733245276", :version=>"1.0", :seq_id=>"none"},
             {:params => {:arguments => {:type => 'debug', :code => 3020, :param_keys => [:client_id, :module_name]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-8733245276").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-8733245276").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -347,7 +352,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 5020, :param_keys => [:amount, :message_handler_names]}}},
             {:params => {:arguments => {:type => 'debug', :code => 5030, :param_keys => [:amount]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-873783245144").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-873783245144").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -371,7 +376,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 5020, :param_keys => [:amount, :message_handler_names]}}},
             {:params => {:arguments => {:type => 'debug', :code => 5030, :param_keys => [:amount]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-873324514431").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-873324514431").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -395,7 +400,7 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 5020, :param_keys => [:amount, :message_handler_names]}}},
             {:params => {:arguments => {:type => 'debug', :code => 5030, :param_keys => [:amount]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-8733324514431").test_messages(messages, expected_responses.size)
+    actual_responses = QeeveeTestClient.instance.do("test-client-8733324514431").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
 
@@ -419,43 +424,9 @@ class BasicTest < Test::Unit::TestCase
             {:params => {:arguments => {:type => 'debug', :code => 5020, :param_keys => [:amount, :message_handler_names]}}},
             {:params => {:arguments => {:type => 'debug', :code => 5030, :param_keys => [:amount]}}}
     ]
-    actual_responses = QeeveeTestClient.new("test-client-8732324514431").test_messages(messages, expected_responses.size, 5)
+    actual_responses = QeeveeTestClient.instance.do("test-client-8732324514431").test_messages(messages, expected_responses.size)
     assert_server_notifications(expected_responses, actual_responses)
   end
-
-#  def test_parallel_clients_processing
-#    client_amount = 10
-#    msg_count = 100
-#
-#    for client_no in (1..client_amount) do
-#      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})], 2)
-#      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unassign_from_modules", "params":{"modules":["__marks_module"]}})], 1)
-#      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"register_message_handlers", "params":{"filenames":["/Users/schmatz/projects/qeevee/qeemono/qeemono-server/qeemono/message_handler/vendor/org/tztz/marks_test_message_handler.rb"]}})], 2)
-#      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"assign_to_modules", "params":{"modules":["__marks_module"]}})], 1)
-#    end
-#
-#    actual_responses = {}
-#    threads = []
-#    for client_no in (1..client_amount) do
-#      threads << Thread.new(client_no) do |tl_client_no|
-#        messages=[]
-#        for i in (1..msg_count) do
-#          messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar222-#{tl_client_no}-#{i}"}, "seq_id":4711000#{tl_client_no}000#{i}})
-#        end
-#        actual_responses[tl_client_no] = QeeveeTestClient.new("test-client-ppp-#{tl_client_no}").test_messages(messages, msg_count, 10)
-#      end
-#    end
-#    threads.each { |t| t.join }
-#    for client_no in (1..client_amount) do
-#      for i in (msg_count..1) do
-#        assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Markimo! Your input is: "Foobar222-#{client_no}-#{i}")}, :client_id=>"test-client-ppp-#{client_no}", :version=>"1.0", :seq_id => "4711000#{client_no}000#{i}".to_i}, actual_responses[client_no][-i])
-#      end
-#    end
-#
-#    for client_no in (1..client_amount) do
-#      QeeveeTestClient.new("test-client-ppp-#{client_no}").test_messages([%q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})], msg_count)
-#    end
-#  end
 
   def test_parallel_clients_processing_forked
     client_amount = 10
@@ -471,7 +442,7 @@ class BasicTest < Test::Unit::TestCase
           messages << %Q({"method":"mark::test_mh.say_hello", "params":{"input":"Foobar333-#{client_no}-#{i}"}, "seq_id":5711000#{client_no}000#{i}})
         end
         messages << %q({"method":"unregister_message_handlers", "params":{"fq_names":["__marks_module#mark::test_mh"]}})
-        responses = QeeveeTestClient.new("test-client-qppp-#{client_no}").test_messages(messages, msg_count)
+        responses = QeeveeTestClient.instance.do("test-client-qppp-#{client_no}").test_messages(messages, msg_count)
         responses.each do |response|
           ServerResponse.create(
             client: "test-client-qppp-#{client_no}",
