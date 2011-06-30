@@ -102,6 +102,42 @@ class BasicTest < Test::Unit::TestCase
     assert_server_notifications(expected_responses, actual_responses)
   end
 
+#  def test_steal_client_id_aka_session_hijacking
+#    messages = [
+#      %q({"method":"send", "params":{"channels":["broadcastwb"], "message":{"method":"Mausi", "params":"7651"}}, "seq_id":56987282004533801})
+#    ]
+#    expected_responses = []
+#    expected_responses << [
+#            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+#            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+#            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+#            {:method=>"Mausi", :params=>"7651", :client_id=>"test-client-AAA", :version=>"1.0", :seq_id=>56987282004533801},
+#    ]
+#    expected_responses << [
+#            {:params => {:arguments => {:type => 'error', :code => 7010, :param_keys => [:client_id, :new_client_id, :wss]}}},
+#            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+#            {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
+#            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+#            {:method=>"Mausi", :params=>"7651", :client_id=>"test-client-AAA", :version=>"1.0", :seq_id=>56987282004533801},
+#    ]
+#
+#    thread_count = 2
+#
+#    actual_responses = []
+#    threads = []
+#    for i in (0..thread_count-1) do
+#      threads << Thread.new(i) do |j|
+#        actual_responses << QeeveeTestClient.instance.do("test-client-AAA").test_messages(messages, expected_responses[j].size)
+#      end
+#    end
+#
+#    threads.each { |t| t.join }
+#
+#    for i in (0..thread_count-1) do
+#      assert_server_notifications(expected_responses[i], actual_responses[i])
+#    end
+#  end
+
   def test_broadcast
     messages = [
             %q({"method":"send", "params":{"channels":["broadcast"], "message":{"method":"Katze", "params":"123"}}, "seq_id":569872820045801})
@@ -122,12 +158,12 @@ class BasicTest < Test::Unit::TestCase
     expected_responses = [
             {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
             {:params => {:arguments => {:type => 'debug', :code => 2000, :param_keys => [:client_id, :channel_symbol, :channel_subscriber_id]}}},
-            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}}
+            {:params => {:arguments => {:type => 'debug', :code => 6000, :param_keys => [:client_id, :wss]}}},
+            {:method=>"Katzensalat", :params=>"12345", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801},
+            {:method=>"Katzensalat", :params=>"12345", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}
     ]
-    actual_responses = QeeveeTestClient.instance.do("test-client-981121").test_messages(messages, expected_responses.size+2)
-    assert_server_notifications(expected_responses, actual_responses[0...-2])
-    assert_equal({:method=>"Katzensalat", :params=>"12345", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}, actual_responses[-2])
-    assert_equal({:method=>"Katzensalat", :params=>"12345", :client_id=>"test-client-981121", :version=>"1.0", :seq_id=>56987820045801}, actual_responses[-1])
+    actual_responses = QeeveeTestClient.instance.do("test-client-981121").test_messages(messages, expected_responses.size)
+    assert_server_notifications(expected_responses, actual_responses)
   end
 
   def test_seq_id_coming_from_server_and_going_to_self
