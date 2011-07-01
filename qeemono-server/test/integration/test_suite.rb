@@ -17,8 +17,11 @@ class QeeveeTestClient
 
   DEFAULT_SERVER_URL = "127.0.0.1:8080"
 
+  MONGOID_CONFIG = YAML::load_file('../../qeemono/config/mongoid_test.yml')
+
+
   def initialize
-    connect_to_test_mongo_db
+    self.class.connect_to_test_mongo_db
     ServerResponse.delete_all
     raise "Mongo DB not empty!" unless ServerResponse.first.nil?
   end
@@ -26,7 +29,6 @@ class QeeveeTestClient
   def do(client_id = nil, url = nil)
     @url = url || DEFAULT_SERVER_URL
     @client_id = client_id
-    connect_to_test_mongo_db
     self
   end
 
@@ -71,10 +73,9 @@ class QeeveeTestClient
     received_messages
   end # end - send_msg
 
-  def connect_to_test_mongo_db
-    mongoid_conf = YAML::load_file('../../qeemono/config/mongoid_test.yml')
+  def self.connect_to_test_mongo_db
     Mongoid.configure do |config|
-      config.master = Mongo::Connection.new(mongoid_conf['host'], mongoid_conf['port']).db(mongoid_conf['database'])
+      config.master = Mongo::Connection.new(MONGOID_CONFIG['host'], MONGOID_CONFIG['port']).db(MONGOID_CONFIG['database'])
     end
   end
 end
