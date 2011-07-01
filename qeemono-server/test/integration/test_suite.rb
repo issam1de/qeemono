@@ -608,8 +608,15 @@ class BasicTest < Test::Unit::TestCase
 
     client_amount.times do |client_no|
       for i in 1..msg_count do
-        response_hash = JSON.parse(ServerResponse.where(client: "test-client-qppp-#{client_no}").and(seq_id: "5711000#{client_no}000#{i}").first.response_hash.to_json, :symbolize_names => true)
-        assert_equal({:method=>"hello", :params=>{:greeting => %Q(Hello Markimo! Your input is: "Foobar333-#{client_no}-#{i}")}, :client_id=>"test-client-qppp-#{client_no}", :version=>"1.0", :seq_id => "5711000#{client_no}000#{i}".to_i}, response_hash)
+        server_response = ServerResponse.where(client: "test-client-qppp-#{client_no}").and(seq_id: "5711000#{client_no}000#{i}").first
+        expected_hash = {:method=>"hello", :params=>{:greeting => %Q(Hello Markimo! Your input is: "Foobar333-#{client_no}-#{i}")}, :client_id=>"test-client-qppp-#{client_no}", :version=>"1.0", :seq_id => "5711000#{client_no}000#{i}".to_i}
+        unless server_response.nil?
+          response_hash = JSON.parse(server_response.response_hash.to_json, :symbolize_names => true)
+          assert_equal(expected_hash, response_hash)
+        else
+          # This will fail...
+          assert_equal(expected_hash, nil)
+        end
       end
     end
   end
