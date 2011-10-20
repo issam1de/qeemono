@@ -1,3 +1,8 @@
+#
+# (c) 2011, Mark von Zeschau
+#
+
+
 require_relative 'lib/exception/mandatory_key_missing_error'
 require_relative 'lib/exception/ambiguous_client_id_error'
 require_relative 'lib/exception/invalid_client_id_error'

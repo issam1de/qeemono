@@ -1,3 +1,8 @@
+#
+# (c) 2011, Mark von Zeschau
+#
+
+
 require_relative '../../lib/exception/unknown_receiver_type_error'
 require_relative '../../lib/exception/unknown_receiver_error'
 require_relative '../../lib/exception/no_receiver_given_error'

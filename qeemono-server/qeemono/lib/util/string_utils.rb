@@ -1,3 +1,8 @@
+#
+# (c) 2011, Mark von Zeschau
+#
+
+
 module StringUtils
   #
   # Taken from Rails code

@@ -1,3 +1,8 @@
+#
+# (c) 2011, Mark von Zeschau
+#
+
+
 require "test/unit"
 require 'em-http-request'
 require 'json'

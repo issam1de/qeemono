@@ -1,4 +1,7 @@
 #
+# (c) 2011, Mark von Zeschau
+#
+#
 # For testing...
 #
 class ServerResponse

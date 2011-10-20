@@ -1,4 +1,7 @@
 #
+# (c) 2011, Mark von Zeschau
+#
+#
 # This data object may carry arbitrary client data.
 # It is used by the persistence message handler for
 # permanently storing client data.

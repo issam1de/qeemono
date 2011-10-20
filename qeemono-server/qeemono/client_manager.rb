@@ -1,3 +1,8 @@
+#
+# (c) 2011, Mark von Zeschau
+#
+
+
 module Qeemono
   #
   # The manager for all clients (web sockets).

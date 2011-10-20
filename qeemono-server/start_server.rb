@@ -1,3 +1,8 @@
+#
+# (c) 2011, Mark von Zeschau
+#
+
+
 require './qeemono/server.rb'
 
 server = Qeemono::Server.new('127.0.0.1', '8080', {
