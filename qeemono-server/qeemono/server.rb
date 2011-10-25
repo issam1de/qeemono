@@ -1,6 +1,6 @@
 #
 # This is the qeemono server.
-# A lightwight, Web Socket and EventMachine based server.
+# A lightweight, Web Socket and EventMachine based server.
 #
 # (c) 2011, Mark von Zeschau
 #
