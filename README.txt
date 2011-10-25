@@ -63,3 +63,6 @@
 #
 # [ The qeemono server and all its dependencies are tested under Ruby 1.9.x ]
 #
+#
+# Start server with: qeemono-server/start_server.sh
+#
